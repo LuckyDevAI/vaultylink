@@ -464,6 +464,14 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone }: {
             <Upload className="w-4 h-4 mr-2" />{t('importData')}
           </Button>
         </div>
+        <Separator className="my-2 bg-border" />
+        <Label className="text-sm text-muted-foreground flex items-center gap-2">
+          <Globe className="w-4 h-4" /> Importa Bookmark
+        </Label>
+        <Button variant="outline" onClick={handleImportBookmarks} className="w-full border-border">
+          <Upload className="w-4 h-4 mr-2" /> Importa da file .HTML
+        </Button>
+        <p className="text-xs text-muted-foreground">Importa bookmark esportati da Chrome, Firefox, Edge, Safari, Opera</p>
       </div>
 
       <Separator className="bg-border" />
