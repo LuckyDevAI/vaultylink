@@ -274,10 +274,11 @@ function LinkFormDialog({
 }
 
 // ── Settings Panel ────────────────────────────────────────────────────────────
-function SettingsPanel({ onBack, vault, biometric }: {
+function SettingsPanel({ onBack, vault, biometric, onImportDone }: {
   onBack: () => void;
   vault: ReturnType<typeof useVault>;
   biometric: ReturnType<typeof useBiometric>;
+  onImportDone?: (links: VaultLink[]) => void;
 }) {
   const { lang, setLang } = useAppStore();
   const { t } = useTranslation(lang);
