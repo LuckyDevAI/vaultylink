@@ -452,10 +452,12 @@ function SettingsPanel({ onBack, vault, biometric }: {
 // ── Main Vault App ────────────────────────────────────────────────────────────
 export default function VaultApp() {
   const vault = useVault();
+  const biometric = useBiometric();
   const { lang, setView, cloudUser } = useAppStore();
   const { t } = useTranslation(lang);
 
   const [authenticated, setAuthenticated] = useState(false);
+  const [lastPassword, setLastPassword] = useState<string | null>(null);
   const [links, setLinks] = useState<VaultLink[]>([]);
   const [tab, setTab] = useState<TabId>('all');
   const [search, setSearch] = useState('');
