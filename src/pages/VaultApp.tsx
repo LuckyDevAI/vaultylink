@@ -349,6 +349,34 @@ function SettingsPanel({ onBack, vault, biometric }: {
     input.click();
   };
 
+  const handleImportBookmarks = () => {
+    const input = document.createElement('input');
+    input.type = 'file'; input.accept = '.html,.htm';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      const html = await file.text();
+      const imported = bookmarksToVaultLinks(html);
+      if (imported.length === 0) {
+        toast.error('Nessun bookmark trovato nel file');
+        return;
+      }
+      // Merge with existing links, avoiding duplicate URLs
+      const existingUrls = new Set((await vault.loadLinks()).map(l => l.url));
+      const newLinks = imported.filter(l => !existingUrls.has(l.url));
+      if (newLinks.length === 0) {
+        toast.info('Tutti i bookmark sono già presenti');
+        return;
+      }
+      const current = await vault.loadLinks();
+      const merged = [...current, ...newLinks];
+      await vault.saveLinks(merged);
+      if (onImportDone) onImportDone(merged);
+      toast.success(`Importati ${newLinks.length} bookmark (${imported.length - newLinks.length} duplicati ignorati)`);
+    };
+    input.click();
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
