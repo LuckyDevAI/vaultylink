@@ -60,6 +60,15 @@ export default function LandingPage() {
               ))}
             </SelectContent>
           </Select>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setView('auth')}
+            className="border-border text-foreground hover:bg-secondary"
+          >
+            <User className="w-4 h-4 mr-1.5" />
+            Login
+          </Button>
         </div>
       </header>
 
