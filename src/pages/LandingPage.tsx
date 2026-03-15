@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Shield, Lock, Heart, Cloud, Globe, Download, ChevronRight } from 'lucide-react';
+import { Shield, Lock, Heart, Cloud, Globe, Download, ChevronRight, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n';
 import { useAppStore } from '@/stores/appStore';
