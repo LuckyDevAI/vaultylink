@@ -339,7 +339,7 @@ function SettingsPanel({ onBack, vault }: {
 // ── Main Vault App ────────────────────────────────────────────────────────────
 export default function VaultApp() {
   const vault = useVault();
-  const { lang, setView } = useAppStore();
+  const { lang, setView, cloudUser } = useAppStore();
   const { t } = useTranslation(lang);
 
   const [authenticated, setAuthenticated] = useState(false);
