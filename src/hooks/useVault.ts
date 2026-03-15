@@ -43,15 +43,15 @@ async function dbSet(key: string, value: string): Promise<void> {
 }
 
 // ── Crypto helpers ────────────────────────────────────────────────────────────
-async function getSalt(): Promise<Uint8Array> {
+async function getSalt(): Promise<Uint8Array<ArrayBuffer>> {
   const stored = await dbGet('salt');
-  if (stored) return new Uint8Array(JSON.parse(stored));
+  if (stored) return new Uint8Array(JSON.parse(stored)) as Uint8Array<ArrayBuffer>;
   const s = crypto.getRandomValues(new Uint8Array(16));
   await dbSet('salt', JSON.stringify([...s]));
-  return s;
+  return s as Uint8Array<ArrayBuffer>;
 }
 
-async function deriveKey(password: string, salt: Uint8Array<ArrayBuffer>): Promise<CryptoKey> {
+async function deriveKey(password: string, salt: Uint8Array): Promise<CryptoKey> {
   const raw = await crypto.subtle.importKey(
     'raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']
   );
