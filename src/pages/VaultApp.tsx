@@ -359,10 +359,16 @@ export default function VaultApp() {
     }
   }, [authenticated, vault.locked]);
 
+  const { cloudUser } = useAppStore();
+
   const persist = useCallback(async (newLinks: VaultLink[]) => {
     setLinks(newLinks);
     await vault.saveLinks(newLinks);
-  }, [vault]);
+    // Sync to cloud if logged in
+    if (cloudUser) {
+      vault.syncCloud().catch(console.error);
+    }
+  }, [vault, cloudUser]);
 
   const handleSaveLink = useCallback((link: VaultLink) => {
     const existing = links.find(l => l.id === link.id);
