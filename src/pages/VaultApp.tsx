@@ -461,7 +461,7 @@ export default function VaultApp() {
           <Button size="sm" variant="ghost" onClick={() => setTab('settings')} className="h-8 w-8 p-0">
             <Settings className="w-4 h-4 text-muted-foreground" />
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => { vault.lock(); setAuthenticated(false); setView('landing'); }}
+          <Button size="sm" variant="ghost" onClick={async () => { vault.lock(); setAuthenticated(false); await supabase.auth.signOut(); setView('landing'); }}
             className="h-8 w-8 p-0">
             <LogOut className="w-4 h-4 text-muted-foreground" />
           </Button>
