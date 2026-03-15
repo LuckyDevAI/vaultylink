@@ -382,7 +382,7 @@ export default function VaultApp() {
     }
   }, [authenticated, vault.locked]);
 
-  const { cloudUser } = useAppStore();
+  
 
   const persist = useCallback(async (newLinks: VaultLink[]) => {
     setLinks(newLinks);
