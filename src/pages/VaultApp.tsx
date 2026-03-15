@@ -708,6 +708,7 @@ export default function VaultApp() {
               <Lock className="w-3.5 h-3.5 text-primary" />
             </div>
             <span className="font-semibold text-foreground text-sm hidden sm:inline">VaultLink</span>
+            {cloudUser && <SyncIndicator status={syncStatus} onRetry={handleRetrySync} />}
           </div>
           <div className="relative flex-1 max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
