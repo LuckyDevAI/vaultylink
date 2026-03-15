@@ -21,6 +21,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { useVault, type VaultLink } from '@/hooks/useVault';
+import { useBiometric } from '@/hooks/useBiometric';
 import { useTranslation } from '@/lib/i18n';
 import { LANG_NAMES, type LangCode } from '@/lib/i18n';
 import { useAppStore } from '@/stores/appStore';
@@ -29,17 +30,35 @@ import { toast } from 'sonner';
 type TabId = 'all' | 'favorites' | 'recent' | 'private' | 'topics' | 'settings';
 
 // ── Auth Screen ───────────────────────────────────────────────────────────────
-function AuthScreen({ onAuth, vault }: { onAuth: () => void; vault: ReturnType<typeof useVault> }) {
+function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
+  onAuth: (password: string) => void;
+  vault: ReturnType<typeof useVault>;
+  biometric: ReturnType<typeof useBiometric>;
+  onBiometricUnlock: (password: string) => void;
+}) {
   const { setup, unlock, hasVault, busy, error } = vault;
   const { lang } = useAppStore();
   const { t } = useTranslation(lang);
   const [isNew, setIsNew] = useState<boolean | null>(null);
   const [pw, setPw] = useState('');
   const [confirmPw, setConfirmPw] = useState('');
+  const [biometricAttempted, setBiometricAttempted] = useState(false);
 
   useEffect(() => {
     hasVault().then(exists => setIsNew(!exists));
   }, [hasVault]);
+
+  // Auto-trigger biometric on mount if enabled
+  useEffect(() => {
+    if (isNew === false && biometric.enabled && !biometric.checking && !biometricAttempted) {
+      setBiometricAttempted(true);
+      biometric.authenticate().then(password => {
+        if (password) {
+          onBiometricUnlock(password);
+        }
+      });
+    }
+  }, [isNew, biometric.enabled, biometric.checking, biometricAttempted]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,10 +66,19 @@ function AuthScreen({ onAuth, vault }: { onAuth: () => void; vault: ReturnType<t
       if (pw !== confirmPw) { toast.error('Passwords do not match'); return; }
       if (pw.length < 4) { toast.error('Password too short'); return; }
       const res = await setup(pw);
-      if (res.ok) onAuth();
+      if (res.ok) onAuth(pw);
     } else {
       const res = await unlock(pw);
-      if (res.ok) onAuth();
+      if (res.ok) onAuth(pw);
+    }
+  };
+
+  const handleBiometricTap = async () => {
+    const password = await biometric.authenticate();
+    if (password) {
+      onBiometricUnlock(password);
+    } else {
+      toast.error('Autenticazione biometrica fallita');
     }
   };
 
@@ -71,12 +99,34 @@ function AuthScreen({ onAuth, vault }: { onAuth: () => void; vault: ReturnType<t
           <p className="text-sm text-muted-foreground">{isNew ? t('setup') : t('locked')}</p>
         </div>
 
+        {/* Biometric button */}
+        {!isNew && biometric.enabled && (
+          <Button
+            variant="outline"
+            onClick={handleBiometricTap}
+            className="w-full h-12 border-primary/30 text-foreground hover:bg-primary/10 gap-3"
+          >
+            <svg className="w-6 h-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 10a2 2 0 0 0-2 2c0 1.02.1 2.51.412 4.12M12 10a2 2 0 0 1 2 2c0 1.22-.102 2.62-.412 4.12M12 10V8m-4.706 6.12C7.116 13.076 7 12.06 7 11a5 5 0 0 1 9.478-2.222M6.12 17.12A13 13 0 0 1 5 11a7 7 0 0 1 12.93-3.632M19 11a15 15 0 0 1-.635 5.12M12 4a9 9 0 0 0-9 9c0 .832.033 1.655.122 2.453M12 4a9 9 0 0 1 8.213 5.333"/>
+            </svg>
+            Sblocca con biometria
+          </Button>
+        )}
+
+        {!isNew && biometric.enabled && (
+          <div className="flex items-center gap-3">
+            <Separator className="flex-1 bg-border" />
+            <span className="text-xs text-muted-foreground">oppure</span>
+            <Separator className="flex-1 bg-border" />
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label className="text-muted-foreground text-xs">{t('masterPw')}</Label>
             <Input
               type="password" value={pw} onChange={e => setPw(e.target.value)}
-              className="bg-secondary border-border mt-1" autoFocus
+              className="bg-secondary border-border mt-1" autoFocus={!biometric.enabled}
             />
           </div>
           {isNew && (
@@ -223,9 +273,10 @@ function LinkFormDialog({
 }
 
 // ── Settings Panel ────────────────────────────────────────────────────────────
-function SettingsPanel({ onBack, vault }: {
+function SettingsPanel({ onBack, vault, biometric }: {
   onBack: () => void;
   vault: ReturnType<typeof useVault>;
+  biometric: ReturnType<typeof useBiometric>;
 }) {
   const { lang, setLang } = useAppStore();
   const { t } = useTranslation(lang);
@@ -237,10 +288,39 @@ function SettingsPanel({ onBack, vault }: {
     if (newPw !== confirmPw) { toast.error('Passwords do not match'); return; }
     try {
       await vault.changePassword(newPw);
+      // Update biometric stored password if enabled
+      if (biometric.enabled) {
+        await biometric.updatePassword(newPw);
+      }
       toast.success('Password updated');
       setCurrentPw(''); setNewPw(''); setConfirmPw('');
     } catch {
       toast.error('Failed to change password');
+    }
+  };
+
+  const handleToggleBiometric = async () => {
+    if (biometric.enabled) {
+      await biometric.disable();
+      toast.success('Biometria disattivata');
+    } else {
+      // We need the current master password to store it
+      if (!currentPw) {
+        toast.error('Inserisci la password attuale per attivare la biometria');
+        return;
+      }
+      // Verify the password first
+      const res = await vault.unlock(currentPw);
+      if (!res.ok) {
+        toast.error('Password errata');
+        return;
+      }
+      const ok = await biometric.enroll(currentPw);
+      if (ok) {
+        toast.success('Biometria attivata!');
+      } else {
+        toast.error('Registrazione biometrica fallita');
+      }
     }
   };
 
@@ -292,6 +372,39 @@ function SettingsPanel({ onBack, vault }: {
 
       <Separator className="bg-border" />
 
+      {/* Biometric */}
+      {biometric.available && (
+        <>
+          <div className="space-y-3">
+            <Label className="text-sm text-muted-foreground flex items-center gap-2">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 10a2 2 0 0 0-2 2c0 1.02.1 2.51.412 4.12M12 10a2 2 0 0 1 2 2c0 1.22-.102 2.62-.412 4.12M12 10V8m-4.706 6.12C7.116 13.076 7 12.06 7 11a5 5 0 0 1 9.478-2.222M6.12 17.12A13 13 0 0 1 5 11a7 7 0 0 1 12.93-3.632M19 11a15 15 0 0 1-.635 5.12M12 4a9 9 0 0 0-9 9c0 .832.033 1.655.122 2.453M12 4a9 9 0 0 1 8.213 5.333"/>
+              </svg>
+              Sblocco biometrico
+            </Label>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-secondary border border-border">
+              <div>
+                <p className="text-sm text-foreground">
+                  {biometric.enabled ? 'Biometria attiva' : 'Biometria disattivata'}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Usa impronta o Face ID per sbloccare il vault
+                </p>
+              </div>
+              <Switch checked={biometric.enabled} onCheckedChange={handleToggleBiometric} />
+            </div>
+            {!biometric.enabled && (
+              <div>
+                <Label className="text-xs text-muted-foreground">Password attuale (per attivare)</Label>
+                <Input type="password" value={currentPw} onChange={e => setCurrentPw(e.target.value)}
+                  className="bg-secondary border-border mt-1" placeholder="Inserisci password master" />
+              </div>
+            )}
+          </div>
+          <Separator className="bg-border" />
+        </>
+      )}
+
       {/* Security */}
       <div className="space-y-3">
         <Label className="text-sm text-muted-foreground flex items-center gap-2">
@@ -339,10 +452,12 @@ function SettingsPanel({ onBack, vault }: {
 // ── Main Vault App ────────────────────────────────────────────────────────────
 export default function VaultApp() {
   const vault = useVault();
+  const biometric = useBiometric();
   const { lang, setView, cloudUser } = useAppStore();
   const { t } = useTranslation(lang);
 
   const [authenticated, setAuthenticated] = useState(false);
+  const [lastPassword, setLastPassword] = useState<string | null>(null);
   const [links, setLinks] = useState<VaultLink[]>([]);
   const [tab, setTab] = useState<TabId>('all');
   const [search, setSearch] = useState('');
@@ -445,14 +560,44 @@ export default function VaultApp() {
 
   const topics = useMemo(() => [...new Set(links.map(l => l.topic).filter(Boolean))], [links]);
 
+  const handleAuth = useCallback((password: string) => {
+    setAuthenticated(true);
+    setLastPassword(password);
+    // Offer biometric enrollment if available but not enabled
+    if (biometric.available && !biometric.enabled) {
+      setTimeout(() => {
+        toast('Vuoi attivare lo sblocco biometrico?', {
+          action: {
+            label: 'Attiva',
+            onClick: async () => {
+              const ok = await biometric.enroll(password);
+              if (ok) toast.success('Biometria attivata!');
+            },
+          },
+          duration: 8000,
+        });
+      }, 1500);
+    }
+  }, [biometric]);
+
+  const handleBiometricUnlock = useCallback(async (password: string) => {
+    const res = await vault.unlock(password);
+    if (res.ok) {
+      setAuthenticated(true);
+      setLastPassword(password);
+    } else {
+      toast.error('Password biometrica non valida. Riprova con la password.');
+    }
+  }, [vault]);
+
   if (!authenticated) {
-    return <AuthScreen onAuth={() => setAuthenticated(true)} vault={vault} />;
+    return <AuthScreen onAuth={handleAuth} vault={vault} biometric={biometric} onBiometricUnlock={handleBiometricUnlock} />;
   }
 
   if (tab === 'settings') {
     return (
       <div className="min-h-screen bg-background p-6 max-w-2xl mx-auto">
-        <SettingsPanel onBack={() => setTab('all')} vault={vault} />
+        <SettingsPanel onBack={() => setTab('all')} vault={vault} biometric={biometric} />
       </div>
     );
   }
