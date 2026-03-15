@@ -5,6 +5,7 @@
  */
 
 import { useState, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 // ── IndexedDB helpers ─────────────────────────────────────────────────────────
 const DB_NAME = 'vaultlink';
@@ -185,10 +186,49 @@ export function useVault() {
     await dbSet('vaultData', ciphertext);
   }, []);
 
+  // ── Cloud sync ────────────────────────────────────────────────────────────
+  const pushToCloud = useCallback(async () => {
+    const blob = await dbGet('vaultData');
+    if (!blob) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { error: err } = await supabase
+      .from('vault_data')
+      .upsert({ user_id: user.id, encrypted_blob: blob, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+    if (err) throw err;
+  }, []);
+
+  const pullFromCloud = useCallback(async (): Promise<boolean> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return false;
+    const { data, error: err } = await supabase
+      .from('vault_data')
+      .select('encrypted_blob')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (err) throw err;
+    if (data?.encrypted_blob) {
+      await dbSet('vaultData', data.encrypted_blob);
+      return true;
+    }
+    return false;
+  }, []);
+
+  const syncCloud = useCallback(async () => {
+    if (!key) return;
+    try {
+      // Push local data to cloud after every save
+      await pushToCloud();
+    } catch (e) {
+      console.error('Cloud sync error:', e);
+    }
+  }, [key, pushToCloud]);
+
   return {
     key, locked, error, busy,
     hasSalt, hasVault, setup, unlock, lock,
     saveLinks, loadLinks, changePassword,
     exportBlob, importBlob,
+    pushToCloud, pullFromCloud, syncCloud,
   };
 }

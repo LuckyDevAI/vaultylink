@@ -339,7 +339,7 @@ function SettingsPanel({ onBack, vault }: {
 // ── Main Vault App ────────────────────────────────────────────────────────────
 export default function VaultApp() {
   const vault = useVault();
-  const { lang, setView } = useAppStore();
+  const { lang, setView, cloudUser } = useAppStore();
   const { t } = useTranslation(lang);
 
   const [authenticated, setAuthenticated] = useState(false);
@@ -352,17 +352,46 @@ export default function VaultApp() {
   const [formOpen, setFormOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<VaultLink | null>(null);
 
-  // Load links when authenticated
+  // Load links when authenticated — pull from cloud first if available
   useEffect(() => {
     if (authenticated && !vault.locked) {
-      vault.loadLinks().then(setLinks);
+      const load = async () => {
+        if (cloudUser) {
+          try {
+            const pulled = await vault.pullFromCloud();
+            if (pulled) {
+              // Re-decrypt with current key after pulling cloud blob
+              const cloudLinks = await vault.loadLinks();
+              if (cloudLinks.length > 0) {
+                setLinks(cloudLinks);
+                return;
+              }
+            }
+          } catch (e) {
+            console.error('Cloud pull failed, using local:', e);
+          }
+        }
+        const localLinks = await vault.loadLinks();
+        setLinks(localLinks);
+        // Push local data to cloud on first load if cloud user
+        if (cloudUser && localLinks.length > 0) {
+          vault.pushToCloud().catch(console.error);
+        }
+      };
+      load();
     }
   }, [authenticated, vault.locked]);
+
+  
 
   const persist = useCallback(async (newLinks: VaultLink[]) => {
     setLinks(newLinks);
     await vault.saveLinks(newLinks);
-  }, [vault]);
+    // Sync to cloud if logged in
+    if (cloudUser) {
+      vault.syncCloud().catch(console.error);
+    }
+  }, [vault, cloudUser]);
 
   const handleSaveLink = useCallback((link: VaultLink) => {
     const existing = links.find(l => l.id === link.id);
