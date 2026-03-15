@@ -560,14 +560,44 @@ export default function VaultApp() {
 
   const topics = useMemo(() => [...new Set(links.map(l => l.topic).filter(Boolean))], [links]);
 
+  const handleAuth = useCallback((password: string) => {
+    setAuthenticated(true);
+    setLastPassword(password);
+    // Offer biometric enrollment if available but not enabled
+    if (biometric.available && !biometric.enabled) {
+      setTimeout(() => {
+        toast('Vuoi attivare lo sblocco biometrico?', {
+          action: {
+            label: 'Attiva',
+            onClick: async () => {
+              const ok = await biometric.enroll(password);
+              if (ok) toast.success('Biometria attivata!');
+            },
+          },
+          duration: 8000,
+        });
+      }, 1500);
+    }
+  }, [biometric]);
+
+  const handleBiometricUnlock = useCallback(async (password: string) => {
+    const res = await vault.unlock(password);
+    if (res.ok) {
+      setAuthenticated(true);
+      setLastPassword(password);
+    } else {
+      toast.error('Password biometrica non valida. Riprova con la password.');
+    }
+  }, [vault]);
+
   if (!authenticated) {
-    return <AuthScreen onAuth={() => setAuthenticated(true)} vault={vault} />;
+    return <AuthScreen onAuth={handleAuth} vault={vault} biometric={biometric} onBiometricUnlock={handleBiometricUnlock} />;
   }
 
   if (tab === 'settings') {
     return (
       <div className="min-h-screen bg-background p-6 max-w-2xl mx-auto">
-        <SettingsPanel onBack={() => setTab('all')} vault={vault} />
+        <SettingsPanel onBack={() => setTab('all')} vault={vault} biometric={biometric} />
       </div>
     );
   }
