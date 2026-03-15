@@ -25,6 +25,7 @@ import { useBiometric } from '@/hooks/useBiometric';
 import { useTranslation } from '@/lib/i18n';
 import { LANG_NAMES, type LangCode } from '@/lib/i18n';
 import { useAppStore } from '@/stores/appStore';
+import { bookmarksToVaultLinks } from '@/lib/bookmarkParser';
 import { toast } from 'sonner';
 
 type TabId = 'all' | 'favorites' | 'recent' | 'private' | 'topics' | 'settings';
