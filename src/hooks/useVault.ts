@@ -51,7 +51,7 @@ async function getSalt(): Promise<Uint8Array<ArrayBuffer>> {
   return s as Uint8Array<ArrayBuffer>;
 }
 
-async function deriveKey(password: string, salt: Uint8Array): Promise<CryptoKey> {
+async function deriveKey(password: string, salt: BufferSource): Promise<CryptoKey> {
   const raw = await crypto.subtle.importKey(
     'raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']
   );
