@@ -1,11 +1,15 @@
 import { create } from 'zustand';
 import type { LangCode } from '@/lib/i18n';
 
+type AppView = 'landing' | 'vault' | 'auth';
+
 interface AppState {
   lang: LangCode;
   setLang: (lang: LangCode) => void;
-  view: 'landing' | 'vault';
-  setView: (view: 'landing' | 'vault') => void;
+  view: AppView;
+  setView: (view: AppView) => void;
+  cloudUser: boolean;
+  setCloudUser: (v: boolean) => void;
 }
 
 const stored = localStorage.getItem('vaultlink-lang') as LangCode | null;
@@ -20,4 +24,6 @@ export const useAppStore = create<AppState>((set) => ({
   },
   view: 'landing',
   setView: (view) => set({ view }),
+  cloudUser: false,
+  setCloudUser: (v) => set({ cloudUser: v }),
 }));

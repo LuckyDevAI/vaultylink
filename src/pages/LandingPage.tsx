@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Shield, Lock, Heart, Cloud, Globe, Download, ChevronRight } from 'lucide-react';
+import { Shield, Lock, Heart, Cloud, Globe, Download, ChevronRight, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n';
 import { useAppStore } from '@/stores/appStore';
@@ -60,6 +60,15 @@ export default function LandingPage() {
               ))}
             </SelectContent>
           </Select>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setView('auth')}
+            className="border-border text-foreground hover:bg-secondary"
+          >
+            <User className="w-4 h-4 mr-1.5" />
+            Login
+          </Button>
         </div>
       </header>
 
