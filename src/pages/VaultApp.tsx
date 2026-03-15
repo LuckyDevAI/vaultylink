@@ -28,8 +28,8 @@ import { toast } from 'sonner';
 type TabId = 'all' | 'favorites' | 'recent' | 'private' | 'topics' | 'settings';
 
 // ── Auth Screen ───────────────────────────────────────────────────────────────
-function AuthScreen({ onAuth }: { onAuth: () => void }) {
-  const { setup, unlock, hasVault, busy, error } = useVault();
+function AuthScreen({ onAuth, vault }: { onAuth: () => void; vault: ReturnType<typeof useVault> }) {
+  const { setup, unlock, hasVault, busy, error } = vault;
   const { lang } = useAppStore();
   const { t } = useTranslation(lang);
   const [isNew, setIsNew] = useState<boolean | null>(null);
@@ -416,7 +416,7 @@ export default function VaultApp() {
   const topics = useMemo(() => [...new Set(links.map(l => l.topic).filter(Boolean))], [links]);
 
   if (!authenticated) {
-    return <AuthScreen onAuth={() => setAuthenticated(true)} />;
+    return <AuthScreen onAuth={() => setAuthenticated(true)} vault={vault} />;
   }
 
   if (tab === 'settings') {
