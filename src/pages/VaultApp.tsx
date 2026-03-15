@@ -575,10 +575,26 @@ export default function VaultApp() {
   const persist = useCallback(async (newLinks: VaultLink[]) => {
     setLinks(newLinks);
     await vault.saveLinks(newLinks);
-    // Sync to cloud if logged in
     if (cloudUser) {
-      vault.syncCloud().catch(console.error);
+      setSyncStatus('syncing');
+      vault.syncCloud()
+        .then(() => {
+          setSyncStatus('synced');
+          setTimeout(() => setSyncStatus('idle'), 3000);
+        })
+        .catch(() => setSyncStatus('error'));
     }
+  }, [vault, cloudUser]);
+
+  const handleRetrySync = useCallback(() => {
+    if (!cloudUser) return;
+    setSyncStatus('syncing');
+    vault.syncCloud()
+      .then(() => {
+        setSyncStatus('synced');
+        setTimeout(() => setSyncStatus('idle'), 3000);
+      })
+      .catch(() => setSyncStatus('error'));
   }, [vault, cloudUser]);
 
   const handleSaveLink = useCallback((link: VaultLink) => {
