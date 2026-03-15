@@ -416,7 +416,7 @@ export default function VaultApp() {
   const topics = useMemo(() => [...new Set(links.map(l => l.topic).filter(Boolean))], [links]);
 
   if (!authenticated) {
-    return <AuthScreen onAuth={() => setAuthenticated(true)} />;
+    return <AuthScreen onAuth={() => setAuthenticated(true)} vault={vault} />;
   }
 
   if (tab === 'settings') {
