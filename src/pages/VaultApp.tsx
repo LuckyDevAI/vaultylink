@@ -29,7 +29,40 @@ import { useAppStore } from '@/stores/appStore';
 import { bookmarksToVaultLinks } from '@/lib/bookmarkParser';
 import { toast } from 'sonner';
 
+type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error' | 'offline';
+
 type TabId = 'all' | 'favorites' | 'recent' | 'private' | 'topics' | 'settings';
+
+// ── Sync Indicator ────────────────────────────────────────────────────────────
+function SyncIndicator({ status, onRetry }: { status: SyncStatus; onRetry?: () => void }) {
+  const config = {
+    idle: { icon: Cloud, label: 'Cloud', className: 'text-muted-foreground' },
+    syncing: { icon: Loader2, label: 'Sincronizzazione...', className: 'text-primary animate-spin' },
+    synced: { icon: Check, label: 'Sincronizzato', className: 'text-emerald-500' },
+    error: { icon: CloudOff, label: 'Errore sync', className: 'text-destructive' },
+    offline: { icon: CloudOff, label: 'Offline', className: 'text-muted-foreground/50' },
+  };
+  const { icon: Icon, label, className } = config[status];
+
+  return (
+    <motion.button
+      onClick={status === 'error' ? onRetry : undefined}
+      className={`relative flex items-center gap-1.5 h-7 px-2 rounded-md text-xs transition-colors ${
+        status === 'error' ? 'hover:bg-destructive/10 cursor-pointer' : 'cursor-default'
+      }`}
+      title={status === 'error' ? 'Clicca per riprovare' : label}
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      key={status}
+    >
+      <Icon className={`w-3.5 h-3.5 ${className}`} />
+      <span className={`hidden sm:inline ${className}`}>{label}</span>
+      {status === 'error' && (
+        <RefreshCw className="w-3 h-3 text-destructive hidden sm:inline" />
+      )}
+    </motion.button>
+  );
+}
 
 // ── Auth Screen ───────────────────────────────────────────────────────────────
 function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
