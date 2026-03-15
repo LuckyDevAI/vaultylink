@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Lock, Plus, Search, Star, Clock, Eye, EyeOff, Settings,
   ExternalLink, Trash2, Edit, ArrowLeft, ChevronDown, LogOut,
-  Shield, Globe, Download, Upload, KeyRound
+  Shield, Globe, Download, Upload, KeyRound,
+  Cloud, CloudOff, Check, Loader2, RefreshCw
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -28,7 +29,40 @@ import { useAppStore } from '@/stores/appStore';
 import { bookmarksToVaultLinks } from '@/lib/bookmarkParser';
 import { toast } from 'sonner';
 
+type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error' | 'offline';
+
 type TabId = 'all' | 'favorites' | 'recent' | 'private' | 'topics' | 'settings';
+
+// ── Sync Indicator ────────────────────────────────────────────────────────────
+function SyncIndicator({ status, onRetry }: { status: SyncStatus; onRetry?: () => void }) {
+  const config = {
+    idle: { icon: Cloud, label: 'Cloud', className: 'text-muted-foreground' },
+    syncing: { icon: Loader2, label: 'Sincronizzazione...', className: 'text-primary animate-spin' },
+    synced: { icon: Check, label: 'Sincronizzato', className: 'text-emerald-500' },
+    error: { icon: CloudOff, label: 'Errore sync', className: 'text-destructive' },
+    offline: { icon: CloudOff, label: 'Offline', className: 'text-muted-foreground/50' },
+  };
+  const { icon: Icon, label, className } = config[status];
+
+  return (
+    <motion.button
+      onClick={status === 'error' ? onRetry : undefined}
+      className={`relative flex items-center gap-1.5 h-7 px-2 rounded-md text-xs transition-colors ${
+        status === 'error' ? 'hover:bg-destructive/10 cursor-pointer' : 'cursor-default'
+      }`}
+      title={status === 'error' ? 'Clicca per riprovare' : label}
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      key={status}
+    >
+      <Icon className={`w-3.5 h-3.5 ${className}`} />
+      <span className={`hidden sm:inline ${className}`}>{label}</span>
+      {status === 'error' && (
+        <RefreshCw className="w-3 h-3 text-destructive hidden sm:inline" />
+      )}
+    </motion.button>
+  );
+}
 
 // ── Auth Screen ───────────────────────────────────────────────────────────────
 function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
@@ -496,6 +530,7 @@ export default function VaultApp() {
 
   const [authenticated, setAuthenticated] = useState(false);
   const [lastPassword, setLastPassword] = useState<string | null>(null);
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
   const [links, setLinks] = useState<VaultLink[]>([]);
   const [tab, setTab] = useState<TabId>('all');
   const [search, setSearch] = useState('');
@@ -510,25 +545,32 @@ export default function VaultApp() {
     if (authenticated && !vault.locked) {
       const load = async () => {
         if (cloudUser) {
+          setSyncStatus('syncing');
           try {
             const pulled = await vault.pullFromCloud();
             if (pulled) {
-              // Re-decrypt with current key after pulling cloud blob
               const cloudLinks = await vault.loadLinks();
               if (cloudLinks.length > 0) {
                 setLinks(cloudLinks);
+                setSyncStatus('synced');
+                setTimeout(() => setSyncStatus('idle'), 3000);
                 return;
               }
             }
           } catch (e) {
             console.error('Cloud pull failed, using local:', e);
+            setSyncStatus('error');
           }
         }
         const localLinks = await vault.loadLinks();
         setLinks(localLinks);
-        // Push local data to cloud on first load if cloud user
         if (cloudUser && localLinks.length > 0) {
-          vault.pushToCloud().catch(console.error);
+          vault.pushToCloud()
+            .then(() => {
+              setSyncStatus('synced');
+              setTimeout(() => setSyncStatus('idle'), 3000);
+            })
+            .catch(() => setSyncStatus('error'));
         }
       };
       load();
@@ -540,10 +582,26 @@ export default function VaultApp() {
   const persist = useCallback(async (newLinks: VaultLink[]) => {
     setLinks(newLinks);
     await vault.saveLinks(newLinks);
-    // Sync to cloud if logged in
     if (cloudUser) {
-      vault.syncCloud().catch(console.error);
+      setSyncStatus('syncing');
+      vault.syncCloud()
+        .then(() => {
+          setSyncStatus('synced');
+          setTimeout(() => setSyncStatus('idle'), 3000);
+        })
+        .catch(() => setSyncStatus('error'));
     }
+  }, [vault, cloudUser]);
+
+  const handleRetrySync = useCallback(() => {
+    if (!cloudUser) return;
+    setSyncStatus('syncing');
+    vault.syncCloud()
+      .then(() => {
+        setSyncStatus('synced');
+        setTimeout(() => setSyncStatus('idle'), 3000);
+      })
+      .catch(() => setSyncStatus('error'));
   }, [vault, cloudUser]);
 
   const handleSaveLink = useCallback((link: VaultLink) => {
@@ -657,6 +715,7 @@ export default function VaultApp() {
               <Lock className="w-3.5 h-3.5 text-primary" />
             </div>
             <span className="font-semibold text-foreground text-sm hidden sm:inline">VaultLink</span>
+            {cloudUser && <SyncIndicator status={syncStatus} onRetry={handleRetrySync} />}
           </div>
           <div className="relative flex-1 max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
