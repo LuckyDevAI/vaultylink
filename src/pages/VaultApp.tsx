@@ -530,6 +530,7 @@ export default function VaultApp() {
 
   const [authenticated, setAuthenticated] = useState(false);
   const [lastPassword, setLastPassword] = useState<string | null>(null);
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
   const [links, setLinks] = useState<VaultLink[]>([]);
   const [tab, setTab] = useState<TabId>('all');
   const [search, setSearch] = useState('');
