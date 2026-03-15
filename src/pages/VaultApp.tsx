@@ -25,6 +25,7 @@ import { useBiometric } from '@/hooks/useBiometric';
 import { useTranslation } from '@/lib/i18n';
 import { LANG_NAMES, type LangCode } from '@/lib/i18n';
 import { useAppStore } from '@/stores/appStore';
+import { bookmarksToVaultLinks } from '@/lib/bookmarkParser';
 import { toast } from 'sonner';
 
 type TabId = 'all' | 'favorites' | 'recent' | 'private' | 'topics' | 'settings';
@@ -273,10 +274,11 @@ function LinkFormDialog({
 }
 
 // ── Settings Panel ────────────────────────────────────────────────────────────
-function SettingsPanel({ onBack, vault, biometric }: {
+function SettingsPanel({ onBack, vault, biometric, onImportDone }: {
   onBack: () => void;
   vault: ReturnType<typeof useVault>;
   biometric: ReturnType<typeof useBiometric>;
+  onImportDone?: (links: VaultLink[]) => void;
 }) {
   const { lang, setLang } = useAppStore();
   const { t } = useTranslation(lang);
@@ -344,6 +346,34 @@ function SettingsPanel({ onBack, vault, biometric }: {
       const text = await file.text();
       await vault.importBlob(text);
       toast.success(t('importData'));
+    };
+    input.click();
+  };
+
+  const handleImportBookmarks = () => {
+    const input = document.createElement('input');
+    input.type = 'file'; input.accept = '.html,.htm';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      const html = await file.text();
+      const imported = bookmarksToVaultLinks(html);
+      if (imported.length === 0) {
+        toast.error('Nessun bookmark trovato nel file');
+        return;
+      }
+      // Merge with existing links, avoiding duplicate URLs
+      const existingUrls = new Set((await vault.loadLinks()).map(l => l.url));
+      const newLinks = imported.filter(l => !existingUrls.has(l.url));
+      if (newLinks.length === 0) {
+        toast.info('Tutti i bookmark sono già presenti');
+        return;
+      }
+      const current = await vault.loadLinks();
+      const merged = [...current, ...newLinks];
+      await vault.saveLinks(merged);
+      if (onImportDone) onImportDone(merged);
+      toast.success(`Importati ${newLinks.length} bookmark (${imported.length - newLinks.length} duplicati ignorati)`);
     };
     input.click();
   };
@@ -434,6 +464,14 @@ function SettingsPanel({ onBack, vault, biometric }: {
             <Upload className="w-4 h-4 mr-2" />{t('importData')}
           </Button>
         </div>
+        <Separator className="my-2 bg-border" />
+        <Label className="text-sm text-muted-foreground flex items-center gap-2">
+          <Globe className="w-4 h-4" /> Importa Bookmark
+        </Label>
+        <Button variant="outline" onClick={handleImportBookmarks} className="w-full border-border">
+          <Upload className="w-4 h-4 mr-2" /> Importa da file .HTML
+        </Button>
+        <p className="text-xs text-muted-foreground">Importa bookmark esportati da Chrome, Firefox, Edge, Safari, Opera</p>
       </div>
 
       <Separator className="bg-border" />
@@ -597,7 +635,7 @@ export default function VaultApp() {
   if (tab === 'settings') {
     return (
       <div className="min-h-screen bg-background p-6 max-w-2xl mx-auto">
-        <SettingsPanel onBack={() => setTab('all')} vault={vault} biometric={biometric} />
+        <SettingsPanel onBack={() => setTab('all')} vault={vault} biometric={biometric} onImportDone={(newLinks) => setLinks(newLinks)} />
       </div>
     );
   }
