@@ -21,6 +21,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { useVault, type VaultLink } from '@/hooks/useVault';
+import { useBiometric } from '@/hooks/useBiometric';
 import { useTranslation } from '@/lib/i18n';
 import { LANG_NAMES, type LangCode } from '@/lib/i18n';
 import { useAppStore } from '@/stores/appStore';
