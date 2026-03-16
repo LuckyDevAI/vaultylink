@@ -4,7 +4,7 @@ import {
   Lock, Plus, Search, Star, Clock, Eye, EyeOff, Settings,
   ExternalLink, Trash2, Edit, ArrowLeft, ChevronDown, LogOut,
   Shield, Globe, Download, Upload, KeyRound, FolderOpen,
-  Cloud, CloudOff, Check, Loader2, RefreshCw
+  Cloud, CloudOff, Check, Loader2, RefreshCw, AlertTriangle
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -96,7 +96,7 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
     e.preventDefault();
     if (isNew) {
       if (pw !== confirmPw) { toast.error('Passwords do not match'); return; }
-      if (pw.length < 4) { toast.error('Password too short'); return; }
+      if (pw.length < 6) { toast.error('Password/PIN: minimo 6 caratteri'); return; }
       const res = await setup(pw);
       if (res.ok) onAuth(pw);
     } else {
@@ -177,6 +177,14 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
         </form>
 
         <p className="text-xs text-center text-muted-foreground font-mono">{t('encrypted')}</p>
+        {isNew && (
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+            <AlertTriangle className="w-4 h-4 text-destructive shrink-0" />
+            <p className="text-xs text-destructive">
+              Attenzione: non è possibile recuperare PIN o password. Memorizzali bene!
+            </p>
+          </div>
+        )}
       </motion.div>
     </div>
   );
