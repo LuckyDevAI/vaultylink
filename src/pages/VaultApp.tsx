@@ -609,7 +609,7 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
       )}
 
       {/* Security */}
-      <div className="space-y-3">
+      <div ref={passwordRef} className="space-y-3">
         <Label className="text-sm text-muted-foreground flex items-center gap-2">
           <KeyRound className="w-4 h-4" /> {t('changePw')}
         </Label>
