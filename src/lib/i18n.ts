@@ -118,7 +118,7 @@ const T: Record<LangCode, TranslationKeys> = {
     featCrypto: 'AES-256 Encryption', featCryptoDesc: 'Every link is encrypted with AES-256-GCM and protected by your master password.',
     featLocal: 'Local Only', featLocalDesc: 'Your data stays on your device. No servers, no tracking.',
     featTopics: 'Topics & Favorites', featTopicsDesc: 'Organize links by topic, bookmark favorites, hide private ones.',
-    featCloud: 'Cloud Backup', featCloudDesc: 'Optional encrypted backup to OneDrive and Google Drive.',
+    featCloud: 'Weekly Encrypted Cloud Sync Plan', featCloudDesc: 'Optional encrypted backup to OneDrive and Google Drive.',
     featLangs: '12 Languages', featLangsDesc: 'Available in 12 languages, including Arabic RTL.',
     featPwa: 'Installable', featPwaDesc: 'Install VaultLink as an app from your browser. Works offline.',
     installTitle: 'Install VaultLink',
