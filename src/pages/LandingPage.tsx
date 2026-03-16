@@ -26,7 +26,7 @@ export default function LandingPage() {
 
   const features = [
     { icon: Shield, key: 'featCrypto', descKey: 'featCryptoDesc', color: 'text-primary', priceKey: 'featPriceFree' },
-    { icon: Lock, key: 'featLocal', descKey: 'featLocalDesc', color: 'text-vault-gold', priceKey: 'featPriceFree' },
+    { icon: Lock, key: 'featLocal', descKey: 'featLocalDesc', color: 'text-vault-gold', priceKey: 'featPriceLocal' },
     { icon: Heart, key: 'featTopics', descKey: 'featTopicsDesc', color: 'text-destructive', priceKey: 'featPriceFree' },
     { icon: Cloud, key: 'featCloud', descKey: 'featCloudDesc', color: 'text-primary', priceKey: 'featPriceCloud' },
     { icon: Globe, key: 'featLangs', descKey: 'featLangsDesc', color: 'text-vault-gold', priceKey: 'featPriceFree' },
