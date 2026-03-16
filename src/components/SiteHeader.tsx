@@ -1,4 +1,4 @@
-import { Lock, User, LogIn } from 'lucide-react';
+import { Lock, User, LogIn, LogOut, KeyRound, Settings, Shield, UserCog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAppStore } from '@/stores/appStore';
 import { useTranslation, LANG_NAMES, type LangCode } from '@/lib/i18n';
@@ -9,6 +9,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
 import { useEffect, useState } from 'react';
 
@@ -16,12 +23,22 @@ export default function SiteHeader({ showBack, onBack }: { showBack?: boolean; o
   const { lang, setLang, setView, cloudUser } = useAppStore();
   const { t } = useTranslation(lang);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUserEmail(user?.email ?? user?.user_metadata?.full_name ?? null);
+      if (user) {
+        supabase.from('user_roles').select('role').eq('user_id', user.id).eq('role', 'admin').maybeSingle()
+          .then(({ data }) => setIsAdmin(!!data));
+      }
     });
   }, [cloudUser]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setView('landing');
+  };
 
   return (
     <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border px-6 py-3">
@@ -53,16 +70,54 @@ export default function SiteHeader({ showBack, onBack }: { showBack?: boolean; o
           </Select>
 
           {cloudUser && userEmail ? (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setView('vault')}
-              className="border-border text-foreground hover:bg-secondary h-8 text-xs"
-            >
-              <User className="w-3.5 h-3.5 mr-1.5" />
-              <span className="hidden sm:inline max-w-[120px] truncate">{userEmail}</span>
-              <span className="sm:hidden">Profilo</span>
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-border text-foreground hover:bg-secondary h-8 text-xs"
+                >
+                  <User className="w-3.5 h-3.5 mr-1.5" />
+                  <span className="hidden sm:inline max-w-[120px] truncate">{userEmail}</span>
+                  <span className="sm:hidden">Profilo</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52 bg-card border-border">
+                <div className="px-3 py-2 border-b border-border">
+                  <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
+                </div>
+                <DropdownMenuItem onClick={() => setView('vault')} className="cursor-pointer gap-2 text-foreground">
+                  <UserCog className="w-4 h-4" />
+                  Modifica profilo
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setView('vault')} className="cursor-pointer gap-2 text-foreground">
+                  <KeyRound className="w-4 h-4" />
+                  Cambia password
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setView('vault')} className="cursor-pointer gap-2 text-foreground">
+                  <Lock className="w-4 h-4" />
+                  Cambia PIN
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setView('vault')} className="cursor-pointer gap-2 text-foreground">
+                  <Settings className="w-4 h-4" />
+                  Impostazioni
+                </DropdownMenuItem>
+                {isAdmin && (
+                  <>
+                    <DropdownMenuSeparator className="bg-border" />
+                    <DropdownMenuItem onClick={() => setView('admin')} className="cursor-pointer gap-2 text-primary">
+                      <Shield className="w-4 h-4" />
+                      Pannello Admin
+                    </DropdownMenuItem>
+                  </>
+                )}
+                <DropdownMenuSeparator className="bg-border" />
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer gap-2 text-destructive focus:text-destructive">
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <Button
               size="sm"
