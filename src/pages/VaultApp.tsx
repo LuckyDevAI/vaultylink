@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Lock, Plus, Search, Star, Clock, Eye, EyeOff, Settings,
   ExternalLink, Trash2, Edit, ArrowLeft, ChevronDown, LogOut,
-  Shield, Globe, Download, Upload, KeyRound,
+  Shield, Globe, Download, Upload, KeyRound, FolderOpen,
   Cloud, CloudOff, Check, Loader2, RefreshCw
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -31,7 +31,7 @@ import { toast } from 'sonner';
 
 type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error' | 'offline';
 
-type TabId = 'all' | 'favorites' | 'recent' | 'private' | 'topics' | 'settings';
+type TabId = 'all' | 'favorites' | 'folders' | 'recent' | 'private' | 'topics' | 'settings';
 
 // ── Sync Indicator ────────────────────────────────────────────────────────────
 function SyncIndicator({ status, onRetry }: { status: SyncStatus; onRetry?: () => void }) {
@@ -656,6 +656,25 @@ export default function VaultApp() {
 
   const topics = useMemo(() => [...new Set(links.map(l => l.topic).filter(Boolean))], [links]);
 
+  const groupedByFolder = useMemo(() => {
+    let result = links;
+    if (!showPrivate) result = result.filter(l => !l.private);
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter(l =>
+        l.url.toLowerCase().includes(q) || l.title.toLowerCase().includes(q) ||
+        l.topic.toLowerCase().includes(q) || l.siteName.toLowerCase().includes(q)
+      );
+    }
+    const groups: Record<string, VaultLink[]> = {};
+    result.forEach(l => {
+      const folder = l.topic || t('noResults') === '' ? l.topic || '—' : l.topic || '—';
+      if (!groups[folder]) groups[folder] = [];
+      groups[folder].push(l);
+    });
+    return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
+  }, [links, showPrivate, search]);
+
   const handleAuth = useCallback((password: string) => {
     setAuthenticated(true);
     setLastPassword(password);
@@ -701,6 +720,7 @@ export default function VaultApp() {
   const tabs: { id: TabId; icon: typeof Star; label: string }[] = [
     { id: 'all', icon: Globe, label: t('allLinks') },
     { id: 'favorites', icon: Star, label: t('favorites') },
+    { id: 'folders', icon: FolderOpen, label: t('folders') },
     { id: 'recent', icon: Clock, label: t('recent') },
     { id: 'private', icon: Lock, label: t('privateLinks') },
   ];
@@ -790,6 +810,53 @@ export default function VaultApp() {
         </div>
 
         {/* Links list */}
+        {tab === 'folders' ? (
+          <div className="space-y-4">
+            {groupedByFolder.length === 0 ? (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-16 space-y-3">
+                <FolderOpen className="w-12 h-12 text-muted-foreground/30 mx-auto" />
+                <p className="text-muted-foreground">{search ? t('noResults') : t('noLinks')}</p>
+              </motion.div>
+            ) : (
+              groupedByFolder.map(([folder, folderLinks]) => (
+                <div key={folder} className="space-y-2">
+                  <div className="flex items-center gap-2 px-1">
+                    <FolderOpen className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-medium text-foreground">{folder}</span>
+                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">{folderLinks.length}</Badge>
+                  </div>
+                  {folderLinks.map((link, i) => (
+                    <motion.div
+                      key={link.id} layout
+                      initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                      transition={{ delay: i * 0.02 }}
+                      className="group flex items-center gap-3 p-3 rounded-lg bg-card border border-border hover:border-primary/20 transition-colors ml-4"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center shrink-0">
+                        {link.favorite ? <Star className="w-4 h-4 text-vault-gold fill-vault-gold" /> : <ExternalLink className="w-4 h-4 text-muted-foreground" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-foreground hover:text-primary truncate">{link.title}</a>
+                          {link.private && <Lock className="w-3 h-3 text-muted-foreground shrink-0" />}
+                        </div>
+                        <span className="text-xs text-muted-foreground truncate block mt-0.5">{link.url}</span>
+                      </div>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setEditLink(link); setFormOpen(true); }}>
+                          <Edit className="w-3.5 h-3.5 text-muted-foreground" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setDeleteTarget(link)}>
+                          <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                        </Button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              ))
+            )}
+          </div>
+        ) : (
         <AnimatePresence mode="popLayout">
           {filteredLinks.length === 0 ? (
             <motion.div
@@ -856,6 +923,7 @@ export default function VaultApp() {
             </div>
           )}
         </AnimatePresence>
+        )}
 
         {/* Stats bar */}
         <div className="text-xs text-muted-foreground text-center pt-4">
