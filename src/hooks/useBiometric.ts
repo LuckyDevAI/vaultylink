@@ -1,6 +1,8 @@
 /**
  * VaultLink — Biometric unlock via WebAuthn
- * Stores master password protected by device biometric (fingerprint/Face ID)
+ * Stores master password encrypted with AES-256-GCM using HKDF-derived key
+ * The encryption key is derived from the credential ID + a random salt via HKDF,
+ * so the raw credential ID alone cannot decrypt the password.
  */
 
 import { useState, useCallback, useEffect } from 'react';
@@ -8,8 +10,9 @@ import { useState, useCallback, useEffect } from 'react';
 const DB_NAME = 'vaultlink';
 const CREDENTIAL_KEY = 'biometric_credential';
 const PW_KEY = 'biometric_pw';
+const HKDF_SALT_KEY = 'biometric_hkdf_salt';
 
-// ── IndexedDB helpers (reuse same DB) ─────────────────────────────────────────
+// ── IndexedDB helpers ─────────────────────────────────────────────────────────
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, 1);
@@ -52,7 +55,7 @@ async function dbDelete(key: string): Promise<void> {
   });
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Crypto helpers ────────────────────────────────────────────────────────────
 function bufToB64(buf: ArrayBuffer): string {
   return btoa(String.fromCharCode(...new Uint8Array(buf)));
 }
@@ -64,26 +67,52 @@ function b64ToBuf(b64: string): ArrayBuffer {
   return buf.buffer;
 }
 
-// Simple XOR obfuscation with a device-bound key (credential ID)
-// This isn't meant to be cryptographically strong — the biometric IS the security gate
-function xorEncrypt(text: string, keyStr: string): string {
-  const textBytes = new TextEncoder().encode(text);
-  const keyBytes = new TextEncoder().encode(keyStr);
-  const result = new Uint8Array(textBytes.length);
-  for (let i = 0; i < textBytes.length; i++) {
-    result[i] = textBytes[i] ^ keyBytes[i % keyBytes.length];
-  }
-  return bufToB64(result.buffer);
+/** Derive an AES-256-GCM key from credential ID using HKDF with a random salt */
+async function deriveKeyFromCredential(credentialId: string, salt: Uint8Array): Promise<CryptoKey> {
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(credentialId),
+    'HKDF',
+    false,
+    ['deriveKey']
+  );
+  return crypto.subtle.deriveKey(
+    {
+      name: 'HKDF',
+      hash: 'SHA-256',
+      salt: salt.buffer as ArrayBuffer,
+      info: new TextEncoder().encode('vaultlink-biometric-v1'),
+    },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt']
+  );
 }
 
-function xorDecrypt(encrypted: string, keyStr: string): string {
-  const encBytes = new Uint8Array(b64ToBuf(encrypted));
-  const keyBytes = new TextEncoder().encode(keyStr);
-  const result = new Uint8Array(encBytes.length);
-  for (let i = 0; i < encBytes.length; i++) {
-    result[i] = encBytes[i] ^ keyBytes[i % keyBytes.length];
-  }
-  return new TextDecoder().decode(result);
+/** Encrypt plaintext with AES-256-GCM, returns JSON string with iv + ciphertext */
+async function aesEncrypt(plaintext: string, key: CryptoKey): Promise<string> {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    new TextEncoder().encode(plaintext)
+  );
+  return JSON.stringify({
+    iv: [...iv],
+    d: [...new Uint8Array(ciphertext)],
+  });
+}
+
+/** Decrypt AES-256-GCM ciphertext */
+async function aesDecrypt(encrypted: string, key: CryptoKey): Promise<string> {
+  const { iv, d } = JSON.parse(encrypted);
+  const plainBuf = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv: new Uint8Array(iv) },
+    key,
+    new Uint8Array(d)
+  );
+  return new TextDecoder().decode(plainBuf);
 }
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
@@ -92,7 +121,6 @@ export function useBiometric() {
   const [enabled, setEnabled] = useState(false);
   const [checking, setChecking] = useState(true);
 
-  // Check availability and if already enrolled
   useEffect(() => {
     const check = async () => {
       try {
@@ -116,7 +144,7 @@ export function useBiometric() {
     check();
   }, []);
 
-  // Enroll biometric: create credential and store encrypted password
+  // Enroll biometric: create credential and store AES-encrypted password
   const enroll = useCallback(async (masterPassword: string): Promise<boolean> => {
     try {
       const challenge = crypto.getRandomValues(new Uint8Array(32));
@@ -132,8 +160,8 @@ export function useBiometric() {
             displayName: 'VaultLink User',
           },
           pubKeyCredParams: [
-            { alg: -7, type: 'public-key' },   // ES256
-            { alg: -257, type: 'public-key' },  // RS256
+            { alg: -7, type: 'public-key' },
+            { alg: -257, type: 'public-key' },
           ],
           authenticatorSelection: {
             authenticatorAttachment: 'platform',
@@ -147,14 +175,17 @@ export function useBiometric() {
       if (!credential) return false;
 
       const credId = bufToB64(credential.rawId);
-      // Store credential ID
-      await dbSet(CREDENTIAL_KEY, JSON.stringify({
-        id: credId,
-        rawId: credId,
-      }));
 
-      // Encrypt and store master password
-      const encryptedPw = xorEncrypt(masterPassword, credId);
+      // Generate random HKDF salt
+      const hkdfSalt = crypto.getRandomValues(new Uint8Array(32));
+      await dbSet(HKDF_SALT_KEY, JSON.stringify([...hkdfSalt]));
+
+      // Store credential ID
+      await dbSet(CREDENTIAL_KEY, JSON.stringify({ id: credId, rawId: credId }));
+
+      // Derive key and encrypt master password with AES-256-GCM
+      const derivedKey = await deriveKeyFromCredential(credId, hkdfSalt);
+      const encryptedPw = await aesEncrypt(masterPassword, derivedKey);
       await dbSet(PW_KEY, encryptedPw);
 
       setEnabled(true);
@@ -189,11 +220,18 @@ export function useBiometric() {
 
       if (!assertion) return null;
 
-      // Retrieve and decrypt password
+      // Retrieve HKDF salt and derive key
+      const saltStr = await dbGet(HKDF_SALT_KEY);
+      if (!saltStr) return null;
+      const hkdfSalt = new Uint8Array(JSON.parse(saltStr));
+
+      const derivedKey = await deriveKeyFromCredential(rawId, hkdfSalt);
+
+      // Decrypt password
       const encryptedPw = await dbGet(PW_KEY);
       if (!encryptedPw) return null;
 
-      return xorDecrypt(encryptedPw, rawId);
+      return await aesDecrypt(encryptedPw, derivedKey);
     } catch (e) {
       console.error('Biometric auth failed:', e);
       return null;
@@ -204,6 +242,7 @@ export function useBiometric() {
   const disable = useCallback(async () => {
     await dbDelete(CREDENTIAL_KEY);
     await dbDelete(PW_KEY);
+    await dbDelete(HKDF_SALT_KEY);
     setEnabled(false);
   }, []);
 
@@ -212,17 +251,23 @@ export function useBiometric() {
     const storedCred = await dbGet(CREDENTIAL_KEY);
     if (!storedCred) return;
     const { rawId } = JSON.parse(storedCred);
-    const encryptedPw = xorEncrypt(newPassword, rawId);
+
+    const saltStr = await dbGet(HKDF_SALT_KEY);
+    if (!saltStr) return;
+    const hkdfSalt = new Uint8Array(JSON.parse(saltStr));
+
+    const derivedKey = await deriveKeyFromCredential(rawId, hkdfSalt);
+    const encryptedPw = await aesEncrypt(newPassword, derivedKey);
     await dbSet(PW_KEY, encryptedPw);
   }, []);
 
   return {
-    available,  // Device supports biometric
-    enabled,    // User has enrolled biometric
-    checking,   // Still checking availability
-    enroll,     // Register biometric + store password
-    authenticate, // Verify biometric + return password
-    disable,    // Remove biometric data
-    updatePassword, // Update stored password after change
+    available,
+    enabled,
+    checking,
+    enroll,
+    authenticate,
+    disable,
+    updatePassword,
   };
 }
