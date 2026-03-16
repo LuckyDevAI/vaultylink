@@ -234,7 +234,7 @@ export default function LandingPage() {
                 <Shield className="w-5 h-5 text-vault-gold" />
                 <h3 className="text-xl font-bold text-foreground">{t('pricingLifetimeName')}</h3>
               </div>
-              <p className="text-sm text-muted-foreground mb-6">{t('pricingLifetimeDesc')}</p>
+              <p className="text-sm text-muted-foreground mb-6 whitespace-pre-line">{t('pricingLifetimeDesc')}</p>
               <div className="mb-6">
                 <span className="text-4xl font-bold text-foreground">€{t('pricingLifetimePrice')}</span>
                 <span className="text-muted-foreground text-sm ml-1">{t('pricingLifetimeOnce')}</span>
