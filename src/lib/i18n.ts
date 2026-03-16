@@ -115,7 +115,7 @@ const T: Record<LangCode, TranslationKeys> = {
     heroHighlight: 'In a vault.',
     heroSub: 'Save, organize and protect all your links with AES-256-GCM encryption. Local only. Yours only.',
     ctaOpen: 'Open VaultLink', ctaLearn: 'Learn more',
-    featCrypto: 'AES-256 Encryption', featCryptoDesc: 'Every link is encrypted with AES-256-GCM and protected by your master password.',
+    featCrypto: 'AES-256 Encryption', featCryptoDesc: 'Every link is encrypted with AES-256-GCM and protected by your master password or PIN.',
     featLocal: 'Local Only', featLocalDesc: 'Your data stays on your device. No servers, no tracking.',
     featTopics: 'Topics & Favorites', featTopicsDesc: 'Organize links by topic, bookmark favorites, hide private ones.',
     featCloud: 'Cloud Backup', featCloudDesc: 'Optional encrypted backup to OneDrive and Google Drive.',
