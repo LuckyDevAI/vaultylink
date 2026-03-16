@@ -664,7 +664,7 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
 export default function VaultApp() {
   const vault = useVault();
   const biometric = useBiometric();
-  const { lang, setView, cloudUser } = useAppStore();
+  const { lang, setView, cloudUser, settingsSection, setSettingsSection } = useAppStore();
   const { t } = useTranslation(lang);
 
   const [authenticated, setAuthenticated] = useState(false);
