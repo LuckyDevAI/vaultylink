@@ -14,7 +14,7 @@ const fadeUp = {
 };
 
 export default function LandingPage() {
-  const { lang, setLang, setView } = useAppStore();
+  const { lang, setView } = useAppStore();
   const { t } = useTranslation(lang);
 
   const features = [
