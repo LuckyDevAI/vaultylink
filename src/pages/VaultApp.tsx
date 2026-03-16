@@ -565,8 +565,8 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
 
       <Separator className="bg-border" />
 
-      {/* Biometric */}
-      {biometric.available && (
+      {/* Biometric / PIN */}
+      <div ref={pinRef} className="space-y-3">
         <>
           <div className="space-y-3">
             <Label className="text-sm text-muted-foreground flex items-center gap-2">
