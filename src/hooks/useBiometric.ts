@@ -80,7 +80,7 @@ async function deriveKeyFromCredential(credentialId: string, salt: Uint8Array): 
     {
       name: 'HKDF',
       hash: 'SHA-256',
-      salt: salt,
+      salt: salt.buffer as ArrayBuffer,
       info: new TextEncoder().encode('vaultlink-biometric-v1'),
     },
     keyMaterial,
