@@ -121,6 +121,7 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
   };
 
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [resetConfirmText, setResetConfirmText] = useState('');
 
   const handleResetVault = async () => {
     try {
