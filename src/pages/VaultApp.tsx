@@ -177,6 +177,14 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
         </form>
 
         <p className="text-xs text-center text-muted-foreground font-mono">{t('encrypted')}</p>
+        {isNew && (
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+            <AlertTriangle className="w-4 h-4 text-destructive shrink-0" />
+            <p className="text-xs text-destructive">
+              Attenzione: non è possibile recuperare PIN o password. Memorizzali bene!
+            </p>
+          </div>
+        )}
       </motion.div>
     </div>
   );
