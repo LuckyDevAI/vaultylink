@@ -18,8 +18,43 @@ const fadeUp = {
 };
 
 export default function LandingPage() {
-  const { lang, setView } = useAppStore();
+  const { lang, setView, cloudUser } = useAppStore();
   const { t } = useTranslation(lang);
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+
+  // Handle payment redirect result
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const payment = params.get('payment');
+    if (payment === 'success') {
+      toast.success(t('paymentSuccess') || 'Pagamento completato con successo!');
+      window.history.replaceState({}, '', window.location.pathname);
+    } else if (payment === 'canceled') {
+      toast.info(t('paymentCanceled') || 'Pagamento annullato.');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
+
+  const handleCheckout = async (plan: 'yearly' | 'lifetime') => {
+    if (!cloudUser) {
+      setView('auth');
+      return;
+    }
+    setLoadingPlan(plan);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { priceId: PLANS[plan].priceId, mode: PLANS[plan].mode },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Errore durante il checkout');
+    } finally {
+      setLoadingPlan(null);
+    }
+  };
 
   const features = [
     { icon: Shield, key: 'featCrypto', descKey: 'featCryptoDesc', color: 'text-primary', priceKey: 'featPriceFree' },
