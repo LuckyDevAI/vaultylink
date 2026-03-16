@@ -123,6 +123,16 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const handleResetVault = async () => {
+    try {
+      // Delete cloud data if user is authenticated
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from('vault_data').delete().eq('user_id', user.id);
+      }
+    } catch (e) {
+      console.error('Cloud delete error:', e);
+    }
+
     // Clear all IndexedDB data
     const req = indexedDB.open('vaultlink', 1);
     req.onsuccess = () => {
@@ -134,7 +144,7 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
         setIsNew(true);
         setPw('');
         setConfirmPw('');
-        toast.success('Vault resettato. Crea una nuova password.');
+        toast.success('Vault resettato (locale + cloud). Crea una nuova password.');
       };
     };
   };
