@@ -434,6 +434,20 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
   const [currentPw, setCurrentPw] = useState('');
   const [newPw, setNewPw] = useState('');
   const [confirmPw, setConfirmPw] = useState('');
+  const profileRef = useRef<HTMLDivElement>(null);
+  const passwordRef = useRef<HTMLDivElement>(null);
+  const pinRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!scrollToSection) return;
+    const refMap: Record<string, React.RefObject<HTMLDivElement | null>> = {
+      profile: profileRef, password: passwordRef, pin: pinRef,
+    };
+    const ref = refMap[scrollToSection];
+    if (ref?.current) {
+      setTimeout(() => ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    }
+  }, [scrollToSection]);
 
   const handleChangePw = async () => {
     if (newPw !== confirmPw) { toast.error('Passwords do not match'); return; }
