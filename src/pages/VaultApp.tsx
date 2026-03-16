@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Lock, Plus, Search, Star, Clock, Eye, EyeOff, Settings,
@@ -422,17 +422,32 @@ function LinkFormDialog({
 }
 
 // ── Settings Panel ────────────────────────────────────────────────────────────
-function SettingsPanel({ onBack, vault, biometric, onImportDone }: {
+function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection }: {
   onBack: () => void;
   vault: ReturnType<typeof useVault>;
   biometric: ReturnType<typeof useBiometric>;
   onImportDone?: (links: VaultLink[]) => void;
+  scrollToSection?: string | null;
 }) {
   const { lang, setLang } = useAppStore();
   const { t } = useTranslation(lang);
   const [currentPw, setCurrentPw] = useState('');
   const [newPw, setNewPw] = useState('');
   const [confirmPw, setConfirmPw] = useState('');
+  const profileRef = useRef<HTMLDivElement>(null);
+  const passwordRef = useRef<HTMLDivElement>(null);
+  const pinRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!scrollToSection) return;
+    const refMap: Record<string, React.RefObject<HTMLDivElement | null>> = {
+      profile: profileRef, password: passwordRef, pin: pinRef,
+    };
+    const ref = refMap[scrollToSection];
+    if (ref?.current) {
+      setTimeout(() => ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    }
+  }, [scrollToSection]);
 
   const handleChangePw = async () => {
     if (newPw !== confirmPw) { toast.error('Passwords do not match'); return; }
@@ -533,6 +548,16 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone }: {
         <h2 className="text-lg font-semibold text-foreground">{t('settingsTitle')}</h2>
       </div>
 
+      {/* Profile */}
+      <div ref={profileRef} className="space-y-2">
+        <Label className="text-sm text-muted-foreground flex items-center gap-2">
+          Profilo utente
+        </Label>
+        <p className="text-xs text-muted-foreground">Gestisci le impostazioni del tuo profilo.</p>
+      </div>
+
+      <Separator className="bg-border" />
+
       {/* Language */}
       <div className="space-y-2">
         <Label className="text-sm text-muted-foreground flex items-center gap-2">
@@ -550,9 +575,9 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone }: {
 
       <Separator className="bg-border" />
 
-      {/* Biometric */}
+      {/* Biometric / PIN */}
       {biometric.available && (
-        <>
+        <div ref={pinRef}>
           <div className="space-y-3">
             <Label className="text-sm text-muted-foreground flex items-center gap-2">
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -579,12 +604,12 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone }: {
               </div>
             )}
           </div>
-          <Separator className="bg-border" />
-        </>
+          <Separator className="bg-border mt-6" />
+        </div>
       )}
 
       {/* Security */}
-      <div className="space-y-3">
+      <div ref={passwordRef} className="space-y-3">
         <Label className="text-sm text-muted-foreground flex items-center gap-2">
           <KeyRound className="w-4 h-4" /> {t('changePw')}
         </Label>
@@ -639,7 +664,7 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone }: {
 export default function VaultApp() {
   const vault = useVault();
   const biometric = useBiometric();
-  const { lang, setView, cloudUser } = useAppStore();
+  const { lang, setView, cloudUser, settingsSection, setSettingsSection } = useAppStore();
   const { t } = useTranslation(lang);
 
   const [authenticated, setAuthenticated] = useState(false);
@@ -655,7 +680,13 @@ export default function VaultApp() {
   const [deleteTarget, setDeleteTarget] = useState<VaultLink | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // Check admin role
+  // Auto-switch to settings when settingsSection is set
+  useEffect(() => {
+    if (settingsSection && authenticated) {
+      setTab('settings');
+    }
+  }, [settingsSection, authenticated]);
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
@@ -836,7 +867,7 @@ export default function VaultApp() {
   if (tab === 'settings') {
     return (
       <div className="min-h-screen bg-background p-6 max-w-2xl mx-auto">
-        <SettingsPanel onBack={() => setTab('all')} vault={vault} biometric={biometric} onImportDone={(newLinks) => setLinks(newLinks)} />
+        <SettingsPanel onBack={() => { setTab('all'); setSettingsSection(null); }} vault={vault} biometric={biometric} onImportDone={(newLinks) => setLinks(newLinks)} scrollToSection={settingsSection} />
       </div>
     );
   }
