@@ -193,6 +193,7 @@ const T: Record<LangCode, TranslationKeys> = {
     footerLegal: 'Legal',
     privacyPolicy: 'Privacy Policy',
     termsOfService: 'Terms of Service',
+    eula: 'EULA',
     privacyTitle: 'Privacy Policy',
     privacyLastUpdate: 'Last updated',
     privacyS1Title: '1. Data Collection',
