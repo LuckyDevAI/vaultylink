@@ -80,7 +80,7 @@ const T: Record<LangCode, TranslationKeys> = {
     pricingCta: 'Inizia ora',
     pricingFree: 'Uso locale gratuito per sempre — i piani aggiungono il cloud.',
     featPriceFree: '✓ Gratis',
-    featPriceCloud: '€9,91/anno',
+    featPriceCloud: '€9,91/anno o €19,90 lifetime',
   },
   en: {
     appName: 'VaultLink', tagline: 'Your links. Private. Anywhere.',
