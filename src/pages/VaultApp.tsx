@@ -29,6 +29,7 @@ import { LANG_NAMES, type LangCode } from '@/lib/i18n';
 import { useAppStore } from '@/stores/appStore';
 import { bookmarksToVaultLinks } from '@/lib/bookmarkParser';
 import { toast } from 'sonner';
+import SiteHeader from '@/components/SiteHeader';
 
 type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error' | 'offline';
 
