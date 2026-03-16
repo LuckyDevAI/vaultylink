@@ -85,7 +85,7 @@ const T: Record<LangCode, TranslationKeys> = {
   },
   en: {
     appName: 'VaultLink', tagline: 'Your links. Private. Anywhere.',
-    allLinks: 'All links', favorites: 'Favorites', recent: 'Recent 7d',
+    allLinks: 'All links', favorites: 'Favorites', folders: 'Folders', recent: 'Recent 7d',
     privateLinks: 'Private', topics: 'Topics', settings: 'Settings',
     addLink: 'Add', search: 'Search links, titles, topics…', lockVault: 'Lock vault',
     sortBy: 'Sort:', sortDate: 'Date', sortName: 'Name', sortTopic: 'Topic',

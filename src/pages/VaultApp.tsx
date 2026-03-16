@@ -701,6 +701,7 @@ export default function VaultApp() {
   const tabs: { id: TabId; icon: typeof Star; label: string }[] = [
     { id: 'all', icon: Globe, label: t('allLinks') },
     { id: 'favorites', icon: Star, label: t('favorites') },
+    { id: 'folders', icon: FolderOpen, label: t('folders') },
     { id: 'recent', icon: Clock, label: t('recent') },
     { id: 'private', icon: Lock, label: t('privateLinks') },
   ];
