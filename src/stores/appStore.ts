@@ -29,4 +29,6 @@ export const useAppStore = create<AppState>((set) => ({
   setView: (view) => set({ view }),
   cloudUser: false,
   setCloudUser: (v) => set({ cloudUser: v }),
+  settingsSection: null,
+  setSettingsSection: (s) => set({ settingsSection: s }),
 }));
