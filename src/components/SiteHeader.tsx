@@ -20,7 +20,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useEffect, useState } from 'react';
 
 export default function SiteHeader({ showBack, onBack }: { showBack?: boolean; onBack?: () => void }) {
-  const { lang, setLang, setView, cloudUser } = useAppStore();
+  const { lang, setLang, setView, cloudUser, setSettingsSection } = useAppStore();
   const { t } = useTranslation(lang);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
