@@ -656,6 +656,25 @@ export default function VaultApp() {
 
   const topics = useMemo(() => [...new Set(links.map(l => l.topic).filter(Boolean))], [links]);
 
+  const groupedByFolder = useMemo(() => {
+    let result = links;
+    if (!showPrivate) result = result.filter(l => !l.private);
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter(l =>
+        l.url.toLowerCase().includes(q) || l.title.toLowerCase().includes(q) ||
+        l.topic.toLowerCase().includes(q) || l.siteName.toLowerCase().includes(q)
+      );
+    }
+    const groups: Record<string, VaultLink[]> = {};
+    result.forEach(l => {
+      const folder = l.topic || t('noResults') === '' ? l.topic || '—' : l.topic || '—';
+      if (!groups[folder]) groups[folder] = [];
+      groups[folder].push(l);
+    });
+    return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
+  }, [links, showPrivate, search]);
+
   const handleAuth = useCallback((password: string) => {
     setAuthenticated(true);
     setLastPassword(password);
