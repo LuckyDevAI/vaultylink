@@ -120,6 +120,25 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
     }
   };
 
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  const handleResetVault = async () => {
+    // Clear all IndexedDB data
+    const req = indexedDB.open('vaultlink', 1);
+    req.onsuccess = () => {
+      const db = req.result;
+      const tx = db.transaction('vault', 'readwrite');
+      tx.objectStore('vault').clear();
+      tx.oncomplete = () => {
+        setShowResetConfirm(false);
+        setIsNew(true);
+        setPw('');
+        setConfirmPw('');
+        toast.success('Vault resettato. Crea una nuova password.');
+      };
+    };
+  };
+
   if (isNew === null) return null;
 
   return (
@@ -214,6 +233,31 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
             </p>
           </div>
         )}
+        {!isNew && (
+          <button
+            onClick={() => setShowResetConfirm(true)}
+            className="text-xs text-destructive/70 hover:text-destructive underline mx-auto block transition-colors"
+          >
+            Password dimenticata? Resetta il vault
+          </button>
+        )}
+
+        <AlertDialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
+          <AlertDialogContent className="bg-background border-border">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-foreground">Resetta il Vault</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tutti i dati locali verranno eliminati permanentemente. Questa azione non può essere annullata. Dovrai creare una nuova password e un nuovo vault.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="border-border">Annulla</AlertDialogCancel>
+              <AlertDialogAction onClick={handleResetVault} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Elimina tutto e resetta
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </motion.div>
     </div>
   );
