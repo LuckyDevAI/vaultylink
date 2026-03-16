@@ -306,6 +306,25 @@ export default function LandingPage() {
               </ul>
             </div>
 
+            {/* Legal */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold text-foreground">{t('footerLegal')}</h4>
+              <ul className="space-y-2">
+                <li>
+                  <button onClick={() => setView('privacy')}
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                    {t('privacyPolicy')}
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setView('terms')}
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                    {t('termsOfService')}
+                  </button>
+                </li>
+              </ul>
+            </div>
+
             {/* Security */}
             <div className="space-y-3">
               <h4 className="text-sm font-semibold text-foreground">{t('featCrypto')}</h4>
