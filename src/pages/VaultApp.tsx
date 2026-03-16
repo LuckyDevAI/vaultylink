@@ -876,6 +876,11 @@ export default function VaultApp() {
             className="bg-primary text-primary-foreground h-8 px-3 text-xs">
             <Plus className="w-3.5 h-3.5 mr-1" />{t('addLink')}
           </Button>
+          {isAdmin && (
+            <Button size="sm" variant="ghost" onClick={() => setView('admin')} className="h-8 w-8 p-0" title="Admin">
+              <Shield className="w-4 h-4 text-primary" />
+            </Button>
+          )}
           <Button size="sm" variant="ghost" onClick={() => setTab('settings')} className="h-8 w-8 p-0">
             <Settings className="w-4 h-4 text-muted-foreground" />
           </Button>
