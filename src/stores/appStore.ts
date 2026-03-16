@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { LangCode } from '@/lib/i18n';
 
 type AppView = 'landing' | 'vault' | 'auth' | 'privacy' | 'terms' | 'eula' | 'admin';
+export type SettingsSection = 'profile' | 'password' | 'pin' | 'general' | null;
 
 interface AppState {
   lang: LangCode;
@@ -10,6 +11,8 @@ interface AppState {
   setView: (view: AppView) => void;
   cloudUser: boolean;
   setCloudUser: (v: boolean) => void;
+  settingsSection: SettingsSection;
+  setSettingsSection: (s: SettingsSection) => void;
 }
 
 const stored = localStorage.getItem('vaultlink-lang') as LangCode | null;
