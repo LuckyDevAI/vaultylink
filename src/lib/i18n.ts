@@ -80,6 +80,7 @@ const T: Record<LangCode, TranslationKeys> = {
     pricingCta: 'Inizia ora',
     pricingFree: 'Uso locale gratuito per sempre — i piani aggiungono il cloud.',
     featPriceFree: '✓ Gratis',
+    featPriceLocal: '€19,90 lifetime',
     featPriceCloud: '€9,91/anno',
   },
   en: {
@@ -145,6 +146,7 @@ const T: Record<LangCode, TranslationKeys> = {
     pricingCta: 'Get started',
     pricingFree: 'Free local use forever — plans add cloud sync.',
     featPriceFree: '✓ Free',
+    featPriceLocal: '€19.90 lifetime',
     featPriceCloud: '€9.91/year',
   },
   fr: { appName:'VaultLink',tagline:'Vos liens. Privés. Partout.',allLinks:'Tous les liens',favorites:'Favoris',recent:'Récents 7j',privateLinks:'Privés',topics:'Sujets',settings:'Paramètres',addLink:'Ajouter',search:'Chercher liens, titres, sujets…',lockVault:'Verrouiller',sortBy:'Trier :',sortDate:'Date',sortName:'Nom',sortTopic:'Sujet',showPrivate:'Afficher privés',hidePrivate:'Masquer privés',noLinks:'Aucun lien sauvegardé',addFirst:'Ajoutez des liens ou chargez la démo',loadDemo:'Charger démo',noResults:'Aucun résultat',setup:'Créez votre mot de passe maître',locked:'Entrez le mot de passe pour déverrouiller',masterPw:'Mot de passe maître',confirmPw:'Confirmer',createVault:'Créer le coffre',unlock:'Déverrouiller',encrypted:'Chiffré AES-256-GCM · Local uniquement',editLink:'Modifier',url:'URL',title:'Titre',siteName:'Nom du site',argument:'Sujet',type:'Type',mainLink:'Lien principal',sublink:'Sous-lien',linkedTo:'Lié à',none:'-- Aucun --',favorite:'Favori',private:'Privé',saveLink:'Enregistrer',updateLink:'Mettre à jour',deleteConfirm:'Supprimer ce lien ?',deleteWarn:'Action irréversible.',cancel:'Annuler',delete:'Supprimer',browserExt:'Extension navigateur',settingsTitle:'Paramètres',license:'Licence',cloudBackup:'Sauvegarde Cloud',security:'Sécurité',language:'Langue',about:'À propos',changePw:'Changer le mot de passe',currentPw:'Mot de passe actuel',newPw:'Nouveau',confirmNewPw:'Confirmer',changePwBtn:'Mettre à jour',version:'Version',developer:'Développeur',builtWith:'Technologies',privacyNote:'Toutes les données sont chiffrées et stockées uniquement sur votre appareil.',feedback:'Retour & Support',exportData:'Exporter (.vlenc)',importData:'Importer',autoLock:'Verrouillage auto',autoLockOff:'Jamais',autoLockMin:'Après {n} min',heroTitle:'Vos liens.',heroHighlight:'Dans un coffre.',heroSub:'Sauvegardez et protégez tous vos liens avec AES-256-GCM.',ctaOpen:'Ouvrir VaultLink',ctaLearn:'En savoir plus',featCrypto:'Chiffrement AES-256',featCryptoDesc:'Chaque lien est chiffré avec AES-256-GCM.',featLocal:'Local uniquement',featLocalDesc:'Vos données restent sur votre appareil.',featTopics:'Sujets & Favoris',featTopicsDesc:'Organisez vos liens par sujet.',featCloud:'Backup Cloud',featCloudDesc:'Sauvegarde chiffrée optionnelle.',featLangs:'12 langues',featLangsDesc:'Disponible en 12 langues.',featPwa:'Installable',featPwaDesc:'Installez VaultLink depuis votre navigateur.',installTitle:'Installer VaultLink',installDesc:'Ajoutez VaultLink à votre écran d\'accueil.',installBtn:'Installer',installManual:'Ou utilisez le menu du navigateur → "Ajouter à l\'écran d\'accueil"'},
