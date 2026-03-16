@@ -120,6 +120,25 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
     }
   };
 
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  const handleResetVault = async () => {
+    // Clear all IndexedDB data
+    const req = indexedDB.open('vaultlink', 1);
+    req.onsuccess = () => {
+      const db = req.result;
+      const tx = db.transaction('vault', 'readwrite');
+      tx.objectStore('vault').clear();
+      tx.oncomplete = () => {
+        setShowResetConfirm(false);
+        setIsNew(true);
+        setPw('');
+        setConfirmPw('');
+        toast.success('Vault resettato. Crea una nuova password.');
+      };
+    };
+  };
+
   if (isNew === null) return null;
 
   return (
