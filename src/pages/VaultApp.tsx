@@ -121,6 +121,7 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
   };
 
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [resetConfirmText, setResetConfirmText] = useState('');
 
   const handleResetVault = async () => {
     try {
@@ -252,17 +253,31 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
           </button>
         )}
 
-        <AlertDialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
+        <AlertDialog open={showResetConfirm} onOpenChange={(open) => { setShowResetConfirm(open); if (!open) setResetConfirmText(''); }}>
           <AlertDialogContent className="bg-background border-border">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-foreground">Resetta il Vault</AlertDialogTitle>
-              <AlertDialogDescription>
-                Tutti i dati locali verranno eliminati permanentemente. Questa azione non può essere annullata. Dovrai creare una nuova password e un nuovo vault.
+              <AlertDialogDescription asChild>
+                <div className="space-y-3">
+                  <p>Tutti i dati locali e cloud verranno eliminati permanentemente. Questa azione non può essere annullata.</p>
+                  <p>Digita <span className="font-mono font-bold text-destructive">RESET</span> per confermare:</p>
+                  <Input
+                    value={resetConfirmText}
+                    onChange={e => setResetConfirmText(e.target.value)}
+                    placeholder="Digita RESET"
+                    className="bg-secondary border-border font-mono"
+                    autoComplete="off"
+                  />
+                </div>
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel className="border-border">Annulla</AlertDialogCancel>
-              <AlertDialogAction onClick={handleResetVault} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              <AlertDialogAction
+                onClick={handleResetVault}
+                disabled={resetConfirmText !== 'RESET'}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50 disabled:pointer-events-none"
+              >
                 Elimina tutto e resetta
               </AlertDialogAction>
             </AlertDialogFooter>
