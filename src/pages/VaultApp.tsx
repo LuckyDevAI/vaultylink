@@ -165,7 +165,30 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
             <Input
               type="password" value={pw} onChange={e => setPw(e.target.value)}
               className="bg-secondary border-border mt-1" autoFocus={!biometric.enabled}
+              minLength={10}
             />
+            {isNew && pw.length > 0 && pwStrength && (
+              <div className="mt-2 space-y-1">
+                <div className="flex gap-1">
+                  {[0, 1, 2, 3].map(i => (
+                    <div
+                      key={i}
+                      className={`h-1.5 flex-1 rounded-full transition-colors ${
+                        i <= pwStrength.score ? strengthColors[pwStrength.score] : 'bg-muted'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">
+                    {strengthLabels[pwStrength.score]}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {pw.length}/10 min
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
           {isNew && (
             <div>
