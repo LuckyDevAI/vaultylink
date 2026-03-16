@@ -93,11 +93,16 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
     }
   }, [isNew, biometric.enabled, biometric.checking, biometricAttempted]);
 
+  const pwStrength = useMemo(() => (isNew && pw.length > 0) ? zxcvbn(pw) : null, [isNew, pw]);
+  const strengthLabels = ['Molto debole', 'Debole', 'Discreta', 'Buona', 'Ottima'];
+  const strengthColors = ['bg-destructive', 'bg-orange-500', 'bg-yellow-500', 'bg-emerald-400', 'bg-emerald-500'];
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isNew) {
-      if (pw !== confirmPw) { toast.error('Passwords do not match'); return; }
-      if (pw.length < 6) { toast.error('Password/PIN: minimo 6 caratteri'); return; }
+      if (pw !== confirmPw) { toast.error('Le password non corrispondono'); return; }
+      if (pw.length < 10) { toast.error('Password/PIN: minimo 10 caratteri'); return; }
+      if (pwStrength && pwStrength.score < 2) { toast.error('Password troppo debole, scegli una combinazione più sicura'); return; }
       const res = await setup(pw);
       if (res.ok) onAuth(pw);
     } else {
