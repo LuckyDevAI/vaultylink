@@ -79,7 +79,7 @@ const T: Record<LangCode, TranslationKeys> = {
     pricingLifetimeBadge: 'Più popolare',
     pricingCta: 'Inizia ora',
     pricingFree: 'Uso locale gratuito per sempre — i piani aggiungono il cloud.',
-    featPriceFree: '✓ Gratis',
+    featPriceFree: '✓ Compreso',
     featPriceLocal: '€19,90 lifetime',
     featPriceCloud: '€9,91/anno',
   },
