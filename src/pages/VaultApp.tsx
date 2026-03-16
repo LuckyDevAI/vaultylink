@@ -36,31 +36,28 @@ type TabId = 'all' | 'favorites' | 'folders' | 'recent' | 'private' | 'topics' |
 // ── Sync Indicator ────────────────────────────────────────────────────────────
 function SyncIndicator({ status, onRetry }: { status: SyncStatus; onRetry?: () => void }) {
   const config = {
-    idle: { icon: Cloud, label: 'Cloud', className: 'text-muted-foreground', iconExtra: '' },
-    syncing: { icon: Loader2, label: 'Sincronizzazione...', className: 'text-primary', iconExtra: 'animate-spin' },
-    synced: { icon: Check, label: 'Sincronizzato', className: 'text-emerald-500', iconExtra: '' },
-    error: { icon: CloudOff, label: 'Errore sync', className: 'text-destructive', iconExtra: '' },
-    offline: { icon: CloudOff, label: 'Offline', className: 'text-muted-foreground/50', iconExtra: '' },
+    idle: { icon: Cloud, label: 'Cloud', className: 'text-muted-foreground', spinning: false },
+    syncing: { icon: Loader2, label: 'Sincronizzazione...', className: 'text-primary', spinning: true },
+    synced: { icon: Check, label: 'Sincronizzato', className: 'text-emerald-500', spinning: false },
+    error: { icon: CloudOff, label: 'Errore sync', className: 'text-destructive', spinning: false },
+    offline: { icon: CloudOff, label: 'Offline', className: 'text-muted-foreground/50', spinning: false },
   };
-  const { icon: Icon, label, className, iconExtra } = config[status];
+  const { icon: Icon, label, className, spinning } = config[status];
 
   return (
-    <motion.button
+    <button
       onClick={status === 'error' ? onRetry : undefined}
       className={`relative flex items-center gap-1.5 h-7 px-2 rounded-md text-xs transition-colors ${
         status === 'error' ? 'hover:bg-destructive/10 cursor-pointer' : 'cursor-default'
       }`}
       title={status === 'error' ? 'Clicca per riprovare' : label}
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      key={status}
     >
-      <Icon className={`w-3.5 h-3.5 ${className} ${iconExtra}`} />
+      <Icon className={`w-3.5 h-3.5 ${className} ${spinning ? 'animate-spin' : ''}`} />
       <span className={`hidden sm:inline ${className}`}>{label}</span>
       {status === 'error' && (
         <RefreshCw className="w-3 h-3 text-destructive hidden sm:inline" />
       )}
-    </motion.button>
+    </button>
   );
 }
 
