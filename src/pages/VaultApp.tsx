@@ -232,7 +232,31 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
               Attenzione: non è possibile recuperare PIN o password. Memorizzali bene!
             </p>
           </div>
+        {!isNew && (
+          <button
+            onClick={() => setShowResetConfirm(true)}
+            className="text-xs text-destructive/70 hover:text-destructive underline mx-auto block transition-colors"
+          >
+            Password dimenticata? Resetta il vault
+          </button>
         )}
+
+        <AlertDialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
+          <AlertDialogContent className="bg-background border-border">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-foreground">Resetta il Vault</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tutti i dati locali verranno eliminati permanentemente. Questa azione non può essere annullata. Dovrai creare una nuova password e un nuovo vault.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="border-border">Annulla</AlertDialogCancel>
+              <AlertDialogAction onClick={handleResetVault} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Elimina tutto e resetta
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </motion.div>
     </div>
   );
