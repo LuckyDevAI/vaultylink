@@ -68,7 +68,7 @@ const T: Record<LangCode, TranslationKeys> = {
     pricingYearlyFeat2: 'Accesso multi-dispositivo',
     pricingYearlyFeat3: 'Tutte le funzionalità base',
     pricingYearlyFeat4: 'Rinnovo annuale',
-    pricingLifetimeName: 'Lifetime',
+    pricingLifetimeName: 'Solo Locale Lifetime',
     pricingLifetimePrice: '19,90',
     pricingLifetimeOnce: 'una tantum',
     pricingLifetimeDesc: 'Accesso completo per sempre.\nPaghi una volta sola.',
