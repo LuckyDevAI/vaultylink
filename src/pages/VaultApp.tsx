@@ -29,6 +29,7 @@ import { LANG_NAMES, type LangCode } from '@/lib/i18n';
 import { useAppStore } from '@/stores/appStore';
 import { bookmarksToVaultLinks } from '@/lib/bookmarkParser';
 import { toast } from 'sonner';
+import SiteHeader from '@/components/SiteHeader';
 
 type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error' | 'offline';
 
@@ -153,7 +154,9 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
   if (isNew === null) return null;
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+    <div className="min-h-screen bg-background flex flex-col">
+      <SiteHeader />
+      <div className="flex-1 flex items-center justify-center p-6">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -284,6 +287,14 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
           </AlertDialogContent>
         </AlertDialog>
       </motion.div>
+      </div>
+
+      <footer className="border-t border-border py-4 px-6">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} VaultLink</p>
+          <p className="text-xs text-muted-foreground font-mono">{t('encrypted')}</p>
+        </div>
+      </footer>
     </div>
   );
 }
