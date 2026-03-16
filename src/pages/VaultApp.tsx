@@ -96,7 +96,7 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
     e.preventDefault();
     if (isNew) {
       if (pw !== confirmPw) { toast.error('Passwords do not match'); return; }
-      if (pw.length < 4) { toast.error('Password too short'); return; }
+      if (pw.length < 6) { toast.error('Password/PIN: minimo 6 caratteri'); return; }
       const res = await setup(pw);
       if (res.ok) onAuth(pw);
     } else {
