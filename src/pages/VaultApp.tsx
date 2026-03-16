@@ -725,13 +725,15 @@ export default function VaultApp() {
   return (
     <div className="min-h-screen bg-background">
       {/* Top bar */}
-      <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-border px-4 py-3">
-        <div className="max-w-4xl mx-auto flex items-center gap-3">
+      <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border px-6 py-3">
+        <div className="max-w-6xl mx-auto flex items-center gap-3">
           <div className="flex items-center gap-2 mr-auto">
-            <div className="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center">
-              <Lock className="w-3.5 h-3.5 text-primary" />
-            </div>
-            <span className="font-semibold text-foreground text-sm hidden sm:inline">VaultLink</span>
+            <button onClick={() => { vault.lock(); setAuthenticated(false); setView('landing'); }} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                <Lock className="w-4 h-4 text-primary" />
+              </div>
+              <span className="font-semibold text-foreground text-lg hidden sm:inline">VaultLink</span>
+            </button>
             {cloudUser && <SyncIndicator status={syncStatus} onRetry={handleRetrySync} />}
           </div>
           <div className="relative flex-1 max-w-xs">
