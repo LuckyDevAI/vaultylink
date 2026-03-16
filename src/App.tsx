@@ -46,6 +46,8 @@ const AppRouter = () => {
       return <AuthPage onBack={() => setView('landing')} onAuth={() => setView('vault')} />;
     case 'vault':
       return <VaultApp />;
+    case 'admin':
+      return <AdminPage />;
     case 'privacy':
       return <PrivacyPage />;
     case 'terms':
