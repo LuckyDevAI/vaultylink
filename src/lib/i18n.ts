@@ -49,7 +49,7 @@ const T: Record<LangCode, TranslationKeys> = {
     heroHighlight: 'In cassaforte.',
     heroSub: 'Salva, organizza e proteggi tutti i tuoi link con crittografia AES-256-GCM. Solo locale. Solo tuo.',
     ctaOpen: 'Apri VaultLink', ctaLearn: 'Scopri di più',
-    featCrypto: 'Crittografia AES-256', featCryptoDesc: 'Ogni link è cifrato con AES-256-GCM e protetto dalla tua password master.',
+    featCrypto: 'Crittografia AES-256', featCryptoDesc: 'Ogni link è cifrato con AES-256-GCM e protetto dalla tua password master o PIN.',
     featLocal: 'Solo Locale', featLocalDesc: 'I tuoi dati restano sul tuo dispositivo. Nessun server, nessun tracking.',
     featTopics: 'Argomenti & Preferiti', featTopicsDesc: 'Organizza i link per argomento, segna i preferiti, nascondi quelli privati.',
     featCloud: 'Piano con sincronizzazione', featCloudDesc: 'Backup cifrato su Cloud Criptato.',
