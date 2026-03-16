@@ -219,9 +219,10 @@ export default function LandingPage() {
               <Button
                 variant="outline"
                 className="w-full border-border text-foreground hover:bg-secondary"
-                onClick={() => setView('auth')}
+                onClick={() => handleCheckout('yearly')}
+                disabled={loadingPlan === 'yearly'}
               >
-                {t('pricingCta')}
+                {loadingPlan === 'yearly' ? '...' : t('pricingCta')}
               </Button>
             </motion.div>
 
