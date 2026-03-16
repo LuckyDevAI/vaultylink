@@ -1,7 +1,6 @@
-import { ArrowLeft, Lock } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useAppStore } from '@/stores/appStore';
 import { useTranslation } from '@/lib/i18n';
+import SiteHeader from '@/components/SiteHeader';
 
 export default function PrivacyPage() {
   const { lang, setView } = useAppStore();
@@ -9,19 +8,7 @@ export default function PrivacyPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-border px-6 py-4">
-        <div className="max-w-3xl mx-auto flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => setView('landing')} className="h-8 w-8">
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center">
-              <Lock className="w-3.5 h-3.5 text-primary" />
-            </div>
-            <span className="font-semibold text-foreground text-sm">VaultLink</span>
-          </div>
-        </div>
-      </header>
+      <SiteHeader showBack onBack={() => setView('landing')} />
 
       <main className="max-w-3xl mx-auto px-6 py-12 space-y-8">
         <h1 className="text-3xl font-bold text-foreground">{t('privacyTitle')}</h1>

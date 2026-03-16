@@ -1,16 +1,9 @@
 import { motion } from 'framer-motion';
-import { Shield, Lock, Heart, Cloud, Globe, Download, ChevronRight, User, Check, Sparkles } from 'lucide-react';
+import { Shield, Lock, Heart, Cloud, Globe, Download, ChevronRight, Check, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n';
 import { useAppStore } from '@/stores/appStore';
-import { LANG_NAMES, type LangCode } from '@/lib/i18n';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import SiteHeader from '@/components/SiteHeader';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -21,7 +14,7 @@ const fadeUp = {
 };
 
 export default function LandingPage() {
-  const { lang, setLang, setView } = useAppStore();
+  const { lang, setView } = useAppStore();
   const { t } = useTranslation(lang);
 
   const features = [
@@ -41,36 +34,7 @@ export default function LandingPage() {
         <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-vault-gold/5 blur-[100px]" />
       </div>
 
-      {/* Header */}
-      <header className="relative z-10 flex items-center justify-between px-6 py-4 max-w-6xl mx-auto">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-            <Lock className="w-4 h-4 text-primary" />
-          </div>
-          <span className="font-semibold text-lg text-foreground">VaultLink</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <Select value={lang} onValueChange={(v) => setLang(v as LangCode)}>
-            <SelectTrigger className="w-[140px] bg-secondary border-border">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(LANG_NAMES).map(([code, name]) => (
-                <SelectItem key={code} value={code}>{name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setView('auth')}
-            className="border-border text-foreground hover:bg-secondary"
-          >
-            <User className="w-4 h-4 mr-1.5" />
-            Login
-          </Button>
-        </div>
-      </header>
+      <SiteHeader />
 
       {/* Hero */}
       <section className="relative z-10 max-w-5xl mx-auto px-6 pt-16 pb-24 text-center">
