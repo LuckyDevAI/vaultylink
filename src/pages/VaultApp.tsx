@@ -680,7 +680,13 @@ export default function VaultApp() {
   const [deleteTarget, setDeleteTarget] = useState<VaultLink | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // Check admin role
+  // Auto-switch to settings when settingsSection is set
+  useEffect(() => {
+    if (settingsSection && authenticated) {
+      setTab('settings');
+    }
+  }, [settingsSection, authenticated]);
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
