@@ -221,6 +221,7 @@ export function useVault() {
       await pushToCloud();
     } catch (e) {
       console.error('Cloud sync error:', e);
+      throw e;
     }
   }, [key, pushToCloud]);
 
