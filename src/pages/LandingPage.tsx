@@ -1,8 +1,12 @@
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Lock, Heart, Cloud, Globe, Download, ChevronRight, Check, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n';
 import { useAppStore } from '@/stores/appStore';
+import { supabase } from '@/integrations/supabase/client';
+import { PLANS } from '@/lib/stripe';
+import { toast } from 'sonner';
 import SiteHeader from '@/components/SiteHeader';
 
 const fadeUp = {
@@ -14,8 +18,43 @@ const fadeUp = {
 };
 
 export default function LandingPage() {
-  const { lang, setView } = useAppStore();
+  const { lang, setView, cloudUser } = useAppStore();
   const { t } = useTranslation(lang);
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+
+  // Handle payment redirect result
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const payment = params.get('payment');
+    if (payment === 'success') {
+      toast.success(t('paymentSuccess') || 'Pagamento completato con successo!');
+      window.history.replaceState({}, '', window.location.pathname);
+    } else if (payment === 'canceled') {
+      toast.info(t('paymentCanceled') || 'Pagamento annullato.');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
+
+  const handleCheckout = async (plan: 'yearly' | 'lifetime') => {
+    if (!cloudUser) {
+      setView('auth');
+      return;
+    }
+    setLoadingPlan(plan);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { priceId: PLANS[plan].priceId, mode: PLANS[plan].mode },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Errore durante il checkout');
+    } finally {
+      setLoadingPlan(null);
+    }
+  };
 
   const features = [
     { icon: Shield, key: 'featCrypto', descKey: 'featCryptoDesc', color: 'text-primary', priceKey: 'featPriceFree' },
@@ -180,9 +219,10 @@ export default function LandingPage() {
               <Button
                 variant="outline"
                 className="w-full border-border text-foreground hover:bg-secondary"
-                onClick={() => setView('auth')}
+                onClick={() => handleCheckout('yearly')}
+                disabled={loadingPlan === 'yearly'}
               >
-                {t('pricingCta')}
+                {loadingPlan === 'yearly' ? '...' : t('pricingCta')}
               </Button>
             </motion.div>
 
@@ -213,10 +253,11 @@ export default function LandingPage() {
               </ul>
               <Button
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90 vault-glow"
-                onClick={() => setView('auth')}
+                onClick={() => handleCheckout('lifetime')}
+                disabled={loadingPlan === 'lifetime'}
               >
-                {t('pricingCta')}
-                <ChevronRight className="w-4 h-4 ml-1" />
+                {loadingPlan === 'lifetime' ? '...' : t('pricingCta')}
+                {loadingPlan !== 'lifetime' && <ChevronRight className="w-4 h-4 ml-1" />}
               </Button>
             </motion.div>
           </div>
