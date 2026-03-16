@@ -31,7 +31,7 @@ import { toast } from 'sonner';
 
 type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error' | 'offline';
 
-type TabId = 'all' | 'favorites' | 'recent' | 'private' | 'topics' | 'settings';
+type TabId = 'all' | 'favorites' | 'folders' | 'recent' | 'private' | 'topics' | 'settings';
 
 // ── Sync Indicator ────────────────────────────────────────────────────────────
 function SyncIndicator({ status, onRetry }: { status: SyncStatus; onRetry?: () => void }) {
