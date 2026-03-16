@@ -49,6 +49,8 @@ const AppRouter = () => {
       return <PrivacyPage />;
     case 'terms':
       return <TermsPage />;
+    case 'eula':
+      return <EulaPage />;
     default:
       return <LandingPage />;
   }

@@ -286,6 +286,12 @@ export default function LandingPage() {
                     {t('termsOfService')}
                   </button>
                 </li>
+                <li>
+                  <button onClick={() => setView('eula')}
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                    {t('eula')}
+                  </button>
+                </li>
               </ul>
             </div>
 
