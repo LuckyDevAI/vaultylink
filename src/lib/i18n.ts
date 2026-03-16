@@ -75,7 +75,7 @@ const T: Record<LangCode, TranslationKeys> = {
     pricingLifetimeFeat1: 'Tutto del piano Cloud Sync',
     pricingLifetimeFeat2: 'Aggiornamenti a vita',
     pricingLifetimeFeat3: 'Nessun rinnovo',
-    pricingLifetimeFeat4: 'Supporto prioritario',
+    pricingLifetimeFeat4: 'Nessun Cloud',
     pricingLifetimeBadge: 'Più popolare',
     pricingCta: 'Inizia ora',
     pricingFree: 'Uso locale gratuito per sempre — i piani aggiungono il cloud.',
