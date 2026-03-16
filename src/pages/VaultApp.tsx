@@ -548,6 +548,16 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
         <h2 className="text-lg font-semibold text-foreground">{t('settingsTitle')}</h2>
       </div>
 
+      {/* Profile */}
+      <div ref={profileRef} className="space-y-2">
+        <Label className="text-sm text-muted-foreground flex items-center gap-2">
+          Profilo utente
+        </Label>
+        <p className="text-xs text-muted-foreground">Gestisci le impostazioni del tuo profilo.</p>
+      </div>
+
+      <Separator className="bg-border" />
+
       {/* Language */}
       <div className="space-y-2">
         <Label className="text-sm text-muted-foreground flex items-center gap-2">
