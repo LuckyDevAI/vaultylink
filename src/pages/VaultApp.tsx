@@ -6,6 +6,7 @@ import {
   Shield, Globe, Download, Upload, KeyRound, FolderOpen,
   Cloud, CloudOff, Check, Loader2, RefreshCw, AlertTriangle
 } from 'lucide-react';
+import zxcvbn from 'zxcvbn';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -92,11 +93,16 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
     }
   }, [isNew, biometric.enabled, biometric.checking, biometricAttempted]);
 
+  const pwStrength = useMemo(() => (isNew && pw.length > 0) ? zxcvbn(pw) : null, [isNew, pw]);
+  const strengthLabels = ['Molto debole', 'Debole', 'Discreta', 'Buona', 'Ottima'];
+  const strengthColors = ['bg-destructive', 'bg-orange-500', 'bg-yellow-500', 'bg-emerald-400', 'bg-emerald-500'];
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isNew) {
-      if (pw !== confirmPw) { toast.error('Passwords do not match'); return; }
-      if (pw.length < 6) { toast.error('Password/PIN: minimo 6 caratteri'); return; }
+      if (pw !== confirmPw) { toast.error('Le password non corrispondono'); return; }
+      if (pw.length < 10) { toast.error('Password/PIN: minimo 10 caratteri'); return; }
+      if (pwStrength && pwStrength.score < 2) { toast.error('Password troppo debole, scegli una combinazione più sicura'); return; }
       const res = await setup(pw);
       if (res.ok) onAuth(pw);
     } else {
@@ -159,7 +165,30 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
             <Input
               type="password" value={pw} onChange={e => setPw(e.target.value)}
               className="bg-secondary border-border mt-1" autoFocus={!biometric.enabled}
+              minLength={10}
             />
+            {isNew && pw.length > 0 && pwStrength && (
+              <div className="mt-2 space-y-1">
+                <div className="flex gap-1">
+                  {[0, 1, 2, 3].map(i => (
+                    <div
+                      key={i}
+                      className={`h-1.5 flex-1 rounded-full transition-colors ${
+                        i <= pwStrength.score ? strengthColors[pwStrength.score] : 'bg-muted'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">
+                    {strengthLabels[pwStrength.score]}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {pw.length}/10 min
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
           {isNew && (
             <div>
