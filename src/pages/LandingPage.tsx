@@ -1,16 +1,9 @@
 import { motion } from 'framer-motion';
-import { Shield, Lock, Heart, Cloud, Globe, Download, ChevronRight, User, Check, Sparkles } from 'lucide-react';
+import { Shield, Lock, Heart, Cloud, Globe, Download, ChevronRight, Check, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n';
 import { useAppStore } from '@/stores/appStore';
-import { LANG_NAMES, type LangCode } from '@/lib/i18n';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import SiteHeader from '@/components/SiteHeader';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
