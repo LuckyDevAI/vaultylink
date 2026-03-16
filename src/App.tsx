@@ -11,6 +11,7 @@ import AuthPage from "@/pages/AuthPage";
 import PrivacyPage from "@/pages/PrivacyPage";
 import TermsPage from "@/pages/TermsPage";
 import EulaPage from "@/pages/EulaPage";
+import AdminPage from "@/pages/AdminPage";
 
 const queryClient = new QueryClient();
 
