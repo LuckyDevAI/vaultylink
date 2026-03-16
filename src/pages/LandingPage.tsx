@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Shield, Lock, Heart, Cloud, Globe, Download, ChevronRight, User } from 'lucide-react';
+import { Shield, Lock, Heart, Cloud, Globe, Download, ChevronRight, User, Check, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n';
 import { useAppStore } from '@/stores/appStore';
@@ -169,6 +169,90 @@ export default function LandingPage() {
               <p className="text-sm text-muted-foreground leading-relaxed">{t(feat.descKey)}</p>
             </motion.div>
           ))}
+        </motion.div>
+      </section>
+
+      {/* Pricing */}
+      <section id="pricing" className="relative z-10 max-w-5xl mx-auto px-6 py-20">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          className="space-y-12"
+        >
+          <motion.h2 variants={fadeUp} custom={0} className="text-3xl md:text-4xl font-bold text-center text-foreground">
+            {t('pricingTitle')}
+          </motion.h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+            {/* Yearly Plan */}
+            <motion.div variants={fadeUp} custom={1}
+              className="relative p-8 rounded-2xl bg-card border border-border hover:border-primary/30 transition-colors duration-300 flex flex-col"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <Cloud className="w-5 h-5 text-primary" />
+                <h3 className="text-xl font-bold text-foreground">{t('pricingYearlyName')}</h3>
+              </div>
+              <p className="text-sm text-muted-foreground mb-6">{t('pricingYearlyDesc')}</p>
+              <div className="mb-6">
+                <span className="text-4xl font-bold text-foreground">€{t('pricingYearlyPrice')}</span>
+                <span className="text-muted-foreground text-sm">{t('pricingYearlyPeriod')}</span>
+              </div>
+              <ul className="space-y-3 mb-8 flex-1">
+                {['pricingYearlyFeat1','pricingYearlyFeat2','pricingYearlyFeat3','pricingYearlyFeat4'].map(k => (
+                  <li key={k} className="flex items-center gap-2 text-sm text-foreground">
+                    <Check className="w-4 h-4 text-primary shrink-0" />
+                    {t(k)}
+                  </li>
+                ))}
+              </ul>
+              <Button
+                variant="outline"
+                className="w-full border-border text-foreground hover:bg-secondary"
+                onClick={() => setView('auth')}
+              >
+                {t('pricingCta')}
+              </Button>
+            </motion.div>
+
+            {/* Lifetime Plan */}
+            <motion.div variants={fadeUp} custom={2}
+              className="relative p-8 rounded-2xl bg-card border-2 border-primary/50 hover:border-primary transition-colors duration-300 flex flex-col vault-glow"
+            >
+              <div className="absolute -top-3 right-6 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-semibold flex items-center gap-1">
+                <Sparkles className="w-3 h-3" />
+                {t('pricingLifetimeBadge')}
+              </div>
+              <div className="flex items-center gap-2 mb-2">
+                <Shield className="w-5 h-5 text-vault-gold" />
+                <h3 className="text-xl font-bold text-foreground">{t('pricingLifetimeName')}</h3>
+              </div>
+              <p className="text-sm text-muted-foreground mb-6">{t('pricingLifetimeDesc')}</p>
+              <div className="mb-6">
+                <span className="text-4xl font-bold text-foreground">€{t('pricingLifetimePrice')}</span>
+                <span className="text-muted-foreground text-sm ml-1">{t('pricingLifetimeOnce')}</span>
+              </div>
+              <ul className="space-y-3 mb-8 flex-1">
+                {['pricingLifetimeFeat1','pricingLifetimeFeat2','pricingLifetimeFeat3','pricingLifetimeFeat4'].map(k => (
+                  <li key={k} className="flex items-center gap-2 text-sm text-foreground">
+                    <Check className="w-4 h-4 text-vault-gold shrink-0" />
+                    {t(k)}
+                  </li>
+                ))}
+              </ul>
+              <Button
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 vault-glow"
+                onClick={() => setView('auth')}
+              >
+                {t('pricingCta')}
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </motion.div>
+          </div>
+
+          <motion.p variants={fadeUp} custom={3} className="text-center text-sm text-muted-foreground">
+            {t('pricingFree')}
+          </motion.p>
         </motion.div>
       </section>
 
