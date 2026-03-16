@@ -653,7 +653,17 @@ export default function VaultApp() {
   const [editLink, setEditLink] = useState<VaultLink | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<VaultLink | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
+  // Check admin role
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        supabase.from('user_roles').select('role').eq('user_id', user.id).eq('role', 'admin').maybeSingle()
+          .then(({ data }) => setIsAdmin(!!data));
+      }
+    });
+  }, [cloudUser]);
   // Load links when authenticated — pull from cloud first if available
   useEffect(() => {
     if (authenticated && !vault.locked) {
