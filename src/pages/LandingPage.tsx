@@ -1,8 +1,12 @@
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Lock, Heart, Cloud, Globe, Download, ChevronRight, Check, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n';
 import { useAppStore } from '@/stores/appStore';
+import { supabase } from '@/integrations/supabase/client';
+import { PLANS } from '@/lib/stripe';
+import { toast } from 'sonner';
 import SiteHeader from '@/components/SiteHeader';
 
 const fadeUp = {
