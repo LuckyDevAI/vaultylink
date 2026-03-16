@@ -851,6 +851,7 @@ export default function VaultApp() {
               </div>
               <span className="font-semibold text-foreground text-lg hidden sm:inline">VaultLink</span>
               <span className="text-xs text-muted-foreground hidden md:inline ml-1">I tuoi link in cassaforte.</span>
+            </button>
             {cloudUser && <SyncIndicator status={syncStatus} onRetry={handleRetrySync} />}
           </div>
           <div className="relative flex-1 max-w-xs">
