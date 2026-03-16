@@ -18,7 +18,7 @@ type TranslationKeys = Record<string, string>;
 const T: Record<LangCode, TranslationKeys> = {
   it: {
     appName: 'VaultLink', tagline: 'I tuoi link. Privati. Ovunque.',
-    allLinks: 'Tutti i link', favorites: 'Preferiti', recent: 'Recenti 7gg',
+    allLinks: 'Tutti i link', favorites: 'Preferiti', folders: 'Cartelle', recent: 'Recenti 7gg',
     privateLinks: 'Privati', topics: 'Argomenti', settings: 'Impostazioni',
     addLink: 'Aggiungi', search: 'Cerca link, titoli, argomenti…', lockVault: 'Blocca vault',
     sortBy: 'Ordina:', sortDate: 'Data', sortName: 'Nome', sortTopic: 'Argomento',
