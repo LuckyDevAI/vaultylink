@@ -6,6 +6,7 @@ import {
   Shield, Globe, Download, Upload, KeyRound, FolderOpen,
   Cloud, CloudOff, Check, Loader2, RefreshCw, AlertTriangle
 } from 'lucide-react';
+import zxcvbn from 'zxcvbn';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
