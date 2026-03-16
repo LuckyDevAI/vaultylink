@@ -232,6 +232,7 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
               Attenzione: non è possibile recuperare PIN o password. Memorizzali bene!
             </p>
           </div>
+        )}
         {!isNew && (
           <button
             onClick={() => setShowResetConfirm(true)}
