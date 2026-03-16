@@ -25,12 +25,12 @@ export default function LandingPage() {
   const { t } = useTranslation(lang);
 
   const features = [
-    { icon: Shield, key: 'featCrypto', descKey: 'featCryptoDesc', color: 'text-primary' },
-    { icon: Lock, key: 'featLocal', descKey: 'featLocalDesc', color: 'text-vault-gold' },
-    { icon: Heart, key: 'featTopics', descKey: 'featTopicsDesc', color: 'text-destructive' },
-    { icon: Cloud, key: 'featCloud', descKey: 'featCloudDesc', color: 'text-primary' },
-    { icon: Globe, key: 'featLangs', descKey: 'featLangsDesc', color: 'text-vault-gold' },
-    { icon: Download, key: 'featPwa', descKey: 'featPwaDesc', color: 'text-primary' },
+    { icon: Shield, key: 'featCrypto', descKey: 'featCryptoDesc', color: 'text-primary', priceKey: 'featPriceFree' },
+    { icon: Lock, key: 'featLocal', descKey: 'featLocalDesc', color: 'text-vault-gold', priceKey: 'featPriceFree' },
+    { icon: Heart, key: 'featTopics', descKey: 'featTopicsDesc', color: 'text-destructive', priceKey: 'featPriceFree' },
+    { icon: Cloud, key: 'featCloud', descKey: 'featCloudDesc', color: 'text-primary', priceKey: 'featPriceCloud' },
+    { icon: Globe, key: 'featLangs', descKey: 'featLangsDesc', color: 'text-vault-gold', priceKey: 'featPriceFree' },
+    { icon: Download, key: 'featPwa', descKey: 'featPwaDesc', color: 'text-primary', priceKey: 'featPriceFree' },
   ];
 
   return (
@@ -166,7 +166,14 @@ export default function LandingPage() {
             >
               <feat.icon className={`w-8 h-8 ${feat.color} mb-4`} />
               <h3 className="text-lg font-semibold text-foreground mb-2">{t(feat.key)}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{t(feat.descKey)}</p>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-3">{t(feat.descKey)}</p>
+              <span className={`inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full ${
+                feat.priceKey === 'featPriceFree' 
+                  ? 'bg-primary/10 text-primary' 
+                  : 'bg-vault-gold/10 text-vault-gold'
+              }`}>
+                {t(feat.priceKey)}
+              </span>
             </motion.div>
           ))}
         </motion.div>
