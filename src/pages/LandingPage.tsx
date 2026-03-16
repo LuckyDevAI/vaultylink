@@ -34,36 +34,7 @@ export default function LandingPage() {
         <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-vault-gold/5 blur-[100px]" />
       </div>
 
-      {/* Header */}
-      <header className="relative z-10 flex items-center justify-between px-6 py-4 max-w-6xl mx-auto">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-            <Lock className="w-4 h-4 text-primary" />
-          </div>
-          <span className="font-semibold text-lg text-foreground">VaultLink</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <Select value={lang} onValueChange={(v) => setLang(v as LangCode)}>
-            <SelectTrigger className="w-[140px] bg-secondary border-border">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(LANG_NAMES).map(([code, name]) => (
-                <SelectItem key={code} value={code}>{name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setView('auth')}
-            className="border-border text-foreground hover:bg-secondary"
-          >
-            <User className="w-4 h-4 mr-1.5" />
-            Login
-          </Button>
-        </div>
-      </header>
+      <SiteHeader />
 
       {/* Hero */}
       <section className="relative z-10 max-w-5xl mx-auto px-6 pt-16 pb-24 text-center">
