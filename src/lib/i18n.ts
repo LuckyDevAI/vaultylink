@@ -52,7 +52,7 @@ const T: Record<LangCode, TranslationKeys> = {
     featCrypto: 'Crittografia AES-256', featCryptoDesc: 'Ogni link è cifrato con AES-256-GCM e protetto dalla tua password master.',
     featLocal: 'Solo Locale', featLocalDesc: 'I tuoi dati restano sul tuo dispositivo. Nessun server, nessun tracking.',
     featTopics: 'Argomenti & Preferiti', featTopicsDesc: 'Organizza i link per argomento, segna i preferiti, nascondi quelli privati.',
-    featCloud: 'Backup Cloud', featCloudDesc: 'Backup cifrato opzionale su OneDrive e Google Drive.',
+    featCloud: 'Piano con Sincronizzazione settimanale su Cloud Crittografato', featCloudDesc: 'Backup cifrato opzionale su OneDrive e Google Drive.',
     featLangs: '12 Lingue', featLangsDesc: 'Interfaccia disponibile in 12 lingue, incluso arabo RTL.',
     featPwa: 'Installabile', featPwaDesc: 'Installa VaultLink come app dal browser. Funziona offline.',
     installTitle: 'Installa VaultLink',
