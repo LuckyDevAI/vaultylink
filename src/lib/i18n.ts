@@ -145,7 +145,7 @@ const T: Record<LangCode, TranslationKeys> = {
     pricingLifetimeBadge: 'Most popular',
     pricingCta: 'Get started',
     pricingFree: 'Free local use forever — plans add cloud sync.',
-    featPriceFree: '✓ Free',
+    featPriceFree: '✓ Included',
     featPriceLocal: '€19.90 lifetime',
     featPriceCloud: '€9.91/year',
   },
