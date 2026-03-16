@@ -253,10 +253,11 @@ export default function LandingPage() {
               </ul>
               <Button
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90 vault-glow"
-                onClick={() => setView('auth')}
+                onClick={() => handleCheckout('lifetime')}
+                disabled={loadingPlan === 'lifetime'}
               >
-                {t('pricingCta')}
-                <ChevronRight className="w-4 h-4 ml-1" />
+                {loadingPlan === 'lifetime' ? '...' : t('pricingCta')}
+                {loadingPlan !== 'lifetime' && <ChevronRight className="w-4 h-4 ml-1" />}
               </Button>
             </motion.div>
           </div>
