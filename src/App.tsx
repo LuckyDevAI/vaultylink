@@ -10,6 +10,7 @@ import VaultApp from "@/pages/VaultApp";
 import AuthPage from "@/pages/AuthPage";
 import PrivacyPage from "@/pages/PrivacyPage";
 import TermsPage from "@/pages/TermsPage";
+import EulaPage from "@/pages/EulaPage";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,8 @@ const AppRouter = () => {
       return <PrivacyPage />;
     case 'terms':
       return <TermsPage />;
+    case 'eula':
+      return <EulaPage />;
     default:
       return <LandingPage />;
   }
