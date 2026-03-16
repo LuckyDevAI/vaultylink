@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import LandingPage from "@/pages/LandingPage";
 import VaultApp from "@/pages/VaultApp";
 import AuthPage from "@/pages/AuthPage";
+import PrivacyPage from "@/pages/PrivacyPage";
+import TermsPage from "@/pages/TermsPage";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +44,10 @@ const AppRouter = () => {
       return <AuthPage onBack={() => setView('landing')} onAuth={() => setView('vault')} />;
     case 'vault':
       return <VaultApp />;
+    case 'privacy':
+      return <PrivacyPage />;
+    case 'terms':
+      return <TermsPage />;
     default:
       return <LandingPage />;
   }

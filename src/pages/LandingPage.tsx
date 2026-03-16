@@ -266,7 +266,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="relative z-10 border-t border-border mt-12">
         <div className="max-w-6xl mx-auto px-6 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8 mb-10">
             {/* Brand */}
             <div className="md:col-span-2 space-y-4">
               <div className="flex items-center gap-2">
@@ -301,6 +301,25 @@ export default function LandingPage() {
                   <button onClick={() => setView('vault')}
                     className="text-sm text-muted-foreground hover:text-primary transition-colors">
                     {t('ctaOpen')}
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold text-foreground">{t('footerLegal')}</h4>
+              <ul className="space-y-2">
+                <li>
+                  <button onClick={() => setView('privacy')}
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                    {t('privacyPolicy')}
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setView('terms')}
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                    {t('termsOfService')}
                   </button>
                 </li>
               </ul>
