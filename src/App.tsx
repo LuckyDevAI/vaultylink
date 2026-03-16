@@ -11,6 +11,7 @@ import AuthPage from "@/pages/AuthPage";
 import PrivacyPage from "@/pages/PrivacyPage";
 import TermsPage from "@/pages/TermsPage";
 import EulaPage from "@/pages/EulaPage";
+import AdminPage from "@/pages/AdminPage";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,8 @@ const AppRouter = () => {
       return <AuthPage onBack={() => setView('landing')} onAuth={() => setView('vault')} />;
     case 'vault':
       return <VaultApp />;
+    case 'admin':
+      return <AdminPage />;
     case 'privacy':
       return <PrivacyPage />;
     case 'terms':

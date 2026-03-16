@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { LangCode } from '@/lib/i18n';
 
-type AppView = 'landing' | 'vault' | 'auth' | 'privacy' | 'terms' | 'eula';
+type AppView = 'landing' | 'vault' | 'auth' | 'privacy' | 'terms' | 'eula' | 'admin';
 
 interface AppState {
   lang: LangCode;

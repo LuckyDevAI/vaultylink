@@ -1,1 +1,4 @@
 project_id = "ejeodmaptmgdfguierdn"
+
+[functions.admin]
+verify_jwt = false

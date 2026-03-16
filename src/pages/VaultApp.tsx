@@ -653,7 +653,17 @@ export default function VaultApp() {
   const [editLink, setEditLink] = useState<VaultLink | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<VaultLink | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
+  // Check admin role
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        supabase.from('user_roles').select('role').eq('user_id', user.id).eq('role', 'admin').maybeSingle()
+          .then(({ data }) => setIsAdmin(!!data));
+      }
+    });
+  }, [cloudUser]);
   // Load links when authenticated — pull from cloud first if available
   useEffect(() => {
     if (authenticated && !vault.locked) {
@@ -866,6 +876,11 @@ export default function VaultApp() {
             className="bg-primary text-primary-foreground h-8 px-3 text-xs">
             <Plus className="w-3.5 h-3.5 mr-1" />{t('addLink')}
           </Button>
+          {isAdmin && (
+            <Button size="sm" variant="ghost" onClick={() => setView('admin')} className="h-8 w-8 p-0" title="Admin">
+              <Shield className="w-4 h-4 text-primary" />
+            </Button>
+          )}
           <Button size="sm" variant="ghost" onClick={() => setTab('settings')} className="h-8 w-8 p-0">
             <Settings className="w-4 h-4 text-muted-foreground" />
           </Button>
