@@ -875,7 +875,7 @@ export default function VaultApp() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto p-4 space-y-4">
+      <main className="max-w-4xl mx-auto p-4 pb-16 space-y-4">
         {/* Tabs */}
         <div className="flex items-center gap-1 overflow-x-auto pb-1">
           {tabs.map(tb => (
