@@ -1,6 +1,6 @@
 import { Lock, User, LogIn, LogOut, KeyRound, Settings, Shield, UserCog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAppStore } from '@/stores/appStore';
+import { useAppStore, type SettingsSection } from '@/stores/appStore';
 import { useTranslation, LANG_NAMES, type LangCode } from '@/lib/i18n';
 import {
   Select,
