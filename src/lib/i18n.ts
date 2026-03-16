@@ -63,7 +63,7 @@ const T: Record<LangCode, TranslationKeys> = {
     pricingYearlyName: 'Cloud Sync',
     pricingYearlyPrice: '9,91',
     pricingYearlyPeriod: '/anno',
-    pricingYearlyDesc: 'Con sincronizzazione cloud cifrata su tutti i dispositivi.',
+    pricingYearlyDesc: 'Con sincronizzazione cloud cifrata\nsu tutti i dispositivi.',
     pricingYearlyFeat1: 'Sync cloud cifrato',
     pricingYearlyFeat2: 'Accesso multi-dispositivo',
     pricingYearlyFeat3: 'Tutte le funzionalità base',

@@ -200,7 +200,7 @@ export default function LandingPage() {
                 <Cloud className="w-5 h-5 text-primary" />
                 <h3 className="text-xl font-bold text-foreground">{t('pricingYearlyName')}</h3>
               </div>
-              <p className="text-sm text-muted-foreground mb-6">{t('pricingYearlyDesc')}</p>
+              <p className="text-sm text-muted-foreground mb-6 whitespace-pre-line">{t('pricingYearlyDesc')}</p>
               <div className="mb-6">
                 <span className="text-4xl font-bold text-foreground">€{t('pricingYearlyPrice')}</span>
                 <span className="text-muted-foreground text-sm">{t('pricingYearlyPeriod')}</span>
