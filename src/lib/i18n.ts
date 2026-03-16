@@ -71,7 +71,7 @@ const T: Record<LangCode, TranslationKeys> = {
     pricingLifetimeName: 'Lifetime',
     pricingLifetimePrice: '19,90',
     pricingLifetimeOnce: 'una tantum',
-    pricingLifetimeDesc: 'Accesso completo per sempre. Paghi una volta sola.',
+    pricingLifetimeDesc: 'Accesso completo per sempre.\nPaghi una volta sola.',
     pricingLifetimeFeat1: 'Tutto del piano Cloud Sync',
     pricingLifetimeFeat2: 'Aggiornamenti a vita',
     pricingLifetimeFeat3: 'Nessun rinnovo',
