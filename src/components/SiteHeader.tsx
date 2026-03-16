@@ -86,19 +86,19 @@ export default function SiteHeader({ showBack, onBack }: { showBack?: boolean; o
                 <div className="px-3 py-2 border-b border-border">
                   <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
                 </div>
-                <DropdownMenuItem onClick={() => setView('vault')} className="cursor-pointer gap-2 text-foreground">
+                <DropdownMenuItem onClick={() => { setSettingsSection('profile'); setView('vault'); }} className="cursor-pointer gap-2 text-foreground">
                   <UserCog className="w-4 h-4" />
                   Modifica profilo
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setView('vault')} className="cursor-pointer gap-2 text-foreground">
+                <DropdownMenuItem onClick={() => { setSettingsSection('password'); setView('vault'); }} className="cursor-pointer gap-2 text-foreground">
                   <KeyRound className="w-4 h-4" />
                   Cambia password
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setView('vault')} className="cursor-pointer gap-2 text-foreground">
+                <DropdownMenuItem onClick={() => { setSettingsSection('pin'); setView('vault'); }} className="cursor-pointer gap-2 text-foreground">
                   <Lock className="w-4 h-4" />
                   Cambia PIN
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setView('vault')} className="cursor-pointer gap-2 text-foreground">
+                <DropdownMenuItem onClick={() => { setSettingsSection('general'); setView('vault'); }} className="cursor-pointer gap-2 text-foreground">
                   <Settings className="w-4 h-4" />
                   Impostazioni
                 </DropdownMenuItem>
