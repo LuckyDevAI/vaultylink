@@ -37,7 +37,7 @@ type TabId = 'all' | 'favorites' | 'recent' | 'private' | 'topics' | 'settings';
 function SyncIndicator({ status, onRetry }: { status: SyncStatus; onRetry?: () => void }) {
   const config = {
     idle: { icon: Cloud, label: 'Cloud', className: 'text-muted-foreground' },
-    syncing: { icon: Loader2, label: 'Sincronizzazione...', className: 'text-primary animate-spin' },
+    syncing: { icon: Loader2, label: 'Sincronizzazione...', className: 'text-primary', iconExtra: 'animate-spin' },
     synced: { icon: Check, label: 'Sincronizzato', className: 'text-emerald-500' },
     error: { icon: CloudOff, label: 'Errore sync', className: 'text-destructive' },
     offline: { icon: CloudOff, label: 'Offline', className: 'text-muted-foreground/50' },
