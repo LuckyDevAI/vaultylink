@@ -36,13 +36,13 @@ type TabId = 'all' | 'favorites' | 'recent' | 'private' | 'topics' | 'settings';
 // ── Sync Indicator ────────────────────────────────────────────────────────────
 function SyncIndicator({ status, onRetry }: { status: SyncStatus; onRetry?: () => void }) {
   const config = {
-    idle: { icon: Cloud, label: 'Cloud', className: 'text-muted-foreground' },
-    syncing: { icon: Loader2, label: 'Sincronizzazione...', className: 'text-primary animate-spin' },
-    synced: { icon: Check, label: 'Sincronizzato', className: 'text-emerald-500' },
-    error: { icon: CloudOff, label: 'Errore sync', className: 'text-destructive' },
-    offline: { icon: CloudOff, label: 'Offline', className: 'text-muted-foreground/50' },
+    idle: { icon: Cloud, label: 'Cloud', className: 'text-muted-foreground', iconExtra: '' },
+    syncing: { icon: Loader2, label: 'Sincronizzazione...', className: 'text-primary', iconExtra: 'animate-spin' },
+    synced: { icon: Check, label: 'Sincronizzato', className: 'text-emerald-500', iconExtra: '' },
+    error: { icon: CloudOff, label: 'Errore sync', className: 'text-destructive', iconExtra: '' },
+    offline: { icon: CloudOff, label: 'Offline', className: 'text-muted-foreground/50', iconExtra: '' },
   };
-  const { icon: Icon, label, className } = config[status];
+  const { icon: Icon, label, className, iconExtra } = config[status];
 
   return (
     <motion.button
@@ -55,7 +55,7 @@ function SyncIndicator({ status, onRetry }: { status: SyncStatus; onRetry?: () =
       animate={{ opacity: 1, scale: 1 }}
       key={status}
     >
-      <Icon className={`w-3.5 h-3.5 ${className}`} />
+      <Icon className={`w-3.5 h-3.5 ${className} ${iconExtra}`} />
       <span className={`hidden sm:inline ${className}`}>{label}</span>
       {status === 'error' && (
         <RefreshCw className="w-3 h-3 text-destructive hidden sm:inline" />
