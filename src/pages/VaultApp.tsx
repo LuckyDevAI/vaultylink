@@ -867,7 +867,7 @@ export default function VaultApp() {
   if (tab === 'settings') {
     return (
       <div className="min-h-screen bg-background p-6 max-w-2xl mx-auto">
-        <SettingsPanel onBack={() => setTab('all')} vault={vault} biometric={biometric} onImportDone={(newLinks) => setLinks(newLinks)} />
+        <SettingsPanel onBack={() => { setTab('all'); setSettingsSection(null); }} vault={vault} biometric={biometric} onImportDone={(newLinks) => setLinks(newLinks)} scrollToSection={settingsSection} />
       </div>
     );
   }
