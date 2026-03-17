@@ -155,6 +155,7 @@ export default function AuthPage({ onBack, onAuth }: AuthPageProps) {
           {t('privacyNote')}
         </p>
       </motion.div>
+      <SiteFooter />
     </div>
   );
 }
