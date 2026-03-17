@@ -300,3 +300,33 @@ Deno.serve(async (req) => {
     });
   }
 });
+
+function buildExpiryHtml(email: string, daysLeft: number, expiryDate: string, autoRenew: boolean): string {
+  const title = daysLeft <= 3 ? '⚠️ Il tuo piano sta per scadere!' : 'Il tuo piano sta per scadere';
+  const renewInfo = autoRenew
+    ? `<p style="font-size:14px;color:#6b7280;line-height:1.5;margin:0 0 25px">Il rinnovo automatico è <strong>attivo</strong>. Il tuo piano verrà rinnovato automaticamente.</p>
+       <a href="https://vaultylink.com" style="display:inline-block;background-color:#0fa968;color:#0f1419;font-size:14px;font-weight:bold;border-radius:12px;padding:12px 24px;text-decoration:none">Gestisci Abbonamento</a>`
+    : `<p style="font-size:14px;color:#6b7280;line-height:1.5;margin:0 0 25px">Il rinnovo automatico è <strong>disattivato</strong>. Se non rinnovi, il piano sarà <strong>Frozen</strong>.</p>
+       <a href="https://vaultylink.com" style="display:inline-block;background-color:#0fa968;color:#0f1419;font-size:14px;font-weight:bold;border-radius:12px;padding:12px 24px;text-decoration:none">Rinnova Ora</a>`;
+  return `<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"></head>
+<body style="background-color:#ffffff;font-family:'Space Grotesk',Arial,sans-serif">
+<div style="padding:20px 25px">
+  <p style="font-size:18px;font-weight:bold;color:#0fa968;margin:0 0 24px">🔐 VaultLink</p>
+  <h1 style="font-size:22px;font-weight:bold;color:#111827;margin:0 0 20px">${title}</h1>
+  <p style="font-size:14px;color:#6b7280;line-height:1.5;margin:0 0 25px">Il tuo piano <strong>Yearly</strong> scadrà il <strong>${expiryDate}</strong> (tra ${daysLeft} giorni).</p>
+  ${renewInfo}
+  <p style="font-size:12px;color:#9ca3af;margin:30px 0 0">Email inviata a ${email}.</p>
+</div></body></html>`;
+}
+
+function buildFrozenHtml(email: string): string {
+  return `<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"></head>
+<body style="background-color:#ffffff;font-family:'Space Grotesk',Arial,sans-serif">
+<div style="padding:20px 25px">
+  <p style="font-size:18px;font-weight:bold;color:#0fa968;margin:0 0 24px">🔐 VaultLink</p>
+  <h1 style="font-size:22px;font-weight:bold;color:#111827;margin:0 0 20px">❄️ Piano sospeso</h1>
+  <p style="font-size:14px;color:#6b7280;line-height:1.5;margin:0 0 25px">Il tuo piano <strong>Yearly</strong> è scaduto. L'accesso cloud è sospeso.</p>
+  <a href="https://vaultylink.com" style="display:inline-block;background-color:#0fa968;color:#0f1419;font-size:14px;font-weight:bold;border-radius:12px;padding:12px 24px;text-decoration:none">Rinnova Ora</a>
+  <p style="font-size:12px;color:#9ca3af;margin:30px 0 0">Email inviata a ${email}.</p>
+</div></body></html>`;
+}
