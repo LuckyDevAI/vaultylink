@@ -274,10 +274,8 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8 mb-10">
             {/* Brand */}
             <div className="md:col-span-2 space-y-4">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-                  <Lock className="w-4 h-4 text-primary" />
-                </div>
+              <div className="flex items-center gap-3">
+                <img src={logoVaulty} alt="VaultLink logo" className="w-10 h-10" />
                 <span className="font-semibold text-lg text-foreground">VaultLink</span>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
