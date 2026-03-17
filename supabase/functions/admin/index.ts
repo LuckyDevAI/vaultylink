@@ -71,9 +71,15 @@ Deno.serve(async (req) => {
           .from("user_roles")
           .select("user_id, role");
 
+        // Get plans
+        const { data: plans } = await supabase
+          .from("user_plans")
+          .select("user_id, plan, expires_at, auto_renew");
+
         const enriched = users.map((u) => {
           const vault = vaults?.find((v) => v.user_id === u.id);
           const userRoles = roles?.filter((r) => r.user_id === u.id).map((r) => r.role) || [];
+          const userPlan = plans?.find((p) => p.user_id === u.id);
           return {
             id: u.id,
             email: u.email,
@@ -83,6 +89,9 @@ Deno.serve(async (req) => {
             has_vault: !!vault,
             vault_updated_at: vault?.updated_at || null,
             vault_size: vault?.encrypted_blob?.length || 0,
+            plan: userPlan?.plan || null,
+            plan_expires_at: userPlan?.expires_at || null,
+            auto_renew: userPlan?.auto_renew ?? null,
           };
         });
 
