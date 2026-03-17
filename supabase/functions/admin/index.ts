@@ -223,6 +223,29 @@ Deno.serve(async (req) => {
         });
       }
 
+      case "set_plan": {
+        const { user_id, plan, expires_at, auto_renew } = params;
+        if (!plan) {
+          // Remove plan
+          await supabase.from("user_plans").delete().eq("user_id", user_id);
+        } else {
+          const { error } = await supabase.from("user_plans").upsert(
+            {
+              user_id,
+              plan,
+              expires_at: expires_at || null,
+              auto_renew: auto_renew ?? true,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "user_id" }
+          );
+          if (error) throw error;
+        }
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       default:
         return new Response(JSON.stringify({ error: "Unknown action" }), {
           status: 400,
