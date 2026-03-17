@@ -121,13 +121,17 @@ Deno.serve(async (req) => {
         if (user?.email) {
           try {
             await supabase.rpc('enqueue_email', {
-              p_queue_name: 'transactional_emails',
-              p_message_id: `plan-frozen-${plan.user_id}`,
-              p_template_name: 'plan-frozen',
-              p_recipient_email: user.email,
-              p_subject: '❄️ Il tuo piano VaultLink è stato sospeso',
-              p_html_body: buildFrozenEmailHtml(user.email),
-              p_metadata: JSON.stringify({ user_id: plan.user_id }),
+              queue_name: 'transactional_emails',
+              payload: {
+                to: user.email,
+                from: 'VaultLink <noreply@notify.vaultylink.com>',
+                sender_domain: 'notify.vaultylink.com',
+                subject: '❄️ Il tuo piano VaultLink è stato sospeso',
+                html: buildFrozenEmailHtml(user.email),
+                label: 'plan-frozen',
+                message_id: `plan-frozen-${plan.user_id}`,
+                queued_at: new Date().toISOString(),
+              },
             });
           } catch (e) {
             console.error(`[PLAN-EXPIRY] Frozen email error:`, e);

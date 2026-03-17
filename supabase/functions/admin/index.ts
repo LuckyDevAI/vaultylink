@@ -271,13 +271,17 @@ Deno.serve(async (req) => {
 
         const messageId = `admin-send-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
         const { error: enqErr } = await supabase.rpc('enqueue_email', {
-          p_queue_name: 'transactional_emails',
-          p_message_id: messageId,
-          p_template_name: tpl || 'custom',
-          p_recipient_email: recipientEmail,
-          p_subject: emailSubject,
-          p_html_body: emailBody,
-          p_metadata: JSON.stringify({ sent_by: 'admin' }),
+          queue_name: 'transactional_emails',
+          payload: {
+            to: recipientEmail,
+            from: 'VaultLink <noreply@notify.vaultylink.com>',
+            sender_domain: 'notify.vaultylink.com',
+            subject: emailSubject,
+            html: emailBody,
+            label: tpl || 'custom',
+            message_id: messageId,
+            queued_at: new Date().toISOString(),
+          },
         });
         if (enqErr) throw enqErr;
 
