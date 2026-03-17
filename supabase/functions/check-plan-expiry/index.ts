@@ -54,18 +54,23 @@ Deno.serve(async (req) => {
 
         // Send email via enqueue_email RPC (uses the email queue infrastructure)
         const messageId = `plan-expiry-${plan.user_id}-${daysLeft <= 3 ? '3d' : '10d'}`;
+        const emailSubject = daysLeft <= 3
+          ? `⚠️ Il tuo piano VaultLink scade tra ${daysLeft} giorni!`
+          : `Il tuo piano VaultLink scade tra ${daysLeft} giorni`;
         
         try {
           const { error: enqueueError } = await supabase.rpc('enqueue_email', {
-            p_queue_name: 'transactional_emails',
-            p_message_id: messageId,
-            p_template_name: 'plan-expiry',
-            p_recipient_email: user.email,
-            p_subject: daysLeft <= 3
-              ? `⚠️ Il tuo piano VaultLink scade tra ${daysLeft} giorni!`
-              : `Il tuo piano VaultLink scade tra ${daysLeft} giorni`,
-            p_html_body: buildExpiryEmailHtml(user.email, daysLeft, formattedDate, plan.auto_renew),
-            p_metadata: JSON.stringify({ user_id: plan.user_id, days_left: daysLeft }),
+            queue_name: 'transactional_emails',
+            payload: {
+              to: user.email,
+              from: 'VaultLink <noreply@notify.vaultylink.com>',
+              sender_domain: 'notify.vaultylink.com',
+              subject: emailSubject,
+              html: buildExpiryEmailHtml(user.email, daysLeft, formattedDate, plan.auto_renew),
+              label: 'plan-expiry',
+              message_id: messageId,
+              queued_at: new Date().toISOString(),
+            },
           });
 
           if (enqueueError) {
