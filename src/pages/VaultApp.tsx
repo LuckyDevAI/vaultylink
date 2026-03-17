@@ -696,6 +696,22 @@ export default function VaultApp() {
       }
     });
   }, [cloudUser]);
+
+  // Check subscription status
+  useEffect(() => {
+    if (!cloudUser) return;
+    const checkSub = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('check-subscription');
+        if (!error && data) {
+          setUserPlan(data);
+        }
+      } catch (e) {
+        console.error('Subscription check failed:', e);
+      }
+    };
+    checkSub();
+  }, [cloudUser]);
   // Load links when authenticated — pull from cloud first if available
   useEffect(() => {
     if (authenticated && !vault.locked) {
