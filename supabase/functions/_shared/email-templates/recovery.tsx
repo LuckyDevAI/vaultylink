@@ -18,21 +18,27 @@ interface RecoveryEmailProps {
   confirmationUrl: string
 }
 
-export const RecoveryEmail = ({ siteName, confirmationUrl }: RecoveryEmailProps) => (
+export const RecoveryEmail = ({
+  siteName,
+  confirmationUrl,
+}: RecoveryEmailProps) => (
   <Html lang="it" dir="ltr">
     <Head />
-    <Preview>Reimposta la tua password per {siteName}</Preview>
+    <Preview>Reimposta la tua password per VaultLink</Preview>
     <Body style={main}>
       <Container style={container}>
         <Text style={logo}>🔐 VaultLink</Text>
         <Heading style={h1}>Reimposta la password</Heading>
         <Text style={text}>
-          Abbiamo ricevuto una richiesta per reimpostare la password del tuo account {siteName}.
+          Abbiamo ricevuto una richiesta per reimpostare la password del tuo account VaultLink.
           Clicca il pulsante qui sotto per scegliere una nuova password.
         </Text>
-        <Button style={button} href={confirmationUrl}>Reimposta Password</Button>
+        <Button style={button} href={confirmationUrl}>
+          Reimposta Password
+        </Button>
         <Text style={footer}>
-          Se non hai richiesto il reset della password, puoi ignorare questa email.
+          Se non hai richiesto il ripristino della password, puoi ignorare questa email.
+          La tua password non verrà modificata.
         </Text>
       </Container>
     </Body>
@@ -47,7 +53,12 @@ const logo = { fontSize: '18px', fontWeight: 'bold' as const, color: '#0fa968', 
 const h1 = { fontSize: '22px', fontWeight: 'bold' as const, color: '#111827', margin: '0 0 20px' }
 const text = { fontSize: '14px', color: '#6b7280', lineHeight: '1.5', margin: '0 0 25px' }
 const button = {
-  backgroundColor: '#0fa968', color: '#0f1419', fontSize: '14px',
-  fontWeight: 'bold' as const, borderRadius: '12px', padding: '12px 24px', textDecoration: 'none',
+  backgroundColor: '#0fa968',
+  color: '#0f1419',
+  fontSize: '14px',
+  fontWeight: 'bold' as const,
+  borderRadius: '12px',
+  padding: '12px 24px',
+  textDecoration: 'none',
 }
 const footer = { fontSize: '12px', color: '#9ca3af', margin: '30px 0 0' }

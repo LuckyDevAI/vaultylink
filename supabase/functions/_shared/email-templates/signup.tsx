@@ -29,18 +29,23 @@ export const SignupEmail = ({
 }: SignupEmailProps) => (
   <Html lang="it" dir="ltr">
     <Head />
-    <Preview>Conferma la tua email per {siteName}</Preview>
+    <Preview>Conferma la tua email per VaultLink</Preview>
     <Body style={main}>
       <Container style={container}>
         <Text style={logo}>🔐 VaultLink</Text>
         <Heading style={h1}>Conferma la tua email</Heading>
         <Text style={text}>
           Grazie per esserti registrato su{' '}
-          <Link href={siteUrl} style={link}><strong>{siteName}</strong></Link>!
+          <Link href={siteUrl} style={link}>
+            <strong>VaultLink</strong>
+          </Link>
+          ! I tuoi link in cassaforte.
         </Text>
         <Text style={text}>
-          Conferma il tuo indirizzo email ({' '}
-          <Link href={`mailto:${recipient}`} style={link}>{recipient}</Link>
+          Conferma il tuo indirizzo email (
+          <Link href={`mailto:${recipient}`} style={link}>
+            {recipient}
+          </Link>
           ) cliccando il pulsante qui sotto:
         </Text>
         <Button style={button} href={confirmationUrl}>
@@ -61,7 +66,7 @@ const container = { padding: '20px 25px' }
 const logo = { fontSize: '18px', fontWeight: 'bold' as const, color: '#0fa968', margin: '0 0 24px' }
 const h1 = { fontSize: '22px', fontWeight: 'bold' as const, color: '#111827', margin: '0 0 20px' }
 const text = { fontSize: '14px', color: '#6b7280', lineHeight: '1.5', margin: '0 0 25px' }
-const link = { color: 'inherit', textDecoration: 'underline' }
+const link = { color: '#0fa968', textDecoration: 'underline' }
 const button = {
   backgroundColor: '#0fa968',
   color: '#0f1419',

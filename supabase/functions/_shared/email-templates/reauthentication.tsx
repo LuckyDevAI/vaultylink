@@ -19,15 +19,15 @@ interface ReauthenticationEmailProps {
 export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => (
   <Html lang="it" dir="ltr">
     <Head />
-    <Preview>Il tuo codice di verifica</Preview>
+    <Preview>Il tuo codice di verifica VaultLink</Preview>
     <Body style={main}>
       <Container style={container}>
         <Text style={logo}>🔐 VaultLink</Text>
-        <Heading style={h1}>Conferma la tua identità</Heading>
+        <Heading style={h1}>Codice di verifica</Heading>
         <Text style={text}>Usa il codice qui sotto per confermare la tua identità:</Text>
         <Text style={codeStyle}>{token}</Text>
         <Text style={footer}>
-          Il codice scadrà a breve. Se non hai richiesto questo codice, puoi ignorare questa email.
+          Questo codice scadrà a breve. Se non hai richiesto questo codice, puoi ignorare questa email.
         </Text>
       </Container>
     </Body>
@@ -43,7 +43,10 @@ const h1 = { fontSize: '22px', fontWeight: 'bold' as const, color: '#111827', ma
 const text = { fontSize: '14px', color: '#6b7280', lineHeight: '1.5', margin: '0 0 25px' }
 const codeStyle = {
   fontFamily: "'JetBrains Mono', Courier, monospace",
-  fontSize: '28px', fontWeight: 'bold' as const, color: '#0fa968',
-  letterSpacing: '4px', margin: '0 0 30px',
+  fontSize: '28px',
+  fontWeight: 'bold' as const,
+  color: '#0fa968',
+  letterSpacing: '4px',
+  margin: '0 0 30px',
 }
 const footer = { fontSize: '12px', color: '#9ca3af', margin: '30px 0 0' }
