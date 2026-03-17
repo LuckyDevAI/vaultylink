@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import logoVaulty from '@/assets/logo_vaulty.png';
 import { motion } from 'framer-motion';
 import { Shield, Lock, Heart, Cloud, Globe, Download, ChevronRight, Check, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
