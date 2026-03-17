@@ -1,4 +1,5 @@
-import { Lock, User, LogIn, LogOut, KeyRound, Settings, Shield, UserCog } from 'lucide-react';
+import { User, LogIn, LogOut, KeyRound, Settings, Shield, UserCog, Lock } from 'lucide-react';
+import logoVaulty from '@/assets/logo_vaulty.png';
 import { Button } from '@/components/ui/button';
 import { useAppStore, type SettingsSection } from '@/stores/appStore';
 import { useTranslation, LANG_NAMES, type LangCode } from '@/lib/i18n';
@@ -50,9 +51,7 @@ export default function SiteHeader({ showBack, onBack }: { showBack?: boolean; o
             </Button>
           )}
           <button onClick={() => setView('landing')} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-              <Lock className="w-4 h-4 text-primary" />
-            </div>
+            <img src={logoVaulty} alt="VaultLink" className="w-8 h-8" />
             <span className="font-semibold text-lg text-foreground">VaultLink</span>
           </button>
         </div>
