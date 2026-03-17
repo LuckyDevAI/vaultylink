@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAppStore } from '@/stores/appStore';
 import SiteHeader from '@/components/SiteHeader';
 import AdminStatsCards from '@/components/admin/AdminStatsCards';
+import AdminPlansTab from '@/components/admin/AdminPlansTab';
 import AdminUserTable, { type AdminUser } from '@/components/admin/AdminUserTable';
 import { toast } from 'sonner';
 
