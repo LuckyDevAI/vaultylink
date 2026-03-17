@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      user_plans: {
+        Row: {
+          auto_renew: boolean
+          created_at: string
+          expires_at: string | null
+          id: string
+          notified_expiry: boolean
+          plan: Database["public"]["Enums"]["plan_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_renew?: boolean
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          notified_expiry?: boolean
+          plan: Database["public"]["Enums"]["plan_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_renew?: boolean
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          notified_expiry?: boolean
+          plan?: Database["public"]["Enums"]["plan_type"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -68,6 +101,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      plan_type: "yearly" | "lifetime" | "frozen"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -196,6 +230,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      plan_type: ["yearly", "lifetime", "frozen"],
     },
   },
 } as const
