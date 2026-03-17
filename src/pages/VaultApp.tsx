@@ -30,6 +30,7 @@ import { useAppStore } from '@/stores/appStore';
 import { bookmarksToVaultLinks } from '@/lib/bookmarkParser';
 import { toast } from 'sonner';
 import SiteHeader from '@/components/SiteHeader';
+import SiteFooter from '@/components/SiteFooter';
 
 type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error' | 'offline';
 
