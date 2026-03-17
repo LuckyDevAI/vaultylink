@@ -182,6 +182,10 @@ export default function AdminPage() {
             <TabsContent value="users">
               <AdminUserTable users={users} onAction={handleAction} onRefresh={loadData} />
             </TabsContent>
+
+            <TabsContent value="plans">
+              <AdminPlansTab users={users} />
+            </TabsContent>
           </Tabs>
         )}
       </main>
