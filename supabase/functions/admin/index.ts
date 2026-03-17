@@ -1,5 +1,4 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import Stripe from "https://esm.sh/stripe@18.5.0";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -153,7 +152,8 @@ Deno.serve(async (req) => {
       case "plan_stats": {
         const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
         if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not set");
-        const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+        const StripeMod = (await import("npm:stripe@18.5.0")).default;
+        const stripe = new StripeMod(stripeKey, { apiVersion: "2025-08-27.basil" });
 
         const YEARLY_PRODUCT = "prod_UA4sfi1uPvB1AN";
         const LIFETIME_PRODUCT = "prod_UA4sxOEr0mEKOy";
