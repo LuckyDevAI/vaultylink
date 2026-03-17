@@ -51,9 +51,7 @@ export default function SiteHeader({ showBack, onBack }: { showBack?: boolean; o
             </Button>
           )}
           <button onClick={() => setView('landing')} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-              <Lock className="w-4 h-4 text-primary" />
-            </div>
+            <img src={logoVaulty} alt="VaultLink" className="w-8 h-8" />
             <span className="font-semibold text-lg text-foreground">VaultLink</span>
           </button>
         </div>
