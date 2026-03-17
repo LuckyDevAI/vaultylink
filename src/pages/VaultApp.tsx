@@ -911,6 +911,11 @@ export default function VaultApp() {
               <span className="text-xs text-muted-foreground hidden md:inline ml-1">I tuoi link in cassaforte.</span>
             </button>
             {cloudUser && <SyncIndicator status={syncStatus} onRetry={handleRetrySync} />}
+            {userPlan?.subscribed && (
+              <Badge className={`text-[10px] h-5 px-2 ${userPlan.plan === 'lifetime' ? 'bg-accent text-accent-foreground' : 'bg-primary/20 text-primary border-primary/30'}`}>
+                {userPlan.plan === 'lifetime' ? '⭐ Lifetime' : '🔄 Yearly'}
+              </Badge>
+            )}
           </div>
           <div className="relative flex-1 max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
