@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useAppStore } from '@/stores/appStore';
 import SiteHeader from '@/components/SiteHeader';
+import SiteFooter from '@/components/SiteFooter';
 import AdminStatsCards from '@/components/admin/AdminStatsCards';
 import AdminPlansTab from '@/components/admin/AdminPlansTab';
 import AdminEmailTab from '@/components/admin/AdminEmailTab';
