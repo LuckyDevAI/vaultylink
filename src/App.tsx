@@ -15,8 +15,46 @@ import AdminPage from "@/pages/AdminPage";
 
 const queryClient = new QueryClient();
 
+const PATH_TO_VIEW: Record<string, string> = {
+  '/': 'landing',
+  '/amministra': 'admin',
+  '/privacy': 'privacy',
+  '/terms': 'terms',
+  '/eula': 'eula',
+  '/auth': 'auth',
+  '/vault': 'vault',
+};
+
+const VIEW_TO_PATH: Record<string, string> = {
+  landing: '/',
+  admin: '/amministra',
+  privacy: '/privacy',
+  terms: '/terms',
+  eula: '/eula',
+  auth: '/auth',
+  vault: '/vault',
+};
+
 const AppRouter = () => {
   const { view, setView, setCloudUser } = useAppStore();
+
+  // Sync URL path → view on mount
+  useEffect(() => {
+    const path = window.location.pathname;
+    const mapped = PATH_TO_VIEW[path];
+    if (mapped && mapped !== view) {
+      setView(mapped as typeof view);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Sync view → URL path on view change
+  useEffect(() => {
+    const targetPath = VIEW_TO_PATH[view] || '/';
+    if (window.location.pathname !== targetPath) {
+      window.history.replaceState(null, '', targetPath);
+    }
+  }, [view]);
 
   // Listen for auth state changes (e.g. OAuth redirect)
   useEffect(() => {
