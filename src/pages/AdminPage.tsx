@@ -123,6 +123,10 @@ export default function AdminPage() {
                 <Shield className="w-3.5 h-3.5" />
                 Gestione utenti
               </TabsTrigger>
+              <TabsTrigger value="plans" className="gap-1.5 text-xs data-[state=active]:bg-card">
+                <CreditCard className="w-3.5 h-3.5" />
+                Piani
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-5">
