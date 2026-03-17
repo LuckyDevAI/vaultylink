@@ -199,6 +199,7 @@ export default function AdminPage() {
           </Tabs>
         )}
       </main>
+      <SiteFooter />
     </div>
   );
 }
