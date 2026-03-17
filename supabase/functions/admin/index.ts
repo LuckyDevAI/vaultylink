@@ -246,6 +246,46 @@ Deno.serve(async (req) => {
         });
       }
 
+      case "send_email": {
+        const { template: tpl, recipient: recipientEmail, subject: subj, body: bodyHtml } = params;
+        if (!recipientEmail) throw new Error("recipient required");
+
+        let emailSubject = subj || '';
+        let emailBody = bodyHtml || '';
+
+        if (tpl === 'plan-expiry-10' || tpl === 'plan-expiry-3') {
+          const days = tpl === 'plan-expiry-10' ? 10 : 3;
+          emailSubject = emailSubject || (days === 3
+            ? `⚠️ Il tuo piano VaultLink scade tra ${days} giorni!`
+            : `Il tuo piano VaultLink scade tra ${days} giorni`);
+          const expiryDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toLocaleDateString('it-IT', {
+            day: '2-digit', month: 'long', year: 'numeric',
+          });
+          emailBody = emailBody || buildExpiryHtml(recipientEmail as string, days, expiryDate, true);
+        } else if (tpl === 'plan-frozen') {
+          emailSubject = emailSubject || '❄️ Il tuo piano VaultLink è stato sospeso';
+          emailBody = emailBody || buildFrozenHtml(recipientEmail as string);
+        } else if (tpl === 'custom') {
+          if (!emailSubject || !emailBody) throw new Error("subject and body required for custom email");
+        }
+
+        const messageId = `admin-send-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        const { error: enqErr } = await supabase.rpc('enqueue_email', {
+          p_queue_name: 'transactional_emails',
+          p_message_id: messageId,
+          p_template_name: tpl || 'custom',
+          p_recipient_email: recipientEmail,
+          p_subject: emailSubject,
+          p_html_body: emailBody,
+          p_metadata: JSON.stringify({ sent_by: 'admin' }),
+        });
+        if (enqErr) throw enqErr;
+
+        return new Response(JSON.stringify({ success: true, message_id: messageId }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       default:
         return new Response(JSON.stringify({ error: "Unknown action" }), {
           status: 400,

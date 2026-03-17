@@ -191,6 +191,10 @@ export default function AdminPage() {
             <TabsContent value="plans">
               <AdminPlansTab users={users} />
             </TabsContent>
+
+            <TabsContent value="email">
+              <AdminEmailTab users={users} />
+            </TabsContent>
           </Tabs>
         )}
       </main>
