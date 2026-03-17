@@ -679,6 +679,7 @@ export default function VaultApp() {
   const [formOpen, setFormOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<VaultLink | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [userPlan, setUserPlan] = useState<{ subscribed: boolean; plan: string | null; subscription_end?: string } | null>(null);
 
   // Auto-switch to settings when settingsSection is set
   useEffect(() => {
