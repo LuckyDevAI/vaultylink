@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, RefreshCw, AlertTriangle, LayoutDashboard } from 'lucide-react';
+import { Shield, RefreshCw, AlertTriangle, LayoutDashboard, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useAppStore } from '@/stores/appStore';
 import SiteHeader from '@/components/SiteHeader';
 import AdminStatsCards from '@/components/admin/AdminStatsCards';
+import AdminPlansTab from '@/components/admin/AdminPlansTab';
 import AdminUserTable, { type AdminUser } from '@/components/admin/AdminUserTable';
 import { toast } from 'sonner';
 
@@ -122,6 +123,10 @@ export default function AdminPage() {
                 <Shield className="w-3.5 h-3.5" />
                 Gestione utenti
               </TabsTrigger>
+              <TabsTrigger value="plans" className="gap-1.5 text-xs data-[state=active]:bg-card">
+                <CreditCard className="w-3.5 h-3.5" />
+                Piani
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-5">
@@ -176,6 +181,10 @@ export default function AdminPage() {
 
             <TabsContent value="users">
               <AdminUserTable users={users} onAction={handleAction} onRefresh={loadData} />
+            </TabsContent>
+
+            <TabsContent value="plans">
+              <AdminPlansTab users={users} />
             </TabsContent>
           </Tabs>
         )}

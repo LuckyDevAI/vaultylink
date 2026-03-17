@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
+import Stripe from "https://esm.sh/stripe@18.5.0";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -145,6 +145,70 @@ Deno.serve(async (req) => {
           latest_activity: vaults?.sort((a, b) =>
             new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
           )?.[0]?.updated_at || null,
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      case "plan_stats": {
+        const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+        if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not set");
+        const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+
+        const YEARLY_PRODUCT = "prod_UA4sfi1uPvB1AN";
+        const LIFETIME_PRODUCT = "prod_UA4sxOEr0mEKOy";
+
+        // Get all users
+        const { data: { users: allUsers } } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+        const yearlyUsers: { email: string; subscription_end?: string }[] = [];
+        const lifetimeUsers: { email: string }[] = [];
+
+        for (const u of allUsers || []) {
+          if (!u.email) continue;
+          const customers = await stripe.customers.list({ email: u.email, limit: 1 });
+          if (customers.data.length === 0) continue;
+          const customerId = customers.data[0].id;
+
+          // Check yearly subscriptions
+          const subs = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 10 });
+          let found = false;
+          for (const sub of subs.data) {
+            const prodId = sub.items.data[0]?.price?.product;
+            if (prodId === YEARLY_PRODUCT) {
+              yearlyUsers.push({
+                email: u.email,
+                subscription_end: new Date(sub.current_period_end * 1000).toISOString(),
+              });
+              found = true;
+              break;
+            }
+          }
+          if (found) continue;
+
+          // Check lifetime payments
+          const sessions = await stripe.checkout.sessions.list({ customer: customerId, limit: 100 });
+          for (const session of sessions.data) {
+            if (session.payment_status === "paid" && session.mode === "payment") {
+              const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 5 });
+              for (const item of lineItems.data) {
+                if (item.price?.product === LIFETIME_PRODUCT) {
+                  lifetimeUsers.push({ email: u.email });
+                  found = true;
+                  break;
+                }
+              }
+              if (found) break;
+            }
+          }
+        }
+
+        const totalUsers = allUsers?.length || 0;
+        const paidCount = yearlyUsers.length + lifetimeUsers.length;
+
+        return new Response(JSON.stringify({
+          yearly: { count: yearlyUsers.length, users: yearlyUsers },
+          lifetime: { count: lifetimeUsers.length, users: lifetimeUsers },
+          free: { count: totalUsers - paidCount },
         }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
