@@ -1116,55 +1116,6 @@ export default function VaultApp() {
         </div>
       </main>
 
-      {/* Bottom toolbar */}
-      <div className="sticky bottom-0 z-30 bg-background/80 backdrop-blur-xl border-t border-border px-4 py-2">
-        <div className="max-w-6xl mx-auto flex items-center gap-1 overflow-x-auto">
-          {tabs.map(tb => (
-            <Button
-              key={tb.id}
-              size="sm"
-              variant={tab === tb.id ? 'default' : 'ghost'}
-              onClick={() => setTab(tb.id)}
-              className={`h-8 text-xs px-3 shrink-0 ${tab === tb.id ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
-            >
-              <tb.icon className="w-3.5 h-3.5 mr-1.5" />{tb.label}
-            </Button>
-          ))}
-
-          {topics.length > 0 && (
-            <Select onValueChange={(_v) => { setTab('all'); setSearch(_v); }}>
-              <SelectTrigger className="h-8 text-xs bg-transparent border-primary/30 text-muted-foreground w-auto px-3 shrink-0">
-                <span className="flex items-center gap-1.5">
-                  <ChevronDown className="w-3.5 h-3.5" />{t('topics')}
-                </span>
-              </SelectTrigger>
-              <SelectContent>
-                {topics.map(tp => (
-                  <SelectItem key={tp} value={tp}>{tp}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-
-          <div className="ml-auto flex items-center gap-2 shrink-0">
-            <Button size="sm" variant="ghost" onClick={() => setShowPrivate(!showPrivate)}
-              className="h-7 text-xs text-muted-foreground">
-              {showPrivate ? <EyeOff className="w-3 h-3 mr-1" /> : <Eye className="w-3 h-3 mr-1" />}
-              {showPrivate ? t('hidePrivate') : t('showPrivate')}
-            </Button>
-            <Select value={sortBy} onValueChange={v => setSortBy(v as 'date' | 'name' | 'topic')}>
-              <SelectTrigger className="h-7 text-xs bg-transparent border-none text-muted-foreground w-auto">
-                <span>{t('sortBy')} {t(sortBy === 'date' ? 'sortDate' : sortBy === 'name' ? 'sortName' : 'sortTopic')}</span>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="date">{t('sortDate')}</SelectItem>
-                <SelectItem value="name">{t('sortName')}</SelectItem>
-                <SelectItem value="topic">{t('sortTopic')}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </div>
 
       {/* Form Dialog */}
       <LinkFormDialog
