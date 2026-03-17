@@ -1,4 +1,5 @@
-import { Lock, User, LogIn, LogOut, KeyRound, Settings, Shield, UserCog } from 'lucide-react';
+import { User, LogIn, LogOut, KeyRound, Settings, Shield, UserCog, Lock } from 'lucide-react';
+import logoVaulty from '@/assets/logo_vaulty.png';
 import { Button } from '@/components/ui/button';
 import { useAppStore, type SettingsSection } from '@/stores/appStore';
 import { useTranslation, LANG_NAMES, type LangCode } from '@/lib/i18n';
