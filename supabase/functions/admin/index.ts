@@ -246,6 +246,46 @@ Deno.serve(async (req) => {
         });
       }
 
+      case "send_email": {
+        const { template: tpl, recipient: recipientEmail, subject: subj, body: bodyHtml } = params;
+        if (!recipientEmail) throw new Error("recipient required");
+
+        let emailSubject = subj || '';
+        let emailBody = bodyHtml || '';
+
+        if (tpl === 'plan-expiry-10' || tpl === 'plan-expiry-3') {
+          const days = tpl === 'plan-expiry-10' ? 10 : 3;
+          emailSubject = emailSubject || (days === 3
+            ? `⚠️ Il tuo piano VaultLink scade tra ${days} giorni!`
+            : `Il tuo piano VaultLink scade tra ${days} giorni`);
+          const expiryDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toLocaleDateString('it-IT', {
+            day: '2-digit', month: 'long', year: 'numeric',
+          });
+          emailBody = emailBody || buildExpiryHtml(recipientEmail as string, days, expiryDate, true);
+        } else if (tpl === 'plan-frozen') {
+          emailSubject = emailSubject || '❄️ Il tuo piano VaultLink è stato sospeso';
+          emailBody = emailBody || buildFrozenHtml(recipientEmail as string);
+        } else if (tpl === 'custom') {
+          if (!emailSubject || !emailBody) throw new Error("subject and body required for custom email");
+        }
+
+        const messageId = `admin-send-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        const { error: enqErr } = await supabase.rpc('enqueue_email', {
+          p_queue_name: 'transactional_emails',
+          p_message_id: messageId,
+          p_template_name: tpl || 'custom',
+          p_recipient_email: recipientEmail,
+          p_subject: emailSubject,
+          p_html_body: emailBody,
+          p_metadata: JSON.stringify({ sent_by: 'admin' }),
+        });
+        if (enqErr) throw enqErr;
+
+        return new Response(JSON.stringify({ success: true, message_id: messageId }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       default:
         return new Response(JSON.stringify({ error: "Unknown action" }), {
           status: 400,
@@ -260,3 +300,33 @@ Deno.serve(async (req) => {
     });
   }
 });
+
+function buildExpiryHtml(email: string, daysLeft: number, expiryDate: string, autoRenew: boolean): string {
+  const title = daysLeft <= 3 ? '⚠️ Il tuo piano sta per scadere!' : 'Il tuo piano sta per scadere';
+  const renewInfo = autoRenew
+    ? `<p style="font-size:14px;color:#6b7280;line-height:1.5;margin:0 0 25px">Il rinnovo automatico è <strong>attivo</strong>. Il tuo piano verrà rinnovato automaticamente.</p>
+       <a href="https://vaultylink.com" style="display:inline-block;background-color:#0fa968;color:#0f1419;font-size:14px;font-weight:bold;border-radius:12px;padding:12px 24px;text-decoration:none">Gestisci Abbonamento</a>`
+    : `<p style="font-size:14px;color:#6b7280;line-height:1.5;margin:0 0 25px">Il rinnovo automatico è <strong>disattivato</strong>. Se non rinnovi, il piano sarà <strong>Frozen</strong>.</p>
+       <a href="https://vaultylink.com" style="display:inline-block;background-color:#0fa968;color:#0f1419;font-size:14px;font-weight:bold;border-radius:12px;padding:12px 24px;text-decoration:none">Rinnova Ora</a>`;
+  return `<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"></head>
+<body style="background-color:#ffffff;font-family:'Space Grotesk',Arial,sans-serif">
+<div style="padding:20px 25px">
+  <p style="font-size:18px;font-weight:bold;color:#0fa968;margin:0 0 24px">🔐 VaultLink</p>
+  <h1 style="font-size:22px;font-weight:bold;color:#111827;margin:0 0 20px">${title}</h1>
+  <p style="font-size:14px;color:#6b7280;line-height:1.5;margin:0 0 25px">Il tuo piano <strong>Yearly</strong> scadrà il <strong>${expiryDate}</strong> (tra ${daysLeft} giorni).</p>
+  ${renewInfo}
+  <p style="font-size:12px;color:#9ca3af;margin:30px 0 0">Email inviata a ${email}.</p>
+</div></body></html>`;
+}
+
+function buildFrozenHtml(email: string): string {
+  return `<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"></head>
+<body style="background-color:#ffffff;font-family:'Space Grotesk',Arial,sans-serif">
+<div style="padding:20px 25px">
+  <p style="font-size:18px;font-weight:bold;color:#0fa968;margin:0 0 24px">🔐 VaultLink</p>
+  <h1 style="font-size:22px;font-weight:bold;color:#111827;margin:0 0 20px">❄️ Piano sospeso</h1>
+  <p style="font-size:14px;color:#6b7280;line-height:1.5;margin:0 0 25px">Il tuo piano <strong>Yearly</strong> è scaduto. L'accesso cloud è sospeso.</p>
+  <a href="https://vaultylink.com" style="display:inline-block;background-color:#0fa968;color:#0f1419;font-size:14px;font-weight:bold;border-radius:12px;padding:12px 24px;text-decoration:none">Rinnova Ora</a>
+  <p style="font-size:12px;color:#9ca3af;margin:30px 0 0">Email inviata a ${email}.</p>
+</div></body></html>`;
+}

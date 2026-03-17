@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, RefreshCw, AlertTriangle, LayoutDashboard, CreditCard } from 'lucide-react';
+import { Shield, RefreshCw, AlertTriangle, LayoutDashboard, CreditCard, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,6 +8,7 @@ import { useAppStore } from '@/stores/appStore';
 import SiteHeader from '@/components/SiteHeader';
 import AdminStatsCards from '@/components/admin/AdminStatsCards';
 import AdminPlansTab from '@/components/admin/AdminPlansTab';
+import AdminEmailTab from '@/components/admin/AdminEmailTab';
 import AdminUserTable, { type AdminUser } from '@/components/admin/AdminUserTable';
 import { toast } from 'sonner';
 
@@ -127,6 +128,10 @@ export default function AdminPage() {
                 <CreditCard className="w-3.5 h-3.5" />
                 Piani
               </TabsTrigger>
+              <TabsTrigger value="email" className="gap-1.5 text-xs data-[state=active]:bg-card">
+                <Mail className="w-3.5 h-3.5" />
+                Email
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-5">
@@ -185,6 +190,10 @@ export default function AdminPage() {
 
             <TabsContent value="plans">
               <AdminPlansTab users={users} />
+            </TabsContent>
+
+            <TabsContent value="email">
+              <AdminEmailTab users={users} />
             </TabsContent>
           </Tabs>
         )}

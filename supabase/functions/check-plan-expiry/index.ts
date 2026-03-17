@@ -18,20 +18,21 @@ Deno.serve(async (req) => {
 
     const now = new Date();
     const tenDaysFromNow = new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000);
+    const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
 
-    // 1. Find yearly plans expiring within 10 days that haven't been notified
+    // Get all yearly plans with upcoming expiry
     const { data: expiringPlans } = await supabase
       .from("user_plans")
       .select("user_id, plan, expires_at, auto_renew, notified_expiry")
       .eq("plan", "yearly")
-      .eq("notified_expiry", false)
       .not("expires_at", "is", null)
-      .lte("expires_at", tenDaysFromNow.toISOString());
+      .lte("expires_at", tenDaysFromNow.toISOString())
+      .gt("expires_at", now.toISOString());
 
-    const notifiedIds: string[] = [];
+    const notified10: string[] = [];
+    const notified3: string[] = [];
 
     if (expiringPlans && expiringPlans.length > 0) {
-      // Get user emails
       const { data: { users: allUsers } } = await supabase.auth.admin.listUsers({ perPage: 1000 });
 
       for (const plan of expiringPlans) {
@@ -41,26 +42,56 @@ Deno.serve(async (req) => {
         const expiryDate = new Date(plan.expires_at!);
         const daysLeft = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
-        // Send notification email via Lovable AI
-        const lovableKey = Deno.env.get("LOVABLE_API_KEY");
-        if (lovableKey) {
-          // For now, log the notification - email sending can be added later
-          console.log(`[PLAN-EXPIRY] Notifica: ${user.email} - piano yearly scade tra ${daysLeft} giorni (${expiryDate.toISOString()}), auto_renew: ${plan.auto_renew}`);
-        }
+        // Determine if we should send 10-day or 3-day notification
+        const shouldNotify10 = !plan.notified_expiry && daysLeft <= 10 && daysLeft > 3;
+        const shouldNotify3 = daysLeft <= 3;
 
-        notifiedIds.push(plan.user_id);
+        if (!shouldNotify10 && !shouldNotify3) continue;
+
+        const formattedDate = expiryDate.toLocaleDateString('it-IT', {
+          day: '2-digit', month: 'long', year: 'numeric',
+        });
+
+        // Send email via enqueue_email RPC (uses the email queue infrastructure)
+        const messageId = `plan-expiry-${plan.user_id}-${daysLeft <= 3 ? '3d' : '10d'}`;
+        
+        try {
+          const { error: enqueueError } = await supabase.rpc('enqueue_email', {
+            p_queue_name: 'transactional_emails',
+            p_message_id: messageId,
+            p_template_name: 'plan-expiry',
+            p_recipient_email: user.email,
+            p_subject: daysLeft <= 3
+              ? `⚠️ Il tuo piano VaultLink scade tra ${daysLeft} giorni!`
+              : `Il tuo piano VaultLink scade tra ${daysLeft} giorni`,
+            p_html_body: buildExpiryEmailHtml(user.email, daysLeft, formattedDate, plan.auto_renew),
+            p_metadata: JSON.stringify({ user_id: plan.user_id, days_left: daysLeft }),
+          });
+
+          if (enqueueError) {
+            console.error(`[PLAN-EXPIRY] Enqueue error for ${user.email}:`, enqueueError);
+            continue;
+          }
+
+          console.log(`[PLAN-EXPIRY] Email accodata: ${user.email} - scade tra ${daysLeft} giorni`);
+
+          if (shouldNotify3) notified3.push(plan.user_id);
+          else notified10.push(plan.user_id);
+        } catch (emailErr) {
+          console.error(`[PLAN-EXPIRY] Email error for ${user.email}:`, emailErr);
+        }
       }
 
-      // Mark as notified
-      if (notifiedIds.length > 0) {
+      // Mark 10-day notified
+      if (notified10.length > 0) {
         await supabase
           .from("user_plans")
           .update({ notified_expiry: true })
-          .in("user_id", notifiedIds);
+          .in("user_id", notified10);
       }
     }
 
-    // 2. Freeze expired yearly plans without auto_renew
+    // Freeze expired yearly plans without auto_renew
     const { data: expiredPlans } = await supabase
       .from("user_plans")
       .select("user_id, plan, expires_at, auto_renew")
@@ -71,18 +102,40 @@ Deno.serve(async (req) => {
 
     const frozenIds: string[] = [];
     if (expiredPlans && expiredPlans.length > 0) {
+      const { data: { users: allUsers } } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+
       for (const plan of expiredPlans) {
         await supabase
           .from("user_plans")
           .update({ plan: "frozen", updated_at: now.toISOString() })
           .eq("user_id", plan.user_id);
         frozenIds.push(plan.user_id);
-        console.log(`[PLAN-EXPIRY] Frozen: user ${plan.user_id} - piano scaduto senza rinnovo`);
+
+        // Send frozen notification email
+        const user = allUsers?.find(u => u.id === plan.user_id);
+        if (user?.email) {
+          try {
+            await supabase.rpc('enqueue_email', {
+              p_queue_name: 'transactional_emails',
+              p_message_id: `plan-frozen-${plan.user_id}`,
+              p_template_name: 'plan-frozen',
+              p_recipient_email: user.email,
+              p_subject: '❄️ Il tuo piano VaultLink è stato sospeso',
+              p_html_body: buildFrozenEmailHtml(user.email),
+              p_metadata: JSON.stringify({ user_id: plan.user_id }),
+            });
+          } catch (e) {
+            console.error(`[PLAN-EXPIRY] Frozen email error:`, e);
+          }
+        }
+
+        console.log(`[PLAN-EXPIRY] Frozen: user ${plan.user_id}`);
       }
     }
 
     return new Response(JSON.stringify({
-      notified: notifiedIds.length,
+      notified_10d: notified10.length,
+      notified_3d: notified3.length,
       frozen: frozenIds.length,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -96,3 +149,63 @@ Deno.serve(async (req) => {
     });
   }
 });
+
+function buildExpiryEmailHtml(email: string, daysLeft: number, expiryDate: string, autoRenew: boolean): string {
+  const urgencyTitle = daysLeft <= 3
+    ? '⚠️ Il tuo piano sta per scadere!'
+    : 'Il tuo piano sta per scadere';
+
+  const renewInfo = autoRenew
+    ? `<p style="font-size:14px;color:#6b7280;line-height:1.5;margin:0 0 25px">
+        Il rinnovo automatico è <strong>attivo</strong>. Il tuo piano verrà rinnovato automaticamente.
+        Se desideri annullare il rinnovo, puoi farlo entro 7 giorni prima della scadenza.
+      </p>
+      <a href="https://vaultylink.com" style="display:inline-block;background-color:#0fa968;color:#0f1419;font-size:14px;font-weight:bold;border-radius:12px;padding:12px 24px;text-decoration:none">Gestisci Abbonamento</a>`
+    : `<p style="font-size:14px;color:#6b7280;line-height:1.5;margin:0 0 25px">
+        Il rinnovo automatico è <strong>disattivato</strong>. Se non rinnovi entro la scadenza,
+        il tuo piano passerà allo stato <strong>Frozen</strong> e l'accesso cloud sarà sospeso.
+      </p>
+      <a href="https://vaultylink.com" style="display:inline-block;background-color:#0fa968;color:#0f1419;font-size:14px;font-weight:bold;border-radius:12px;padding:12px 24px;text-decoration:none">Rinnova Ora</a>`;
+
+  return `<!DOCTYPE html>
+<html lang="it">
+<head><meta charset="UTF-8"></head>
+<body style="background-color:#ffffff;font-family:'Space Grotesk',Arial,sans-serif">
+<div style="padding:20px 25px">
+  <p style="font-size:18px;font-weight:bold;color:#0fa968;margin:0 0 24px">🔐 VaultLink</p>
+  <h1 style="font-size:22px;font-weight:bold;color:#111827;margin:0 0 20px">${urgencyTitle}</h1>
+  <p style="font-size:14px;color:#6b7280;line-height:1.5;margin:0 0 25px">
+    Ciao, il tuo piano <strong>Yearly</strong> su VaultLink scadrà il <strong>${expiryDate}</strong> (tra ${daysLeft} giorni).
+  </p>
+  ${renewInfo}
+  <p style="font-size:12px;color:#9ca3af;margin:30px 0 0">
+    Questa email è stata inviata a ${email} perché hai un piano attivo su VaultLink.
+  </p>
+</div>
+</body>
+</html>`;
+}
+
+function buildFrozenEmailHtml(email: string): string {
+  return `<!DOCTYPE html>
+<html lang="it">
+<head><meta charset="UTF-8"></head>
+<body style="background-color:#ffffff;font-family:'Space Grotesk',Arial,sans-serif">
+<div style="padding:20px 25px">
+  <p style="font-size:18px;font-weight:bold;color:#0fa968;margin:0 0 24px">🔐 VaultLink</p>
+  <h1 style="font-size:22px;font-weight:bold;color:#111827;margin:0 0 20px">❄️ Piano sospeso</h1>
+  <p style="font-size:14px;color:#6b7280;line-height:1.5;margin:0 0 25px">
+    Il tuo piano <strong>Yearly</strong> su VaultLink è scaduto e non è stato rinnovato.
+    Il tuo account è ora in stato <strong>Frozen</strong> e l'accesso alla sincronizzazione cloud è sospeso.
+  </p>
+  <p style="font-size:14px;color:#6b7280;line-height:1.5;margin:0 0 25px">
+    Per riattivare il servizio, rinnova il tuo abbonamento.
+  </p>
+  <a href="https://vaultylink.com" style="display:inline-block;background-color:#0fa968;color:#0f1419;font-size:14px;font-weight:bold;border-radius:12px;padding:12px 24px;text-decoration:none">Rinnova Ora</a>
+  <p style="font-size:12px;color:#9ca3af;margin:30px 0 0">
+    Questa email è stata inviata a ${email}.
+  </p>
+</div>
+</body>
+</html>`;
+}
