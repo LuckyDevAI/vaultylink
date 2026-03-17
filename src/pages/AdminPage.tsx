@@ -128,6 +128,10 @@ export default function AdminPage() {
                 <CreditCard className="w-3.5 h-3.5" />
                 Piani
               </TabsTrigger>
+              <TabsTrigger value="email" className="gap-1.5 text-xs data-[state=active]:bg-card">
+                <Mail className="w-3.5 h-3.5" />
+                Email
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-5">
