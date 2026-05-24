@@ -242,7 +242,7 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
           <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
             <AlertTriangle className="w-4 h-4 text-destructive shrink-0" />
             <p className="text-xs text-destructive">
-              Attenzione: non è possibile recuperare PIN o password. Memorizzali bene!
+              Attenzione: non è possibile recuperare il PIN. Memorizzalo bene!
             </p>
           </div>
         )}
@@ -251,7 +251,7 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
             onClick={() => setShowResetConfirm(true)}
             className="text-xs text-destructive/70 hover:text-destructive underline mx-auto block transition-colors"
           >
-            Password dimenticata? Resetta il vault
+            PIN dimenticato? Resetta il vault
           </button>
         )}
 
