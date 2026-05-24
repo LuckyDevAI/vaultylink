@@ -451,7 +451,7 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
         supabase.from('user_plans').select('auto_renew, expires_at, plan').eq('user_id', user.id).maybeSingle()
           .then(({ data }) => {
             if (data) setProfilePlan(p => ({
-              subscribed: p?.subscribed ?? (data.plan !== 'free'),
+              subscribed: p?.subscribed ?? (data.plan !== 'frozen'),
               plan: data.plan,
               subscription_end: data.expires_at ?? p?.subscription_end,
               auto_renew: data.auto_renew,
