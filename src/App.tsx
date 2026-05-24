@@ -12,6 +12,7 @@ import PrivacyPage from "@/pages/PrivacyPage";
 import TermsPage from "@/pages/TermsPage";
 import EulaPage from "@/pages/EulaPage";
 import AdminPage from "@/pages/AdminPage";
+import AccountPage from "@/pages/AccountPage";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const PATH_TO_VIEW: Record<string, string> = {
   '/eula': 'eula',
   '/auth': 'auth',
   '/vault': 'vault',
+  '/account': 'account',
 };
 
 const VIEW_TO_PATH: Record<string, string> = {
@@ -33,6 +35,7 @@ const VIEW_TO_PATH: Record<string, string> = {
   eula: '/eula',
   auth: '/auth',
   vault: '/vault',
+  account: '/account',
 };
 
 const AppRouter = () => {
