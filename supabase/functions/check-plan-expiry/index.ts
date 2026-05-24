@@ -17,20 +17,19 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const now = new Date();
-    const tenDaysFromNow = new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000);
-    const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+    const twentyDaysFromNow = new Date(now.getTime() + 20 * 24 * 60 * 60 * 1000);
 
-    // Get all yearly plans with upcoming expiry
+    // Get yearly plans expiring within 20 days that have not been notified yet
     const { data: expiringPlans } = await supabase
       .from("user_plans")
       .select("user_id, plan, expires_at, auto_renew, notified_expiry")
       .eq("plan", "yearly")
+      .eq("notified_expiry", false)
       .not("expires_at", "is", null)
-      .lte("expires_at", tenDaysFromNow.toISOString())
+      .lte("expires_at", twentyDaysFromNow.toISOString())
       .gt("expires_at", now.toISOString());
 
-    const notified10: string[] = [];
-    const notified3: string[] = [];
+    const notified20: string[] = [];
 
     if (expiringPlans && expiringPlans.length > 0) {
       const { data: { users: allUsers } } = await supabase.auth.admin.listUsers({ perPage: 1000 });
@@ -42,22 +41,15 @@ Deno.serve(async (req) => {
         const expiryDate = new Date(plan.expires_at!);
         const daysLeft = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
-        // Determine if we should send 10-day or 3-day notification
-        const shouldNotify10 = !plan.notified_expiry && daysLeft <= 10 && daysLeft > 3;
-        const shouldNotify3 = daysLeft <= 3;
-
-        if (!shouldNotify10 && !shouldNotify3) continue;
-
         const formattedDate = expiryDate.toLocaleDateString('it-IT', {
           day: '2-digit', month: 'long', year: 'numeric',
         });
 
-        // Send email via enqueue_email RPC (uses the email queue infrastructure)
-        const messageId = `plan-expiry-${plan.user_id}-${daysLeft <= 3 ? '3d' : '10d'}`;
-        const emailSubject = daysLeft <= 3
-          ? `⚠️ Il tuo piano VaultLink scade tra ${daysLeft} giorni!`
-          : `Il tuo piano VaultLink scade tra ${daysLeft} giorni`;
-        
+        const messageId = `plan-renewal-20d-${plan.user_id}-${expiryDate.toISOString().slice(0, 10)}`;
+        const emailSubject = plan.auto_renew
+          ? `🔄 Promemoria: rinnovo automatico tra ${daysLeft} giorni`
+          : `⚠️ Il tuo piano VaultLink scade tra ${daysLeft} giorni`;
+
         try {
           const { error: enqueueError } = await supabase.rpc('enqueue_email', {
             queue_name: 'transactional_emails',
@@ -67,7 +59,7 @@ Deno.serve(async (req) => {
               sender_domain: 'notify.vaultylink.com',
               subject: emailSubject,
               html: buildExpiryEmailHtml(user.email, daysLeft, formattedDate, plan.auto_renew),
-              label: 'plan-expiry',
+              label: 'plan-renewal-20d',
               message_id: messageId,
               queued_at: new Date().toISOString(),
             },
@@ -78,21 +70,18 @@ Deno.serve(async (req) => {
             continue;
           }
 
-          console.log(`[PLAN-EXPIRY] Email accodata: ${user.email} - scade tra ${daysLeft} giorni`);
-
-          if (shouldNotify3) notified3.push(plan.user_id);
-          else notified10.push(plan.user_id);
+          console.log(`[PLAN-EXPIRY] Email 20d accodata: ${user.email} - scade tra ${daysLeft} giorni`);
+          notified20.push(plan.user_id);
         } catch (emailErr) {
           console.error(`[PLAN-EXPIRY] Email error for ${user.email}:`, emailErr);
         }
       }
 
-      // Mark 10-day notified
-      if (notified10.length > 0) {
+      if (notified20.length > 0) {
         await supabase
           .from("user_plans")
           .update({ notified_expiry: true })
-          .in("user_id", notified10);
+          .in("user_id", notified20);
       }
     }
 
@@ -143,8 +132,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(JSON.stringify({
-      notified_10d: notified10.length,
-      notified_3d: notified3.length,
+      notified_20d: notified20.length,
       frozen: frozenIds.length,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
