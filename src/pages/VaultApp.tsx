@@ -537,7 +537,10 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
       await vault.saveLinks(merged);
       if (onImportDone) onImportDone(merged);
       toast.success(`Importati ${newLinks.length} bookmark (${imported.length - newLinks.length} duplicati ignorati)`);
+    };
+    input.click();
   };
+
 
   const handleManualImport = async () => {
     const lines = manualText.split('\n').map(l => l.trim()).filter(Boolean);
