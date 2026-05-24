@@ -16,6 +16,13 @@ const logStep = (step: string, details?: any) => {
 const YEARLY_PRODUCT = "prod_UA4sfi1uPvB1AN";
 const LIFETIME_PRODUCT = "prod_UA4sxOEr0mEKOy";
 
+const planPayload = (planRow: any) => ({
+  subscribed: planRow?.plan === "yearly" || planRow?.plan === "lifetime",
+  plan: planRow?.plan ?? null,
+  subscription_end: planRow?.expires_at ?? null,
+  auto_renew: planRow?.auto_renew ?? null,
+});
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -43,12 +50,18 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id });
 
+    const { data: existingPlan } = await supabaseClient
+      .from("user_plans")
+      .select("plan, expires_at, auto_renew")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
 
     if (customers.data.length === 0) {
-      logStep("No customer found");
-      return new Response(JSON.stringify({ subscribed: false, plan: null }), {
+      logStep("No customer found, using stored plan fallback");
+      return new Response(JSON.stringify(planPayload(existingPlan)), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
