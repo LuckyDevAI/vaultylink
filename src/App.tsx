@@ -72,6 +72,7 @@ const AppRouter = () => {
       if (session?.user) {
         setCloudUser(true);
         if (event === 'PASSWORD_RECOVERY' || isPasswordRecoveryCallback()) {
+          sessionStorage.setItem('vl_password_recovery', '1');
           setView('auth');
           return;
         }
@@ -88,6 +89,7 @@ const AppRouter = () => {
       if (session?.user) {
         setCloudUser(true);
         if (isPasswordRecoveryCallback()) {
+          sessionStorage.setItem('vl_password_recovery', '1');
           setView('auth');
         }
       }
