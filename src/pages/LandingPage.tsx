@@ -279,7 +279,7 @@ export default function LandingPage() {
             {/* Brand */}
             <div className="md:col-span-2 space-y-4">
               <div className="flex items-center gap-3">
-                <img src={logoVaulty} alt="VaultLink logo" className="w-10 h-10" />
+                <img src={logoVaulty} alt="VaultLink secure vault logo" className="w-10 h-10" />
                 <span className="font-semibold text-lg text-foreground">VaultLink</span>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
