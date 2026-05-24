@@ -68,12 +68,18 @@ export default function AccountPage() {
     }
   };
 
+  const freeDaysLeft = plan?.plan === 'free' && plan?.subscription_end
+    ? Math.max(0, Math.ceil((new Date(plan.subscription_end).getTime() - Date.now()) / 86400000))
+    : null;
+
   const planLabel = plan?.plan === 'lifetime' ? 'Lifetime'
     : plan?.plan === 'yearly' ? 'Annuale'
     : plan?.plan === 'frozen' ? 'Frozen (scaduto)'
+    : plan?.plan === 'free' ? `Free (scade tra ${freeDaysLeft ?? '—'} giorni)`
     : plan?.subscribed ? 'Attivo' : 'Free';
 
   const isFree = !plan?.subscribed && (plan?.plan == null || plan?.plan === 'free');
+
 
   const handleCheckout = async (which: 'yearly' | 'lifetime') => {
     setCheckoutLoading(which);
