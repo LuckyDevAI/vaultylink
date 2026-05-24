@@ -229,15 +229,19 @@ export default function AuthPage({ onBack, onAuth }: AuthPageProps) {
               </Button>
             </form>
 
-            {/* Reset Password — shown after a failed login */}
-            {mode === 'login' && loginFailed && (
-              <motion.div
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 space-y-2"
+            {/* Reset Password — always visible in login mode, emphasized after a failed login */}
+            {mode === 'login' && (
+              <div
+                className={`rounded-lg p-3 space-y-2 transition-colors ${
+                  loginFailed
+                    ? 'border border-destructive/30 bg-destructive/10'
+                    : 'border border-border/40 bg-secondary/40'
+                }`}
               >
-                <p className="text-xs text-destructive">
-                  Password errata. Vuoi reimpostarla?
+                <p className={`text-xs ${loginFailed ? 'text-destructive' : 'text-muted-foreground'}`}>
+                  {loginFailed
+                    ? 'Password errata. Vuoi reimpostarla?'
+                    : 'Hai dimenticato la password?'}
                 </p>
                 <Button
                   type="button"
@@ -245,12 +249,16 @@ export default function AuthPage({ onBack, onAuth }: AuthPageProps) {
                   size="sm"
                   onClick={handleResetPassword}
                   disabled={resetSending}
-                  className="w-full border-destructive/40 text-destructive hover:bg-destructive/20 hover:text-destructive"
+                  className={`w-full ${
+                    loginFailed
+                      ? 'border-destructive/40 text-destructive hover:bg-destructive/20 hover:text-destructive'
+                      : 'border-border text-foreground hover:bg-secondary'
+                  }`}
                 >
                   <KeyRound className="w-4 h-4 mr-2" aria-hidden="true" />
                   {resetSending ? 'Invio in corso...' : 'Reset Password'}
                 </Button>
-              </motion.div>
+              </div>
             )}
 
             {/* Toggle mode */}
