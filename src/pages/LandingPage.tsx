@@ -107,7 +107,7 @@ export default function LandingPage() {
           </motion.h1>
 
           <motion.p variants={fadeUp} custom={2}
-            className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto leading-relaxed whitespace-pre-line"
+            className="text-primary/90 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed font-semibold whitespace-pre-line"
           >
             {t('heroSub')}
           </motion.p>
