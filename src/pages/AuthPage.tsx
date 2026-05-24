@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import SiteFooter from '@/components/SiteFooter';
+import Seo from '@/components/Seo';
 import { lovable } from '@/integrations/lovable/index';
 import { useTranslation } from '@/lib/i18n';
 import { useAppStore } from '@/stores/appStore';
@@ -78,13 +79,18 @@ export default function AuthPage({ onBack, onAuth }: AuthPageProps) {
         className="w-full max-w-sm space-y-6"
       >
         {/* Header */}
+        <Seo
+          title={mode === 'login' ? 'Login · VaultyLink' : 'Crea account · VaultyLink'}
+          description="Accedi o registrati per sincronizzare la tua cassaforte cifrata VaultyLink su tutti i tuoi dispositivi."
+          path="/auth"
+        />
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0">
-            <ArrowLeft className="w-4 h-4" />
+          <Button variant="ghost" size="icon" onClick={onBack} aria-label="Torna alla home" className="shrink-0">
+            <ArrowLeft className="w-4 h-4" aria-hidden="true" />
           </Button>
           <div>
             <h1 className="text-xl font-bold text-foreground">
-              {mode === 'login' ? 'Login' : 'Register'}
+              {mode === 'login' ? 'Unlock your VaultLink' : 'Register'}
             </h1>
             <p className="text-xs text-muted-foreground">VaultLink Cloud Sync</p>
           </div>
@@ -97,7 +103,7 @@ export default function AuthPage({ onBack, onAuth }: AuthPageProps) {
             className="w-full h-11 border-border text-foreground hover:bg-secondary justify-center gap-3"
             onClick={handleGoogle}
           >
-            <Chrome className="w-5 h-5 text-primary" />
+            <Chrome className="w-5 h-5 text-primary" aria-hidden="true" />
             Continue with Google
           </Button>
 
@@ -121,21 +127,23 @@ export default function AuthPage({ onBack, onAuth }: AuthPageProps) {
         {/* Email form */}
         <form onSubmit={handleEmailAuth} className="space-y-3">
           <div>
-            <Label className="text-xs text-muted-foreground">Email</Label>
+            <Label htmlFor="auth-email" className="text-xs text-muted-foreground">Email</Label>
             <Input
+              id="auth-email" autoComplete="email"
               type="email" value={email} onChange={e => setEmail(e.target.value)}
               className="bg-secondary border-border mt-1" required
             />
           </div>
           <div>
-            <Label className="text-xs text-muted-foreground">Password</Label>
+            <Label htmlFor="auth-password" className="text-xs text-muted-foreground">Password</Label>
             <Input
+              id="auth-password" autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
               type="password" value={password} onChange={e => setPassword(e.target.value)}
               className="bg-secondary border-border mt-1" required minLength={6}
             />
           </div>
           <Button type="submit" disabled={loading} className="w-full bg-primary text-primary-foreground">
-            <Mail className="w-4 h-4 mr-2" />
+            <Mail className="w-4 h-4 mr-2" aria-hidden="true" />
             {loading ? '...' : mode === 'login' ? 'Login' : 'Register'}
           </Button>
         </form>

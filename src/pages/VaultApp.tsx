@@ -540,7 +540,7 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={onBack}><ArrowLeft className="w-4 h-4" /></Button>
+        <Button variant="ghost" size="icon" onClick={onBack} aria-label="Torna indietro"><ArrowLeft className="w-4 h-4" aria-hidden="true" /></Button>
         <h2 className="text-lg font-semibold text-foreground">{t('settingsTitle')}</h2>
       </div>
 
@@ -899,11 +899,11 @@ export default function VaultApp() {
       <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border px-6 py-3">
         <div className="max-w-6xl mx-auto flex items-center gap-3">
           <div className="flex items-center gap-2 mr-auto">
-            <button onClick={() => { vault.lock(); setAuthenticated(false); setView('landing'); }} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <button onClick={() => { vault.lock(); setAuthenticated(false); setView('landing'); }} aria-label="VaultLink home" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-                <Lock className="w-4 h-4 text-primary" />
+                <Lock className="w-4 h-4 text-primary" aria-hidden="true" />
               </div>
-              <span className="font-semibold text-foreground text-lg hidden sm:inline">VaultLink</span>
+              <h1 className="font-semibold text-foreground text-lg hidden sm:inline">La mia cassaforte VaultLink</h1>
               <span className="text-xs text-muted-foreground hidden md:inline ml-1">I tuoi link in cassaforte.</span>
             </button>
             {cloudUser && <SyncIndicator status={syncStatus} onRetry={handleRetrySync} />}
@@ -914,8 +914,10 @@ export default function VaultApp() {
             )}
           </div>
           <div className="relative flex-1 max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
+            <Label htmlFor="vault-search" className="sr-only">{t('search')}</Label>
             <Input
+              id="vault-search"
               value={search} onChange={e => setSearch(e.target.value)}
               placeholder={t('search')}
               className="pl-9 bg-secondary border-border h-8 text-sm"
@@ -923,19 +925,20 @@ export default function VaultApp() {
           </div>
           <Button size="sm" onClick={() => { setEditLink(null); setFormOpen(true); }}
             className="bg-primary text-primary-foreground h-8 px-3 text-xs">
-            <Plus className="w-3.5 h-3.5 mr-1" />{t('addLink')}
+            <Plus className="w-3.5 h-3.5 mr-1" aria-hidden="true" />{t('addLink')}
           </Button>
           {isAdmin && (
-            <Button size="sm" variant="ghost" onClick={() => setView('admin')} className="h-8 w-8 p-0" title="Admin">
-              <Shield className="w-4 h-4 text-primary" />
+            <Button size="sm" variant="ghost" onClick={() => setView('admin')} aria-label="Pannello Admin" className="h-8 w-8 p-0" title="Admin">
+              <Shield className="w-4 h-4 text-primary" aria-hidden="true" />
             </Button>
           )}
-          <Button size="sm" variant="ghost" onClick={() => setTab('settings')} className="h-8 w-8 p-0">
-            <Settings className="w-4 h-4 text-muted-foreground" />
+          <Button size="sm" variant="ghost" onClick={() => setTab('settings')} aria-label="Impostazioni" className="h-8 w-8 p-0">
+            <Settings className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
           </Button>
           <Button size="sm" variant="ghost" onClick={async () => { vault.lock(); setAuthenticated(false); await supabase.auth.signOut(); setView('landing'); }}
+            aria-label="Esci e blocca la cassaforte"
             className="h-8 w-8 p-0">
-            <LogOut className="w-4 h-4 text-muted-foreground" />
+            <LogOut className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
           </Button>
         </div>
       </header>
@@ -1024,11 +1027,11 @@ export default function VaultApp() {
                         <span className="text-xs text-muted-foreground truncate block mt-0.5">{link.url}</span>
                       </div>
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setEditLink(link); setFormOpen(true); }}>
-                          <Edit className="w-3.5 h-3.5 text-muted-foreground" />
+                        <Button size="icon" variant="ghost" aria-label={`Modifica ${link.title}`} className="h-7 w-7" onClick={() => { setEditLink(link); setFormOpen(true); }}>
+                          <Edit className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
                         </Button>
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setDeleteTarget(link)}>
-                          <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                        <Button size="icon" variant="ghost" aria-label={`Elimina ${link.title}`} className="h-7 w-7" onClick={() => setDeleteTarget(link)}>
+                          <Trash2 className="w-3.5 h-3.5 text-destructive" aria-hidden="true" />
                         </Button>
                       </div>
                     </motion.div>
@@ -1090,13 +1093,13 @@ export default function VaultApp() {
                     </div>
                   </div>
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button size="icon" variant="ghost" className="h-7 w-7"
+                    <Button size="icon" variant="ghost" aria-label={`Modifica ${link.title}`} className="h-7 w-7"
                       onClick={() => { setEditLink(link); setFormOpen(true); }}>
-                      <Edit className="w-3.5 h-3.5 text-muted-foreground" />
+                      <Edit className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
                     </Button>
-                    <Button size="icon" variant="ghost" className="h-7 w-7"
+                    <Button size="icon" variant="ghost" aria-label={`Elimina ${link.title}`} className="h-7 w-7"
                       onClick={() => setDeleteTarget(link)}>
-                      <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                      <Trash2 className="w-3.5 h-3.5 text-destructive" aria-hidden="true" />
                     </Button>
                   </div>
                 </motion.div>

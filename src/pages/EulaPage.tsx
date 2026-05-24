@@ -1,6 +1,7 @@
 import { useAppStore } from '@/stores/appStore';
 import { useTranslation } from '@/lib/i18n';
 import SiteHeader from '@/components/SiteHeader';
+import Seo from '@/components/Seo';
 
 export default function EulaPage() {
   const { lang, setView } = useAppStore();
@@ -8,6 +9,11 @@ export default function EulaPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title="EULA · VaultyLink"
+        description="Accordo di licenza per l'utente finale di VaultyLink (Windows, macOS, Web)."
+        path="/eula"
+      />
       <SiteHeader showBack onBack={() => setView('landing')} />
 
       <main className="max-w-3xl mx-auto px-6 py-12 space-y-8">
