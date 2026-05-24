@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Lock, Mail, ArrowLeft, Chrome } from 'lucide-react';
+import { Lock, Mail, ArrowLeft, Chrome, KeyRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -28,14 +28,30 @@ interface AuthPageProps {
 export default function AuthPage({ onBack, onAuth }: AuthPageProps) {
   const { lang } = useAppStore();
   const { t } = useTranslation(lang);
-  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [mode, setMode] = useState<'login' | 'register' | 'recovery'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loginFailed, setLoginFailed] = useState(false);
+  const [resetSending, setResetSending] = useState(false);
+
+  // Detect Supabase recovery callback (#access_token=...&type=recovery)
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.includes('type=recovery')) {
+      setMode('recovery');
+    }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') setMode('recovery');
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setLoginFailed(false);
     try {
       if (mode === 'register') {
         const { error } = await supabase.auth.signUp({
@@ -47,11 +63,56 @@ export default function AuthPage({ onBack, onAuth }: AuthPageProps) {
         toast.success('Check your email to confirm your account!');
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        if (error) {
+          setLoginFailed(true);
+          throw error;
+        }
         onAuth();
       }
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Auth error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!email) {
+      toast.error('Inserisci la tua email per ricevere il link di reset');
+      return;
+    }
+    setResetSending(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+      if (error) throw error;
+      toast.success('Ti abbiamo inviato un link per reimpostare la password. Controlla la tua email.');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Errore invio email');
+    } finally {
+      setResetSending(false);
+    }
+  };
+
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 6) {
+      toast.error('La password deve avere almeno 6 caratteri');
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      toast.success('Password aggiornata. Ora puoi accedere.');
+      // Clean hash and switch back to login
+      window.history.replaceState(null, '', '/auth');
+      setMode('login');
+      setPassword('');
+      setNewPassword('');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Errore aggiornamento password');
     } finally {
       setLoading(false);
     }
@@ -80,7 +141,7 @@ export default function AuthPage({ onBack, onAuth }: AuthPageProps) {
       >
         {/* Header */}
         <Seo
-          title={mode === 'login' ? 'Login · VaultyLink' : 'Crea account · VaultyLink'}
+          title={mode === 'login' ? 'Login · VaultyLink' : mode === 'register' ? 'Crea account · VaultyLink' : 'Reset password · VaultyLink'}
           description="Accedi o registrati per sincronizzare la tua cassaforte cifrata VaultyLink su tutti i tuoi dispositivi."
           path="/auth"
         />
@@ -90,78 +151,124 @@ export default function AuthPage({ onBack, onAuth }: AuthPageProps) {
           </Button>
           <div>
             <h1 className="text-xl font-bold text-foreground">
-              {mode === 'login' ? 'Unlock your Vaulty Link' : 'Register'}
+              {mode === 'login' ? 'Unlock your Vaulty Link' : mode === 'register' ? 'Register' : 'Reimposta password'}
             </h1>
             <p className="text-xs text-muted-foreground">Vaulty Link Cloud Sync</p>
           </div>
         </div>
 
-        {/* Social buttons */}
-        <div className="space-y-3">
-          <Button
-            variant="outline"
-            className="w-full h-11 border-border text-foreground hover:bg-secondary justify-center gap-3"
-            onClick={handleGoogle}
-          >
-            <Chrome className="w-5 h-5 text-primary" aria-hidden="true" />
-            Continue with Google
-          </Button>
+        {mode === 'recovery' ? (
+          <form onSubmit={handleUpdatePassword} className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              Inserisci la nuova password per il tuo account.
+            </p>
+            <div>
+              <Label htmlFor="new-password" className="text-xs text-muted-foreground">Nuova password</Label>
+              <Input
+                id="new-password" autoComplete="new-password"
+                type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)}
+                className="bg-secondary border-border mt-1" required minLength={6}
+              />
+            </div>
+            <Button type="submit" disabled={loading} className="w-full bg-primary text-primary-foreground">
+              <KeyRound className="w-4 h-4 mr-2" aria-hidden="true" />
+              {loading ? '...' : 'Aggiorna password'}
+            </Button>
+          </form>
+        ) : (
+          <>
+            {/* Social buttons */}
+            <div className="space-y-3">
+              <Button
+                variant="outline"
+                className="w-full h-11 border-border text-foreground hover:bg-secondary justify-center gap-3"
+                onClick={handleGoogle}
+              >
+                <Chrome className="w-5 h-5 text-primary" aria-hidden="true" />
+                Continue with Google
+              </Button>
 
-          <Button
-            variant="outline"
-            className="w-full h-11 border-border text-foreground hover:bg-secondary justify-center gap-3"
-            onClick={handleApple}
-          >
-            <AppleLogo />
-            Continue with Apple
-          </Button>
-        </div>
+              <Button
+                variant="outline"
+                className="w-full h-11 border-border text-foreground hover:bg-secondary justify-center gap-3"
+                onClick={handleApple}
+              >
+                <AppleLogo />
+                Continue with Apple
+              </Button>
+            </div>
 
-        {/* Divider */}
-        <div className="flex items-center gap-3">
-          <Separator className="flex-1 bg-border" />
-          <span className="text-xs text-muted-foreground">or</span>
-          <Separator className="flex-1 bg-border" />
-        </div>
+            {/* Divider */}
+            <div className="flex items-center gap-3">
+              <Separator className="flex-1 bg-border" />
+              <span className="text-xs text-muted-foreground">or</span>
+              <Separator className="flex-1 bg-border" />
+            </div>
 
-        {/* Email form */}
-        <form onSubmit={handleEmailAuth} className="space-y-3">
-          <div>
-            <Label htmlFor="auth-email" className="text-xs text-muted-foreground">Email</Label>
-            <Input
-              id="auth-email" autoComplete="email"
-              type="email" value={email} onChange={e => setEmail(e.target.value)}
-              className="bg-secondary border-border mt-1" required
-            />
-          </div>
-          <div>
-            <Label htmlFor="auth-password" className="text-xs text-muted-foreground">Password</Label>
-            <Input
-              id="auth-password" autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-              type="password" value={password} onChange={e => setPassword(e.target.value)}
-              className="bg-secondary border-border mt-1" required minLength={6}
-            />
-          </div>
-          <Button type="submit" disabled={loading} className="w-full bg-primary text-primary-foreground">
-            <Mail className="w-4 h-4 mr-2" aria-hidden="true" />
-            {loading ? '...' : mode === 'login' ? 'Login' : 'Register'}
-          </Button>
-        </form>
+            {/* Email form */}
+            <form onSubmit={handleEmailAuth} className="space-y-3">
+              <div>
+                <Label htmlFor="auth-email" className="text-xs text-muted-foreground">Email</Label>
+                <Input
+                  id="auth-email" autoComplete="email"
+                  type="email" value={email} onChange={e => setEmail(e.target.value)}
+                  className="bg-secondary border-border mt-1" required
+                />
+              </div>
+              <div>
+                <Label htmlFor="auth-password" className="text-xs text-muted-foreground">Password</Label>
+                <Input
+                  id="auth-password" autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                  type="password" value={password} onChange={e => setPassword(e.target.value)}
+                  className="bg-secondary border-border mt-1" required minLength={6}
+                />
+              </div>
+              <Button type="submit" disabled={loading} className="w-full bg-primary text-primary-foreground">
+                <Mail className="w-4 h-4 mr-2" aria-hidden="true" />
+                {loading ? '...' : mode === 'login' ? 'Login' : 'Register'}
+              </Button>
+            </form>
 
-        {/* Toggle mode */}
-        <p className="text-center text-xs text-muted-foreground">
-          {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
-          <button
-            onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
-            className="text-primary hover:underline font-medium"
-          >
-            {mode === 'login' ? 'Register' : 'Login'}
-          </button>
-        </p>
+            {/* Reset Password — shown after a failed login */}
+            {mode === 'login' && loginFailed && (
+              <motion.div
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 space-y-2"
+              >
+                <p className="text-xs text-destructive">
+                  Password errata. Vuoi reimpostarla?
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleResetPassword}
+                  disabled={resetSending}
+                  className="w-full border-destructive/40 text-destructive hover:bg-destructive/20 hover:text-destructive"
+                >
+                  <KeyRound className="w-4 h-4 mr-2" aria-hidden="true" />
+                  {resetSending ? 'Invio in corso...' : 'Reset Password'}
+                </Button>
+              </motion.div>
+            )}
 
-        <p className="text-[10px] text-center text-muted-foreground font-mono">
-          {t('privacyNote')}
-        </p>
+            {/* Toggle mode */}
+            <p className="text-center text-xs text-muted-foreground">
+              {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
+              <button
+                onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setLoginFailed(false); }}
+                className="text-primary hover:underline font-medium"
+              >
+                {mode === 'login' ? 'Register' : 'Login'}
+              </button>
+            </p>
+
+            <p className="text-[10px] text-center text-muted-foreground font-mono">
+              {t('privacyNote')}
+            </p>
+          </>
+        )}
       </motion.div>
       <SiteFooter />
     </div>
