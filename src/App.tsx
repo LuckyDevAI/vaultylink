@@ -36,11 +36,16 @@ const VIEW_TO_PATH: Record<string, string> = {
 };
 
 const AppRouter = () => {
-  const { view, setView, setCloudUser } = useAppStore();
+  const { view, setView, setCloudUser, setSettingsSection } = useAppStore();
 
   // Sync URL path → view on mount
   useEffect(() => {
     const path = window.location.pathname;
+    if (path === '/account') {
+      setSettingsSection('profile');
+      setView('vault');
+      return;
+    }
     const mapped = PATH_TO_VIEW[path];
     if (mapped && mapped !== view) {
       setView(mapped as typeof view);
@@ -50,6 +55,8 @@ const AppRouter = () => {
 
   // Sync view → URL path on view change
   useEffect(() => {
+    // Preserve /account URL while in vault view
+    if (view === 'vault' && window.location.pathname === '/account') return;
     const targetPath = VIEW_TO_PATH[view] || '/';
     if (window.location.pathname !== targetPath) {
       window.history.replaceState(null, '', targetPath);
