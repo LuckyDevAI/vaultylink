@@ -4,7 +4,7 @@ import {
   Lock, Plus, Search, Star, Clock, Eye, EyeOff, Settings,
   ExternalLink, Trash2, Edit, ArrowLeft, ChevronDown, LogOut,
   Shield, Globe, Download, Upload, KeyRound, FolderOpen,
-  Cloud, CloudOff, Check, Loader2, RefreshCw, AlertTriangle
+  Cloud, CloudOff, Check, Loader2, RefreshCw, AlertTriangle, User
 } from 'lucide-react';
 import zxcvbn from 'zxcvbn';
 import { supabase } from '@/integrations/supabase/client';
@@ -426,7 +426,7 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
   onImportDone?: (links: VaultLink[]) => void;
   scrollToSection?: string | null;
 }) {
-  const { lang, setLang } = useAppStore();
+  const { lang, setLang, setView } = useAppStore();
   const { t } = useTranslation(lang);
   const [currentPw, setCurrentPw] = useState('');
   const [newPw, setNewPw] = useState('');
@@ -434,9 +434,52 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
   const [manualOpen, setManualOpen] = useState(false);
   const [manualText, setManualText] = useState('');
   const [manualBusy, setManualBusy] = useState(false);
+  const [accountEmail, setAccountEmail] = useState<string | null>(null);
+  const [profilePlan, setProfilePlan] = useState<{ subscribed: boolean; plan: string | null; subscription_end?: string; auto_renew?: boolean } | null>(null);
+  const [portalLoading, setPortalLoading] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   const passwordRef = useRef<HTMLDivElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setAccountEmail(user?.email ?? null);
+      if (user) {
+        supabase.functions.invoke('check-subscription').then(({ data, error }) => {
+          if (!error && data) setProfilePlan(data);
+        });
+        supabase.from('user_plans').select('auto_renew, expires_at, plan').eq('user_id', user.id).maybeSingle()
+          .then(({ data }) => {
+            if (data) setProfilePlan(p => ({
+              subscribed: p?.subscribed ?? (data.plan !== 'frozen'),
+              plan: data.plan,
+              subscription_end: data.expires_at ?? p?.subscription_end,
+              auto_renew: data.auto_renew,
+            }));
+          });
+      }
+    });
+  }, []);
+
+  const handleManageSubscription = async () => {
+    setPortalLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('customer-portal');
+      if (error) throw error;
+      if (data?.url) window.open(data.url, '_blank');
+      else throw new Error('URL portale non disponibile');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Impossibile aprire il portale');
+    } finally {
+      setPortalLoading(false);
+    }
+  };
+
+  const handleLogoutAccount = async () => {
+    await supabase.auth.signOut();
+    setView('landing');
+  };
+
 
   useEffect(() => {
     if (!scrollToSection) return;
@@ -608,12 +651,57 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
       </div>
 
       {/* Profile */}
-      <div ref={profileRef} className="space-y-2">
+      <div ref={profileRef} className="space-y-3">
         <Label className="text-sm text-muted-foreground flex items-center gap-2">
-          Profilo utente
+          <User className="w-4 h-4" /> Profilo utente
         </Label>
-        <p className="text-xs text-muted-foreground">Gestisci le impostazioni del tuo profilo.</p>
+        <div className="rounded-lg border border-border bg-secondary/40 p-4 space-y-3">
+          <div>
+            <p className="text-xs text-muted-foreground">Email account</p>
+            <p className="text-sm text-foreground font-mono break-all">{accountEmail ?? '—'}</p>
+          </div>
+          <Separator className="bg-border" />
+          <div>
+            <p className="text-xs text-muted-foreground mb-1">Piano attivo</p>
+            {profilePlan?.subscribed ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge className={profilePlan.plan === 'lifetime' ? 'bg-accent text-accent-foreground' : 'bg-primary/20 text-primary border-primary/30'}>
+                  {profilePlan.plan === 'lifetime' ? '⭐ Lifetime' : profilePlan.plan === 'yearly' ? '🔄 Annuale' : profilePlan.plan}
+                </Badge>
+                {profilePlan.plan === 'yearly' && profilePlan.subscription_end && (
+                  <span className="text-xs text-muted-foreground">
+                    {profilePlan.auto_renew ? 'Rinnovo automatico il' : 'Scade il'}{' '}
+                    {new Date(profilePlan.subscription_end).toLocaleDateString('it-IT')}
+                  </span>
+                )}
+              </div>
+            ) : (
+              <Badge variant="outline" className="border-border text-muted-foreground">Piano gratuito / locale</Badge>
+            )}
+          </div>
+          {profilePlan?.subscribed && profilePlan.plan === 'yearly' && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleManageSubscription}
+              disabled={portalLoading}
+              className="w-full border-border"
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              {portalLoading ? 'Apertura…' : 'Gestisci abbonamento (Stripe)'}
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLogoutAccount}
+            className="w-full border-border text-destructive hover:text-destructive"
+          >
+            <LogOut className="w-4 h-4 mr-2" /> Logout
+          </Button>
+        </div>
       </div>
+
 
       <Separator className="bg-border" />
 
