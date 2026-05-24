@@ -101,6 +101,36 @@ export type Database = {
         }
         Relationships: []
       }
+      extension_queue: {
+        Row: {
+          created_at: string
+          favicon: string | null
+          id: string
+          source: string | null
+          title: string | null
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          favicon?: string | null
+          id?: string
+          source?: string | null
+          title?: string | null
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          favicon?: string | null
+          id?: string
+          source?: string | null
+          title?: string | null
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
