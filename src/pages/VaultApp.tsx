@@ -941,6 +941,24 @@ export default function VaultApp() {
     }
   }, [authenticated, vault.locked]);
 
+  // Realtime cross-device sync: subscribe while unlocked
+  useEffect(() => {
+    if (!authenticated || vault.locked || !cloudUser) return;
+    const unsubscribe = vault.subscribeRealtime(async () => {
+      try {
+        setSyncStatus('syncing');
+        const remoteLinks = await vault.loadLinks();
+        setLinks(remoteLinks);
+        setSyncStatus('synced');
+        setTimeout(() => setSyncStatus('idle'), 2000);
+      } catch (e) {
+        console.error('Realtime apply failed:', e);
+        setSyncStatus('error');
+      }
+    });
+    return unsubscribe;
+  }, [authenticated, vault.locked, cloudUser, vault]);
+
   
 
   const persist = useCallback(async (newLinks: VaultLink[]) => {
