@@ -32,19 +32,28 @@ export default function AuthPage({ onBack, onAuth }: AuthPageProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [loginFailed, setLoginFailed] = useState(false);
   const [resetSending, setResetSending] = useState(false);
 
-  // Detect password recovery callback (#type=recovery, ?type=recovery, or legacy ?code=... on /auth)
+  // Detect password recovery callback (#type=recovery, ?type=recovery, ?code=..., or sessionStorage flag set by App.tsx)
   useEffect(() => {
     const hash = window.location.hash;
     const query = new URLSearchParams(window.location.search);
-    if (hash.includes('type=recovery') || query.get('type') === 'recovery' || query.has('code')) {
+    if (
+      hash.includes('type=recovery') ||
+      query.get('type') === 'recovery' ||
+      query.has('code') ||
+      sessionStorage.getItem('vl_password_recovery') === '1'
+    ) {
       setMode('recovery');
     }
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') setMode('recovery');
+      if (event === 'PASSWORD_RECOVERY') {
+        sessionStorage.setItem('vl_password_recovery', '1');
+        setMode('recovery');
+      }
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -102,16 +111,21 @@ export default function AuthPage({ onBack, onAuth }: AuthPageProps) {
       toast.error('La password deve avere almeno 6 caratteri');
       return;
     }
+    if (newPassword !== confirmPassword) {
+      toast.error('Le password non coincidono');
+      return;
+    }
     setLoading(true);
     try {
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
       toast.success('Password aggiornata. Ora puoi accedere.');
-      // Clean hash and switch back to login
+      sessionStorage.removeItem('vl_password_recovery');
       window.history.replaceState(null, '', '/auth');
       setMode('login');
       setPassword('');
       setNewPassword('');
+      setConfirmPassword('');
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Errore aggiornamento password');
     } finally {
@@ -171,7 +185,22 @@ export default function AuthPage({ onBack, onAuth }: AuthPageProps) {
                 className="bg-secondary border-border mt-1" required minLength={6}
               />
             </div>
-            <Button type="submit" disabled={loading} className="w-full bg-primary text-primary-foreground">
+            <div>
+              <Label htmlFor="confirm-password" className="text-xs text-muted-foreground">Conferma password</Label>
+              <Input
+                id="confirm-password" autoComplete="new-password"
+                type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
+                className="bg-secondary border-border mt-1" required minLength={6}
+              />
+              {confirmPassword.length > 0 && newPassword !== confirmPassword && (
+                <p className="text-xs text-destructive mt-1">Le password non coincidono</p>
+              )}
+            </div>
+            <Button
+              type="submit"
+              disabled={loading || newPassword.length < 6 || newPassword !== confirmPassword}
+              className="w-full bg-primary text-primary-foreground"
+            >
               <KeyRound className="w-4 h-4 mr-2" aria-hidden="true" />
               {loading ? '...' : 'Aggiorna password'}
             </Button>
