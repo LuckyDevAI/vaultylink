@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -47,6 +47,7 @@ const isPasswordRecoveryCallback = () => {
 
 const AppRouter = () => {
   const { view, setView, setCloudUser } = useAppStore();
+  const [hasSyncedInitialPath, setHasSyncedInitialPath] = useState(false);
 
   // Sync URL path → view on mount
   useEffect(() => {
@@ -55,16 +56,18 @@ const AppRouter = () => {
     if (mapped && mapped !== view) {
       setView(mapped as typeof view);
     }
+    setHasSyncedInitialPath(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Sync view → URL path on view change
   useEffect(() => {
+    if (!hasSyncedInitialPath || isPasswordRecoveryCallback()) return;
     const targetPath = VIEW_TO_PATH[view] || '/';
     if (window.location.pathname !== targetPath) {
       window.history.replaceState(null, '', targetPath);
     }
-  }, [view]);
+  }, [hasSyncedInitialPath, view]);
 
   // Listen for auth state changes (e.g. OAuth redirect)
   useEffect(() => {
