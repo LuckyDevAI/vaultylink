@@ -787,20 +787,34 @@ export default function VaultApp() {
     });
   }, [cloudUser]);
 
-  // Check subscription status
+  // Check subscription status + send purchase confirmation email if redirected from Stripe
   useEffect(() => {
     if (!cloudUser) return;
-    const checkSub = async () => {
+
+    const url = new URL(window.location.href);
+    const paymentSuccess = url.searchParams.get('payment') === 'success';
+
+    const run = async () => {
       try {
-        const { data, error } = await supabase.functions.invoke('check-subscription');
-        if (!error && data) {
-          setUserPlan(data);
+        if (paymentSuccess) {
+          // Trigger purchase confirmation email (idempotent server-side)
+          try {
+            await supabase.functions.invoke('send-purchase-confirmation');
+          } catch (e) {
+            console.error('Purchase email failed:', e);
+          }
+          // Clean URL so we don't retrigger on refresh
+          url.searchParams.delete('payment');
+          window.history.replaceState({}, '', url.pathname + (url.search || '') + url.hash);
         }
+
+        const { data, error } = await supabase.functions.invoke('check-subscription');
+        if (!error && data) setUserPlan(data);
       } catch (e) {
         console.error('Subscription check failed:', e);
       }
     };
-    checkSub();
+    run();
   }, [cloudUser]);
   // Load links when authenticated — pull from cloud first if available
   useEffect(() => {
