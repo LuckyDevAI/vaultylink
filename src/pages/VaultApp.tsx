@@ -764,6 +764,10 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
         <Label className="text-sm text-muted-foreground flex items-center gap-2">
           <KeyRound className="w-4 h-4" /> {t('changePw')}
         </Label>
+        <p className="text-xs text-muted-foreground -mt-1">
+          Minimo 10 caratteri alfanumerici.<br />
+          <span className="text-amber-500">⚠️ Non dimenticarla: la Master Password non è recuperabile.</span>
+        </p>
         <Input type="password" placeholder={t('currentPw')} value={currentPw}
           onChange={e => setCurrentPw(e.target.value)} className="bg-secondary border-border" />
         <Input type="password" placeholder={t('newPw')} value={newPw}
