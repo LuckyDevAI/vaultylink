@@ -6,8 +6,9 @@ import { Separator } from '@/components/ui/separator';
 import { useAppStore } from '@/stores/appStore';
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
-import { User, LogOut, CreditCard, Lock, ExternalLink, Shield } from 'lucide-react';
+import { User, LogOut, CreditCard, Lock, ExternalLink, Shield, Cloud, Crown, Check, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
+import { PLANS } from '@/lib/stripe';
 
 interface PlanInfo {
   subscribed?: boolean;
