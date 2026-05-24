@@ -72,6 +72,23 @@ export default function AccountPage() {
     : plan?.plan === 'frozen' ? 'Frozen (scaduto)'
     : plan?.subscribed ? 'Attivo' : 'Free';
 
+  const isFree = !plan?.subscribed && (plan?.plan == null || plan?.plan === 'free');
+
+  const handleCheckout = async (which: 'yearly' | 'lifetime') => {
+    setCheckoutLoading(which);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { priceId: PLANS[which].priceId, mode: PLANS[which].mode },
+      });
+      if (error) throw error;
+      if (data?.url) window.location.href = data.url;
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Errore checkout');
+    } finally {
+      setCheckoutLoading(null);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SiteHeader />
