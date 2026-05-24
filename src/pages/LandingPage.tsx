@@ -112,6 +112,14 @@ export default function LandingPage() {
             {t('heroSub')}
           </motion.p>
 
+          <motion.p variants={fadeUp} custom={2}
+            className="text-primary/90 text-base md:text-lg max-w-2xl mx-auto leading-relaxed font-semibold"
+          >
+            Piano Con Sincronizzazione.
+            <br />
+            Backup cifrato su Cloud Criptato.
+          </motion.p>
+
           <motion.div variants={fadeUp} custom={3} className="flex items-center justify-center gap-4 pt-4">
             <Button
               size="lg"
