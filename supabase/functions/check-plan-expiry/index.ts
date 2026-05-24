@@ -85,12 +85,13 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Freeze expired yearly plans without auto_renew
+    // Freeze expired plans:
+    //  - 'yearly' with auto_renew = false
+    //  - 'free' (always, after the 10-day trial)
     const { data: expiredPlans } = await supabase
       .from("user_plans")
       .select("user_id, plan, expires_at, auto_renew")
-      .eq("plan", "yearly")
-      .eq("auto_renew", false)
+      .or("and(plan.eq.yearly,auto_renew.eq.false),plan.eq.free")
       .not("expires_at", "is", null)
       .lte("expires_at", now.toISOString());
 
@@ -127,9 +128,10 @@ Deno.serve(async (req) => {
           }
         }
 
-        console.log(`[PLAN-EXPIRY] Frozen: user ${plan.user_id}`);
+        console.log(`[PLAN-EXPIRY] Frozen: user ${plan.user_id} (was ${plan.plan})`);
       }
     }
+
 
     return new Response(JSON.stringify({
       notified_20d: notified20.length,
