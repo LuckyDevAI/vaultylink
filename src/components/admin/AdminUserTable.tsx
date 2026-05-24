@@ -39,6 +39,7 @@ export interface AdminUser {
 type SortKey = 'email' | 'created_at' | 'last_sign_in_at' | 'vault_size' | 'plan';
 
 const PLAN_LABELS: Record<string, { label: string; emoji: string; color: string }> = {
+  free: { label: 'Free', emoji: '🆓', color: 'bg-muted/40 text-muted-foreground' },
   yearly: { label: 'Yearly', emoji: '🔄', color: 'bg-primary/15 text-primary' },
   lifetime: { label: 'Lifetime', emoji: '⭐', color: 'bg-accent/15 text-accent' },
   frozen: { label: 'Frozen', emoji: '❄️', color: 'bg-blue-500/15 text-blue-400' },
