@@ -431,6 +431,9 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
   const [currentPw, setCurrentPw] = useState('');
   const [newPw, setNewPw] = useState('');
   const [confirmPw, setConfirmPw] = useState('');
+  const [manualOpen, setManualOpen] = useState(false);
+  const [manualText, setManualText] = useState('');
+  const [manualBusy, setManualBusy] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   const passwordRef = useRef<HTMLDivElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);
