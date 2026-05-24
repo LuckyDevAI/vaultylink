@@ -1,6 +1,7 @@
 import { useAppStore } from '@/stores/appStore';
 import { useTranslation } from '@/lib/i18n';
 import SiteHeader from '@/components/SiteHeader';
+import Seo from '@/components/Seo';
 
 export default function PrivacyPage() {
   const { lang, setView } = useAppStore();
@@ -8,6 +9,11 @@ export default function PrivacyPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title="Privacy Policy · VaultyLink"
+        description="Come VaultyLink protegge i tuoi dati: cifratura end-to-end AES-256-GCM, zero accesso server ai contenuti."
+        path="/privacy"
+      />
       <SiteHeader showBack onBack={() => setView('landing')} />
 
       <main className="max-w-3xl mx-auto px-6 py-12 space-y-8">
