@@ -113,9 +113,9 @@ export default function LandingPage() {
             <br />
             scegli il piano che preferisci:
             <br />
-            Solo locale. Solo tuo.Piano Con Sincronizzazione.
+            Il Piano Con Sincronizzazione solo locale. Solo tuo.
             <br />
-            oppure Backup cifrato su Cloud Criptato.
+            oppure con Backup cifrato su Cloud Criptato.
           </motion.p>
 
           <motion.div variants={fadeUp} custom={3} className="flex items-center justify-center gap-4 pt-4">
