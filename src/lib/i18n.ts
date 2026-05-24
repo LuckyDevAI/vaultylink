@@ -47,7 +47,7 @@ const T: Record<LangCode, TranslationKeys> = {
     // Landing
     heroTitle: 'I tuoi link.',
     heroHighlight: 'In cassaforte.',
-    heroSub: 'Salva, sincronizza e proteggi tutti i tuoi link.\ncon crittografia AES-256-GCM. Solo locale. Solo tuo.',
+    heroSub: 'Salva, sincronizza e proteggi tutti i tuoi link.\ncon crittografia AES-256-GCM.',
     ctaOpen: 'Apri VaultLink', ctaLearn: 'Scopri di più',
     featCrypto: 'Crittografia AES-256', featCryptoDesc: 'Ogni link è cifrato con AES-256-GCM e protetto dalla tua password master o PIN.',
     featLocal: 'Solo Locale', featLocalDesc: 'I tuoi dati restano sul tuo dispositivo. Nessun server, nessun tracking.',
