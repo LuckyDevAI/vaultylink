@@ -130,6 +130,73 @@ export default function AccountPage() {
           )}
         </Card>
 
+        {isFree && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-primary" />
+              <h2 className="text-lg font-semibold text-foreground">Passa a un piano premium</h2>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Sblocca la sincronizzazione cloud cifrata end-to-end su tutti i tuoi dispositivi.
+            </p>
+
+            <div className="grid sm:grid-cols-2 gap-4">
+              {/* Yearly */}
+              <Card className="p-6 bg-card border-border flex flex-col">
+                <div className="flex items-center gap-2 mb-2">
+                  <Cloud className="w-5 h-5 text-primary" />
+                  <h3 className="font-semibold text-foreground">Cloud Sync</h3>
+                </div>
+                <p className="text-3xl font-bold text-foreground">
+                  €9,91<span className="text-sm font-normal text-muted-foreground">/anno</span>
+                </p>
+                <ul className="mt-4 space-y-2 text-sm text-foreground flex-1">
+                  <li className="flex gap-2"><Check className="w-4 h-4 text-primary mt-0.5 shrink-0" /> Sincronizzazione cloud E2EE</li>
+                  <li className="flex gap-2"><Check className="w-4 h-4 text-primary mt-0.5 shrink-0" /> Multi-dispositivo in tempo reale</li>
+                  <li className="flex gap-2"><Check className="w-4 h-4 text-primary mt-0.5 shrink-0" /> Backup automatico cifrato</li>
+                  <li className="flex gap-2"><Check className="w-4 h-4 text-primary mt-0.5 shrink-0" /> Aggiornamenti inclusi</li>
+                </ul>
+                <Button
+                  onClick={() => handleCheckout('yearly')}
+                  disabled={checkoutLoading !== null}
+                  className="mt-5 bg-primary text-primary-foreground"
+                >
+                  {checkoutLoading === 'yearly' ? 'Apertura…' : 'Abbonati'}
+                </Button>
+              </Card>
+
+              {/* Lifetime */}
+              <Card className="p-6 bg-card border-primary/50 flex flex-col relative ring-1 ring-primary/30">
+                <span className="absolute -top-2 right-4 text-[10px] font-semibold uppercase tracking-wider bg-primary text-primary-foreground px-2 py-0.5 rounded">
+                  Più popolare
+                </span>
+                <div className="flex items-center gap-2 mb-2">
+                  <Crown className="w-5 h-5 text-vault-gold" />
+                  <h3 className="font-semibold text-foreground">Lifetime</h3>
+                </div>
+                <p className="text-3xl font-bold text-foreground">
+                  €19,90<span className="text-sm font-normal text-muted-foreground"> una tantum</span>
+                </p>
+                <ul className="mt-4 space-y-2 text-sm text-foreground flex-1">
+                  <li className="flex gap-2"><Check className="w-4 h-4 text-primary mt-0.5 shrink-0" /> Tutto del piano Cloud Sync</li>
+                  <li className="flex gap-2"><Check className="w-4 h-4 text-primary mt-0.5 shrink-0" /> Aggiornamenti a vita</li>
+                  <li className="flex gap-2"><Check className="w-4 h-4 text-primary mt-0.5 shrink-0" /> Nessun rinnovo</li>
+                  <li className="flex gap-2"><Check className="w-4 h-4 text-primary mt-0.5 shrink-0" /> Paghi una volta sola</li>
+                </ul>
+                <Button
+                  onClick={() => handleCheckout('lifetime')}
+                  disabled={checkoutLoading !== null}
+                  className="mt-5 bg-primary text-primary-foreground"
+                >
+                  {checkoutLoading === 'lifetime' ? 'Apertura…' : 'Acquista'}
+                </Button>
+              </Card>
+            </div>
+          </div>
+        )}
+
+
+
         <Card className="p-6 bg-card border-border space-y-3">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">Vault</p>
           <p className="text-sm text-muted-foreground">
