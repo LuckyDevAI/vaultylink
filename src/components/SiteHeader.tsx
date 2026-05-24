@@ -85,9 +85,16 @@ export default function SiteHeader({ showBack, onBack }: { showBack?: boolean; o
                 <div className="px-3 py-2 border-b border-border">
                   <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
                 </div>
-                <DropdownMenuItem onClick={() => { setSettingsSection('profile'); setView('vault'); }} className="cursor-pointer gap-2 text-foreground">
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSettingsSection('profile');
+                    setView('vault');
+                    window.history.replaceState(null, '', '/account');
+                  }}
+                  className="cursor-pointer gap-2 text-foreground"
+                >
                   <UserCog className="w-4 h-4" />
-                  Modifica profilo
+                  Account
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => { setSettingsSection('password'); setView('vault'); }} className="cursor-pointer gap-2 text-foreground">
                   <KeyRound className="w-4 h-4" />
