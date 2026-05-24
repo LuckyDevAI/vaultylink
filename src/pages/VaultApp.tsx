@@ -702,7 +702,38 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
           <Upload className="w-4 h-4 mr-2" /> Importa da file .HTML
         </Button>
         <p className="text-xs text-muted-foreground">Importa bookmark esportati da Chrome, Firefox, Edge, Safari, Opera</p>
+        <Separator className="my-2 bg-border" />
+        <Label className="text-sm text-muted-foreground flex items-center gap-2">
+          <Upload className="w-4 h-4" /> Importazione manuale
+        </Label>
+        <Button variant="outline" onClick={() => setManualOpen(true)} className="w-full border-border">
+          <Upload className="w-4 h-4 mr-2" /> Aggiungi link manualmente
+        </Button>
+        <p className="text-xs text-muted-foreground">Incolla uno o più link (uno per riga). Ideale per prima installazione o nuovi device.</p>
       </div>
+
+      <Dialog open={manualOpen} onOpenChange={(o) => { setManualOpen(o); if (!o) setManualText(''); }}>
+        <DialogContent className="bg-card border-border max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Importazione manuale link</DialogTitle>
+            <DialogDescription>
+              Incolla un link per riga. Formato opzionale: <code className="text-xs">URL | Titolo | Argomento</code>
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={manualText}
+            onChange={(e) => setManualText(e.target.value)}
+            placeholder={'https://example.com\nhttps://github.com | GitHub | Lavoro\nyoutube.com | YouTube | Svago'}
+            className="min-h-[200px] font-mono text-xs bg-secondary border-border"
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setManualOpen(false)} className="border-border">Annulla</Button>
+            <Button onClick={handleManualImport} disabled={manualBusy} className="bg-primary text-primary-foreground">
+              {manualBusy ? 'Importazione...' : 'Importa'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Separator className="bg-border" />
 
