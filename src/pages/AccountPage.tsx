@@ -23,6 +23,7 @@ export default function AccountPage() {
   const [plan, setPlan] = useState<PlanInfo | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState<'yearly' | 'lifetime' | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
