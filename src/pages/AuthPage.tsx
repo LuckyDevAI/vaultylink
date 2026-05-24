@@ -111,16 +111,21 @@ export default function AuthPage({ onBack, onAuth }: AuthPageProps) {
       toast.error('La password deve avere almeno 6 caratteri');
       return;
     }
+    if (newPassword !== confirmPassword) {
+      toast.error('Le password non coincidono');
+      return;
+    }
     setLoading(true);
     try {
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
       toast.success('Password aggiornata. Ora puoi accedere.');
-      // Clean hash and switch back to login
+      sessionStorage.removeItem('vl_password_recovery');
       window.history.replaceState(null, '', '/auth');
       setMode('login');
       setPassword('');
       setNewPassword('');
+      setConfirmPassword('');
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Errore aggiornamento password');
     } finally {
