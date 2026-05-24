@@ -36,10 +36,11 @@ export default function AuthPage({ onBack, onAuth }: AuthPageProps) {
   const [loginFailed, setLoginFailed] = useState(false);
   const [resetSending, setResetSending] = useState(false);
 
-  // Detect Supabase recovery callback (#access_token=...&type=recovery)
+  // Detect password recovery callback (#type=recovery, ?type=recovery, or legacy ?code=... on /auth)
   useEffect(() => {
     const hash = window.location.hash;
-    if (hash.includes('type=recovery')) {
+    const query = new URLSearchParams(window.location.search);
+    if (hash.includes('type=recovery') || query.get('type') === 'recovery' || query.has('code')) {
       setMode('recovery');
     }
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
@@ -84,7 +85,7 @@ export default function AuthPage({ onBack, onAuth }: AuthPageProps) {
     setResetSending(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth`,
+        redirectTo: `${window.location.origin}/auth?type=recovery`,
       });
       if (error) throw error;
       toast.success('Ti abbiamo inviato un link per reimpostare la password. Controlla la tua email.');
