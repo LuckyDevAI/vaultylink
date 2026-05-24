@@ -469,7 +469,7 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
       if (data?.url) window.open(data.url, '_blank');
       else throw new Error('URL portale non disponibile');
     } catch (e) {
-      toast({ title: 'Errore', description: e instanceof Error ? e.message : 'Impossibile aprire il portale', variant: 'destructive' });
+      toast.error(e instanceof Error ? e.message : 'Impossibile aprire il portale');
     } finally {
       setPortalLoading(false);
     }
