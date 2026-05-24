@@ -190,9 +190,10 @@ Deno.serve(async (req) => {
           for (const sub of subs.data) {
             const prodId = sub.items.data[0]?.price?.product;
             if (prodId === YEARLY_PRODUCT) {
+              const periodEndSec = getStripePeriodEndSeconds(sub);
               yearlyUsers.push({
                 email: u.email,
-                subscription_end: new Date(sub.current_period_end * 1000).toISOString(),
+                subscription_end: periodEndSec ? new Date(periodEndSec * 1000).toISOString() : undefined,
               });
               found = true;
               break;
