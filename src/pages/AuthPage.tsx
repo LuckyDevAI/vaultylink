@@ -37,6 +37,11 @@ export default function AuthPage({ onBack, onAuth }: AuthPageProps) {
   const [loginFailed, setLoginFailed] = useState(false);
   const [resetSending, setResetSending] = useState(false);
 
+  const enterRecoveryMode = () => {
+    sessionStorage.setItem('vl_password_recovery', '1');
+    setMode('recovery');
+  };
+
   // Detect password recovery callback (#type=recovery, ?type=recovery, ?code=..., or sessionStorage flag set by App.tsx)
   useEffect(() => {
     const hash = window.location.hash;
@@ -47,15 +52,15 @@ export default function AuthPage({ onBack, onAuth }: AuthPageProps) {
       query.has('code') ||
       sessionStorage.getItem('vl_password_recovery') === '1'
     ) {
-      setMode('recovery');
+      enterRecoveryMode();
     }
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
-        sessionStorage.setItem('vl_password_recovery', '1');
-        setMode('recovery');
+        enterRecoveryMode();
       }
     });
     return () => subscription.unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
@@ -103,6 +108,11 @@ export default function AuthPage({ onBack, onAuth }: AuthPageProps) {
     } finally {
       setResetSending(false);
     }
+  };
+
+  const handleManualRecoveryMode = () => {
+    enterRecoveryMode();
+    window.history.replaceState(null, '', '/auth?type=recovery');
   };
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
@@ -273,6 +283,18 @@ export default function AuthPage({ onBack, onAuth }: AuthPageProps) {
                     ? 'Password errata. Vuoi reimpostarla?'
                     : 'Hai dimenticato la password?'}
                 </p>
+                {loginFailed && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleManualRecoveryMode}
+                    className="w-full"
+                  >
+                    <KeyRound className="w-4 h-4 mr-2" aria-hidden="true" />
+                    Inserisci nuova password
+                  </Button>
+                )}
                 <Button
                   type="button"
                   variant="outline"
