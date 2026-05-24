@@ -537,7 +537,64 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
       await vault.saveLinks(merged);
       if (onImportDone) onImportDone(merged);
       toast.success(`Importati ${newLinks.length} bookmark (${imported.length - newLinks.length} duplicati ignorati)`);
-    };
+  };
+
+  const handleManualImport = async () => {
+    const lines = manualText.split('\n').map(l => l.trim()).filter(Boolean);
+    if (lines.length === 0) {
+      toast.error('Inserisci almeno un link');
+      return;
+    }
+    setManualBusy(true);
+    try {
+      const now = Date.now();
+      const parsed: VaultLink[] = [];
+      for (const line of lines) {
+        // Accept "URL", "URL | Title", or "URL | Title | Topic"
+        const parts = line.split('|').map(p => p.trim());
+        let raw = parts[0];
+        if (!/^https?:\/\//i.test(raw)) raw = 'https://' + raw;
+        let urlObj: URL;
+        try { urlObj = new URL(raw); } catch { continue; }
+        const siteName = urlObj.hostname.replace(/^www\./, '');
+        parsed.push({
+          id: crypto.randomUUID(),
+          url: urlObj.toString(),
+          title: parts[1] || siteName,
+          siteName,
+          topic: parts[2] || '',
+          type: 'main',
+          favorite: false,
+          private: false,
+          createdAt: now,
+          updatedAt: now,
+        });
+      }
+      if (parsed.length === 0) {
+        toast.error('Nessun URL valido trovato');
+        setManualBusy(false);
+        return;
+      }
+      const current = await vault.loadLinks();
+      const existingUrls = new Set(current.map(l => l.url));
+      const newLinks = parsed.filter(l => !existingUrls.has(l.url));
+      if (newLinks.length === 0) {
+        toast.info('Tutti i link sono già presenti');
+        setManualBusy(false);
+        return;
+      }
+      const merged = [...current, ...newLinks];
+      await vault.saveLinks(merged);
+      if (onImportDone) onImportDone(merged);
+      toast.success(`Importati ${newLinks.length} link (${parsed.length - newLinks.length} duplicati ignorati)`);
+      setManualText('');
+      setManualOpen(false);
+    } catch (e) {
+      toast.error('Errore durante l\'importazione');
+    } finally {
+      setManualBusy(false);
+    }
+  };
     input.click();
   };
 
