@@ -141,8 +141,8 @@ serve(async (req) => {
     }
 
 
-    logStep("No active plan found");
-    return new Response(JSON.stringify({ subscribed: false, plan: null }), {
+    logStep("No active Stripe plan found, using stored plan fallback");
+    return new Response(JSON.stringify(planPayload(existingPlan)), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
