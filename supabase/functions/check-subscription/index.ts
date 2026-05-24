@@ -65,9 +65,14 @@ serve(async (req) => {
     });
 
     for (const sub of subscriptions.data) {
-      const productId = sub.items.data[0]?.price?.product;
+      const item = sub.items.data[0];
+      const productId = item?.price?.product;
       if (productId === YEARLY_PRODUCT) {
-        const subscriptionEnd = new Date(sub.current_period_end * 1000).toISOString();
+        // In Stripe API 2025-08-27.basil current_period_end is on the subscription item
+        const periodEndSec = (item as any)?.current_period_end ?? (sub as any).current_period_end;
+        const subscriptionEnd = periodEndSec
+          ? new Date(periodEndSec * 1000).toISOString()
+          : new Date(Date.now() + 365 * 24 * 3600 * 1000).toISOString();
         logStep("Active yearly subscription found", { subscriptionEnd });
         await supabaseClient.from("user_plans").upsert({
           user_id: user.id,
