@@ -342,7 +342,8 @@ export default function AdminUserTable({ users, onAction, onRefresh }: Props) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Nessuno (Free)</SelectItem>
+                  <SelectItem value="none">Nessuno</SelectItem>
+                  <SelectItem value="free">🆓 Free — trial 10 giorni</SelectItem>
                   <SelectItem value="yearly">🔄 Yearly — €9,91/anno</SelectItem>
                   <SelectItem value="lifetime">⭐ Lifetime — €19,90</SelectItem>
                   <SelectItem value="frozen">❄️ Frozen</SelectItem>
@@ -350,7 +351,7 @@ export default function AdminUserTable({ users, onAction, onRefresh }: Props) {
               </Select>
             </div>
 
-            {(editPlan === 'yearly' || editPlan === 'frozen') && (
+            {(editPlan === 'yearly' || editPlan === 'frozen' || editPlan === 'free') && (
               <>
                 <div className="space-y-2">
                   <Label className="text-foreground text-xs">Data scadenza</Label>
