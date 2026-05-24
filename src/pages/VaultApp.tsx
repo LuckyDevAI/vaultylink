@@ -75,11 +75,11 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
   const { setup, unlock, hasVault, busy, error } = vault;
   const { lang } = useAppStore();
   const { t } = useTranslation(lang);
-  const vaultPrompt = isNew ? 'Crea il tuo PIN' : 'Inserisci il PIN per sbloccare';
   const [isNew, setIsNew] = useState<boolean | null>(null);
   const [pw, setPw] = useState('');
   const [confirmPw, setConfirmPw] = useState('');
   const [biometricAttempted, setBiometricAttempted] = useState(false);
+  const vaultPrompt = isNew ? 'Crea il tuo PIN' : 'Inserisci il PIN per sbloccare';
 
   useEffect(() => {
     hasVault().then(exists => setIsNew(!exists));
