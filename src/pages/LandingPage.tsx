@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { PLANS } from '@/lib/stripe';
 import { toast } from 'sonner';
 import SiteHeader from '@/components/SiteHeader';
+import Seo from '@/components/Seo';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -74,6 +75,11 @@ export default function LandingPage() {
         <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-vault-gold/5 blur-[100px]" />
       </div>
 
+      <Seo
+        title="VaultyLink — Tutti i tuoi link in cassaforte cifrata"
+        description="VaultyLink: cassaforte digitale end-to-end cifrata (AES-256-GCM) per salvare, organizzare e proteggere i tuoi link. Windows, macOS e Web."
+        path="/"
+      />
       <SiteHeader />
 
       <main>

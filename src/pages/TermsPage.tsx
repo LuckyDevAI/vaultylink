@@ -1,6 +1,7 @@
 import { useAppStore } from '@/stores/appStore';
 import { useTranslation } from '@/lib/i18n';
 import SiteHeader from '@/components/SiteHeader';
+import Seo from '@/components/Seo';
 
 export default function TermsPage() {
   const { lang, setView } = useAppStore();
@@ -8,6 +9,11 @@ export default function TermsPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title="Termini di servizio · VaultyLink"
+        description="Termini che regolano l'uso di VaultyLink, la cassaforte cifrata per i tuoi link."
+        path="/terms"
+      />
       <SiteHeader showBack onBack={() => setView('landing')} />
 
       <main className="max-w-3xl mx-auto px-6 py-12 space-y-8">
