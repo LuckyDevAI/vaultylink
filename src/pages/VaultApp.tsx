@@ -426,7 +426,7 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
   onImportDone?: (links: VaultLink[]) => void;
   scrollToSection?: string | null;
 }) {
-  const { lang, setLang } = useAppStore();
+  const { lang, setLang, setView } = useAppStore();
   const { t } = useTranslation(lang);
   const [currentPw, setCurrentPw] = useState('');
   const [newPw, setNewPw] = useState('');
@@ -434,9 +434,52 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
   const [manualOpen, setManualOpen] = useState(false);
   const [manualText, setManualText] = useState('');
   const [manualBusy, setManualBusy] = useState(false);
+  const [accountEmail, setAccountEmail] = useState<string | null>(null);
+  const [profilePlan, setProfilePlan] = useState<{ subscribed: boolean; plan: string | null; subscription_end?: string; auto_renew?: boolean } | null>(null);
+  const [portalLoading, setPortalLoading] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   const passwordRef = useRef<HTMLDivElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setAccountEmail(user?.email ?? null);
+      if (user) {
+        supabase.functions.invoke('check-subscription').then(({ data, error }) => {
+          if (!error && data) setProfilePlan(data);
+        });
+        supabase.from('user_plans').select('auto_renew, expires_at, plan').eq('user_id', user.id).maybeSingle()
+          .then(({ data }) => {
+            if (data) setProfilePlan(p => ({
+              subscribed: p?.subscribed ?? (data.plan !== 'free'),
+              plan: data.plan,
+              subscription_end: data.expires_at ?? p?.subscription_end,
+              auto_renew: data.auto_renew,
+            }));
+          });
+      }
+    });
+  }, []);
+
+  const handleManageSubscription = async () => {
+    setPortalLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('customer-portal');
+      if (error) throw error;
+      if (data?.url) window.open(data.url, '_blank');
+      else throw new Error('URL portale non disponibile');
+    } catch (e) {
+      toast({ title: 'Errore', description: e instanceof Error ? e.message : 'Impossibile aprire il portale', variant: 'destructive' });
+    } finally {
+      setPortalLoading(false);
+    }
+  };
+
+  const handleLogoutAccount = async () => {
+    await supabase.auth.signOut();
+    setView('landing');
+  };
+
 
   useEffect(() => {
     if (!scrollToSection) return;
