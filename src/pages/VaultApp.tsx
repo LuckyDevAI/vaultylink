@@ -168,7 +168,7 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto vault-glow">
             <Lock className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">VaultLink</h1>
+          <h1 className="text-2xl font-bold text-foreground">Vaulty Link</h1>
           <p className="text-sm text-muted-foreground">{isNew ? t('setup') : t('locked')}</p>
         </div>
 
