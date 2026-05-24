@@ -4,7 +4,7 @@ import {
   Lock, Plus, Search, Star, Clock, Eye, EyeOff, Settings,
   ExternalLink, Trash2, Edit, ArrowLeft, ChevronDown, LogOut,
   Shield, Globe, Download, Upload, KeyRound, FolderOpen,
-  Cloud, CloudOff, Check, Loader2, RefreshCw, AlertTriangle
+  Cloud, CloudOff, Check, Loader2, RefreshCw, AlertTriangle, User
 } from 'lucide-react';
 import zxcvbn from 'zxcvbn';
 import { supabase } from '@/integrations/supabase/client';
