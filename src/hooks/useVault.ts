@@ -4,8 +4,9 @@
  * Uses IndexedDB for persistent storage
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
 // ── IndexedDB helpers ─────────────────────────────────────────────────────────
 const DB_NAME = 'vaultlink';
