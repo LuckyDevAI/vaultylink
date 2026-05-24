@@ -32,19 +32,28 @@ export default function AuthPage({ onBack, onAuth }: AuthPageProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [loginFailed, setLoginFailed] = useState(false);
   const [resetSending, setResetSending] = useState(false);
 
-  // Detect password recovery callback (#type=recovery, ?type=recovery, or legacy ?code=... on /auth)
+  // Detect password recovery callback (#type=recovery, ?type=recovery, ?code=..., or sessionStorage flag set by App.tsx)
   useEffect(() => {
     const hash = window.location.hash;
     const query = new URLSearchParams(window.location.search);
-    if (hash.includes('type=recovery') || query.get('type') === 'recovery' || query.has('code')) {
+    if (
+      hash.includes('type=recovery') ||
+      query.get('type') === 'recovery' ||
+      query.has('code') ||
+      sessionStorage.getItem('vl_password_recovery') === '1'
+    ) {
       setMode('recovery');
     }
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') setMode('recovery');
+      if (event === 'PASSWORD_RECOVERY') {
+        sessionStorage.setItem('vl_password_recovery', '1');
+        setMode('recovery');
+      }
     });
     return () => subscription.unsubscribe();
   }, []);
