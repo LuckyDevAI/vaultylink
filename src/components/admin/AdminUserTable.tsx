@@ -20,7 +20,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
-export type PlanType = 'yearly' | 'lifetime' | 'frozen' | null;
+export type PlanType = 'free' | 'yearly' | 'lifetime' | 'frozen' | null;
 
 export interface AdminUser {
   id: string;
@@ -39,6 +39,7 @@ export interface AdminUser {
 type SortKey = 'email' | 'created_at' | 'last_sign_in_at' | 'vault_size' | 'plan';
 
 const PLAN_LABELS: Record<string, { label: string; emoji: string; color: string }> = {
+  free: { label: 'Free', emoji: '🆓', color: 'bg-muted/40 text-muted-foreground' },
   yearly: { label: 'Yearly', emoji: '🔄', color: 'bg-primary/15 text-primary' },
   lifetime: { label: 'Lifetime', emoji: '⭐', color: 'bg-accent/15 text-accent' },
   frozen: { label: 'Frozen', emoji: '❄️', color: 'bg-blue-500/15 text-blue-400' },
@@ -125,7 +126,7 @@ export default function AdminUserTable({ users, onAction, onRefresh }: Props) {
     if (filter === 'yearly') list = list.filter(u => u.plan === 'yearly');
     if (filter === 'lifetime') list = list.filter(u => u.plan === 'lifetime');
     if (filter === 'frozen') list = list.filter(u => u.plan === 'frozen');
-    if (filter === 'free') list = list.filter(u => !u.plan);
+    if (filter === 'free') list = list.filter(u => !u.plan || u.plan === 'free');
 
     return [...list].sort((a, b) => {
       let cmp = 0;
@@ -341,7 +342,8 @@ export default function AdminUserTable({ users, onAction, onRefresh }: Props) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Nessuno (Free)</SelectItem>
+                  <SelectItem value="none">Nessuno</SelectItem>
+                  <SelectItem value="free">🆓 Free — trial 10 giorni</SelectItem>
                   <SelectItem value="yearly">🔄 Yearly — €9,91/anno</SelectItem>
                   <SelectItem value="lifetime">⭐ Lifetime — €19,90</SelectItem>
                   <SelectItem value="frozen">❄️ Frozen</SelectItem>
@@ -349,7 +351,7 @@ export default function AdminUserTable({ users, onAction, onRefresh }: Props) {
               </Select>
             </div>
 
-            {(editPlan === 'yearly' || editPlan === 'frozen') && (
+            {(editPlan === 'yearly' || editPlan === 'frozen' || editPlan === 'free') && (
               <>
                 <div className="space-y-2">
                   <Label className="text-foreground text-xs">Data scadenza</Label>
