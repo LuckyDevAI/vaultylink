@@ -86,11 +86,7 @@ export default function SiteHeader({ showBack, onBack }: { showBack?: boolean; o
                   <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
                 </div>
                 <DropdownMenuItem
-                  onClick={() => {
-                    setSettingsSection('profile');
-                    setView('vault');
-                    window.history.replaceState(null, '', '/account');
-                  }}
+                  onClick={() => setView('account')}
                   className="cursor-pointer gap-2 text-foreground"
                 >
                   <UserCog className="w-4 h-4" />
