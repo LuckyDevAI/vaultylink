@@ -6,7 +6,7 @@ import {
   Shield, Globe, Download, Upload, KeyRound, FolderOpen,
   Cloud, CloudOff, Check, Loader2, RefreshCw, AlertTriangle, User
 } from 'lucide-react';
-import zxcvbn from 'zxcvbn';
+
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -96,16 +96,13 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
     }
   }, [isNew, biometric.enabled, biometric.checking, biometricAttempted]);
 
-  const pwStrength = useMemo(() => (isNew && pw.length > 0) ? zxcvbn(pw) : null, [isNew, pw]);
-  const strengthLabels = ['Molto debole', 'Debole', 'Discreta', 'Buona', 'Ottima'];
-  const strengthColors = ['bg-destructive', 'bg-orange-500', 'bg-yellow-500', 'bg-emerald-400', 'bg-emerald-500'];
+  const isValidPin = (v: string) => /^\d{5,10}$/.test(v);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isNew) {
-      if (pw !== confirmPw) { toast.error('Le password non corrispondono'); return; }
-      if (pw.length < 10) { toast.error('Password/PIN: minimo 10 caratteri'); return; }
-      if (pwStrength && pwStrength.score < 2) { toast.error('Password troppo debole, scegli una combinazione più sicura'); return; }
+      if (!isValidPin(pw)) { toast.error('Il PIN deve essere composto da 5-10 cifre'); return; }
+      if (pw !== confirmPw) { toast.error('I PIN non corrispondono'); return; }
       const res = await setup(pw);
       if (res.ok) onAuth(pw);
     } else {
@@ -196,41 +193,41 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label className="text-muted-foreground text-xs">{t('masterPw')}</Label>
+            <Label className="text-muted-foreground text-xs">PIN (5-10 cifre)</Label>
             <Input
-              type="password" value={pw} onChange={e => setPw(e.target.value)}
-              className="bg-secondary border-border mt-1" autoFocus={!biometric.enabled}
-              minLength={10}
+              type="password"
+              inputMode="numeric"
+              pattern="\d{5,10}"
+              autoComplete="one-time-code"
+              value={pw}
+              onChange={e => setPw(e.target.value.replace(/\D/g, '').slice(0, 10))}
+              className="bg-secondary border-border mt-1 tracking-[0.5em] text-center text-lg font-mono"
+              autoFocus={!biometric.enabled}
+              minLength={5}
+              maxLength={10}
+              placeholder="•••••"
             />
-            {isNew && pw.length > 0 && pwStrength && (
-              <div className="mt-2 space-y-1">
-                <div className="flex gap-1">
-                  {[0, 1, 2, 3].map(i => (
-                    <div
-                      key={i}
-                      className={`h-1.5 flex-1 rounded-full transition-colors ${
-                        i <= pwStrength.score ? strengthColors[pwStrength.score] : 'bg-muted'
-                      }`}
-                    />
-                  ))}
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">
-                    {strengthLabels[pwStrength.score]}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {pw.length}/10 min
-                  </span>
-                </div>
+            {isNew && pw.length > 0 && (
+              <div className="mt-2 flex justify-between items-center">
+                <span className="text-xs text-muted-foreground">
+                  {pw.length < 5 ? 'Troppo corto' : 'OK'}
+                </span>
+                <span className="text-xs text-muted-foreground">{pw.length}/10</span>
               </div>
             )}
           </div>
           {isNew && (
             <div>
-              <Label className="text-muted-foreground text-xs">{t('confirmPw')}</Label>
+              <Label className="text-muted-foreground text-xs">Conferma PIN</Label>
               <Input
-                type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)}
-                className="bg-secondary border-border mt-1"
+                type="password"
+                inputMode="numeric"
+                pattern="\d{5,10}"
+                value={confirmPw}
+                onChange={e => setConfirmPw(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                className="bg-secondary border-border mt-1 tracking-[0.5em] text-center text-lg font-mono"
+                maxLength={10}
+                placeholder="•••••"
               />
             </div>
           )}
@@ -245,7 +242,7 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
           <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
             <AlertTriangle className="w-4 h-4 text-destructive shrink-0" />
             <p className="text-xs text-destructive">
-              Attenzione: non è possibile recuperare PIN o password. Memorizzali bene!
+              Attenzione: non è possibile recuperare il PIN. Memorizzalo bene!
             </p>
           </div>
         )}
@@ -254,7 +251,7 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
             onClick={() => setShowResetConfirm(true)}
             className="text-xs text-destructive/70 hover:text-destructive underline mx-auto block transition-colors"
           >
-            Password dimenticata? Resetta il vault
+            PIN dimenticato? Resetta il vault
           </button>
         )}
 
@@ -493,21 +490,20 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
   }, [scrollToSection]);
 
   const handleChangePw = async () => {
-    if (!/^[A-Za-z0-9]{10,}$/.test(newPw)) {
-      toast.error('Minimo 10 caratteri alfanumerici (A-Z, a-z, 0-9)');
+    if (!/^\d{5,10}$/.test(newPw)) {
+      toast.error('Il PIN deve essere composto da 5-10 cifre');
       return;
     }
-    if (newPw !== confirmPw) { toast.error('Passwords do not match'); return; }
+    if (newPw !== confirmPw) { toast.error('I PIN non corrispondono'); return; }
     try {
       await vault.changePassword(newPw);
-      // Update biometric stored password if enabled
       if (biometric.enabled) {
         await biometric.updatePassword(newPw);
       }
-      toast.success('Password updated');
+      toast.success('PIN aggiornato');
       setCurrentPw(''); setNewPw(''); setConfirmPw('');
     } catch {
-      toast.error('Failed to change password');
+      toast.error('Impossibile aggiornare il PIN');
     }
   };
 
@@ -749,9 +745,16 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
             </div>
             {!biometric.enabled && (
               <div>
-                <Label className="text-xs text-muted-foreground">Password attuale (per attivare)</Label>
-                <Input type="password" value={currentPw} onChange={e => setCurrentPw(e.target.value)}
-                  className="bg-secondary border-border mt-1" placeholder="Inserisci password master" />
+                <Label className="text-xs text-muted-foreground">PIN attuale (per attivare)</Label>
+                <Input
+                  type="password"
+                  inputMode="numeric"
+                  value={currentPw}
+                  onChange={e => setCurrentPw(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                  className="bg-secondary border-border mt-1 tracking-[0.5em] text-center font-mono"
+                  maxLength={10}
+                  placeholder="Inserisci il PIN"
+                />
               </div>
             )}
           </div>
@@ -762,19 +765,25 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
       {/* Security */}
       <div ref={passwordRef} className="space-y-3">
         <Label className="text-sm text-muted-foreground flex items-center gap-2">
-          <KeyRound className="w-4 h-4" /> {t('changePw')}
+          <KeyRound className="w-4 h-4" /> Cambia PIN
         </Label>
         <p className="text-xs text-muted-foreground -mt-1">
-          Minimo 10 caratteri alfanumerici.<br />
-          <span className="text-amber-500">⚠️ Non dimenticarla: la Master Password non è recuperabile.</span>
+          Da 5 a 10 cifre.<br />
+          <span className="text-amber-500">⚠️ Non dimenticarlo: il PIN non è recuperabile.</span>
         </p>
-        <Input type="password" placeholder={t('currentPw')} value={currentPw}
-          onChange={e => setCurrentPw(e.target.value)} className="bg-secondary border-border" />
-        <Input type="password" placeholder={t('newPw')} value={newPw}
-          onChange={e => setNewPw(e.target.value)} className="bg-secondary border-border" />
-        <Input type="password" placeholder={t('confirmNewPw')} value={confirmPw}
-          onChange={e => setConfirmPw(e.target.value)} className="bg-secondary border-border" />
-        <Button onClick={handleChangePw} className="bg-primary text-primary-foreground">{t('changePwBtn')}</Button>
+        <Input type="password" inputMode="numeric" placeholder="PIN attuale" value={currentPw}
+          onChange={e => setCurrentPw(e.target.value.replace(/\D/g, '').slice(0, 10))}
+          maxLength={10}
+          className="bg-secondary border-border tracking-[0.5em] text-center font-mono" />
+        <Input type="password" inputMode="numeric" placeholder="Nuovo PIN" value={newPw}
+          onChange={e => setNewPw(e.target.value.replace(/\D/g, '').slice(0, 10))}
+          maxLength={10}
+          className="bg-secondary border-border tracking-[0.5em] text-center font-mono" />
+        <Input type="password" inputMode="numeric" placeholder="Conferma nuovo PIN" value={confirmPw}
+          onChange={e => setConfirmPw(e.target.value.replace(/\D/g, '').slice(0, 10))}
+          maxLength={10}
+          className="bg-secondary border-border tracking-[0.5em] text-center font-mono" />
+        <Button onClick={handleChangePw} className="bg-primary text-primary-foreground">Cambia PIN</Button>
       </div>
 
       <Separator className="bg-border" />
