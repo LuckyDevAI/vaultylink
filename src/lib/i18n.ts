@@ -47,7 +47,7 @@ const T: Record<LangCode, TranslationKeys> = {
     // Landing
     heroTitle: 'I tuoi link.',
     heroHighlight: 'In cassaforte.',
-    heroSub: 'Salva, organizza e proteggi tutti i tuoi link con crittografia AES-256-GCM. Solo locale. Solo tuo.',
+    heroSub: 'Salva, sincronizza e proteggi tutti i tuoi link.\ncon crittografia AES-256-GCM. Solo locale. Solo tuo.',
     ctaOpen: 'Apri VaultLink', ctaLearn: 'Scopri di più',
     featCrypto: 'Crittografia AES-256', featCryptoDesc: 'Ogni link è cifrato con AES-256-GCM e protetto dalla tua password master o PIN.',
     featLocal: 'Solo Locale', featLocalDesc: 'I tuoi dati restano sul tuo dispositivo. Nessun server, nessun tracking.',
@@ -154,7 +154,7 @@ const T: Record<LangCode, TranslationKeys> = {
     autoLock: 'Auto-lock', autoLockOff: 'Never', autoLockMin: 'After {n} min',
     heroTitle: 'Your links.',
     heroHighlight: 'In a vault.',
-    heroSub: 'Save, organize and protect all your links with AES-256-GCM encryption. Local only. Yours only.',
+    heroSub: 'Save, sync and protect all your links.\nwith AES-256-GCM encryption. Local only. Yours only.',
     ctaOpen: 'Open VaultLink', ctaLearn: 'Learn more',
     featCrypto: 'AES-256 Encryption', featCryptoDesc: 'Every link is encrypted with AES-256-GCM and protected by your master password or PIN.',
     featLocal: 'Local Only', featLocalDesc: 'Your data stays on your device. No servers, no tracking.',
