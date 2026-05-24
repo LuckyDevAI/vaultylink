@@ -490,21 +490,20 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
   }, [scrollToSection]);
 
   const handleChangePw = async () => {
-    if (!/^[A-Za-z0-9]{10,}$/.test(newPw)) {
-      toast.error('Minimo 10 caratteri alfanumerici (A-Z, a-z, 0-9)');
+    if (!/^\d{5,10}$/.test(newPw)) {
+      toast.error('Il PIN deve essere composto da 5-10 cifre');
       return;
     }
-    if (newPw !== confirmPw) { toast.error('Passwords do not match'); return; }
+    if (newPw !== confirmPw) { toast.error('I PIN non corrispondono'); return; }
     try {
       await vault.changePassword(newPw);
-      // Update biometric stored password if enabled
       if (biometric.enabled) {
         await biometric.updatePassword(newPw);
       }
-      toast.success('Password updated');
+      toast.success('PIN aggiornato');
       setCurrentPw(''); setNewPw(''); setConfirmPw('');
     } catch {
-      toast.error('Failed to change password');
+      toast.error('Impossibile aggiornare il PIN');
     }
   };
 
