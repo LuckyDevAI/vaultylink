@@ -107,6 +107,8 @@ export function useVault() {
   const [locked, setLocked] = useState(true);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const lastPushedRef = useRef<string | null>(null);
+  const channelRef = useRef<RealtimeChannel | null>(null);
 
   const hasSalt = useCallback(async (): Promise<boolean> => {
     const stored = await dbGet('salt');
