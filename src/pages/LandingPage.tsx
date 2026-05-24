@@ -169,7 +169,7 @@ export default function LandingPage() {
               className="group p-6 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors duration-300"
             >
               <feat.icon className={`w-8 h-8 ${feat.color} mb-4`} />
-              <h3 className="text-lg font-semibold text-foreground mb-2">{t(feat.key)}</h3>
+              <h2 className="text-lg font-semibold text-foreground mb-2">{t(feat.key)}</h2>
               <p className="text-sm text-muted-foreground leading-relaxed mb-3">{t(feat.descKey)}</p>
               <span className={`inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full ${
                 feat.priceKey === 'featPriceFree' 
