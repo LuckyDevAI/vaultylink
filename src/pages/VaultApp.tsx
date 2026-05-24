@@ -957,7 +957,7 @@ export default function VaultApp() {
       };
       load();
     }
-  }, [authenticated, vault.locked]);
+  }, [authenticated, vault.locked, cloudUser]);
 
   // Realtime cross-device sync: subscribe while unlocked
   useEffect(() => {
