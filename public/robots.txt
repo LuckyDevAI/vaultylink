@@ -12,3 +12,7 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /amministra
+Disallow: /vault
+
+Sitemap: https://vaultylink.com/sitemap.xml
