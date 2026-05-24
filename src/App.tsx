@@ -12,6 +12,7 @@ import PrivacyPage from "@/pages/PrivacyPage";
 import TermsPage from "@/pages/TermsPage";
 import EulaPage from "@/pages/EulaPage";
 import AdminPage from "@/pages/AdminPage";
+import AccountPage from "@/pages/AccountPage";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const PATH_TO_VIEW: Record<string, string> = {
   '/eula': 'eula',
   '/auth': 'auth',
   '/vault': 'vault',
+  '/account': 'account',
 };
 
 const VIEW_TO_PATH: Record<string, string> = {
@@ -33,19 +35,15 @@ const VIEW_TO_PATH: Record<string, string> = {
   eula: '/eula',
   auth: '/auth',
   vault: '/vault',
+  account: '/account',
 };
 
 const AppRouter = () => {
-  const { view, setView, setCloudUser, setSettingsSection } = useAppStore();
+  const { view, setView, setCloudUser } = useAppStore();
 
   // Sync URL path → view on mount
   useEffect(() => {
     const path = window.location.pathname;
-    if (path === '/account') {
-      setSettingsSection('profile');
-      setView('vault');
-      return;
-    }
     const mapped = PATH_TO_VIEW[path];
     if (mapped && mapped !== view) {
       setView(mapped as typeof view);
@@ -55,8 +53,6 @@ const AppRouter = () => {
 
   // Sync view → URL path on view change
   useEffect(() => {
-    // Preserve /account URL while in vault view
-    if (view === 'vault' && window.location.pathname === '/account') return;
     const targetPath = VIEW_TO_PATH[view] || '/';
     if (window.location.pathname !== targetPath) {
       window.history.replaceState(null, '', targetPath);
@@ -93,6 +89,8 @@ const AppRouter = () => {
       return <VaultApp />;
     case 'admin':
       return <AdminPage />;
+    case 'account':
+      return <AccountPage />;
     case 'privacy':
       return <PrivacyPage />;
     case 'terms':
