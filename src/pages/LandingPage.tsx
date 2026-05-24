@@ -111,11 +111,11 @@ export default function LandingPage() {
           >
             {t('heroSub')}
             <br />
-            scegli il piano che preferisci:
+            Scegli il piano che preferisci:
             <br />
-            Il Piano Con Sincronizzazione solo locale. Solo tuo.
+            il Piano con sincronizzazione solo locale. Solo tuo.
             <br />
-            oppure con Backup cifrato su Cloud Criptato.
+            Oppure con Backup cifrato su Cloud Criptato.
           </motion.p>
 
           <motion.div variants={fadeUp} custom={3} className="flex items-center justify-center gap-4 pt-4">
