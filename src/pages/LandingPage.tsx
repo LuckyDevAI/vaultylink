@@ -10,7 +10,6 @@ import { PLANS } from '@/lib/stripe';
 import { toast } from 'sonner';
 import SiteHeader from '@/components/SiteHeader';
 import Seo from '@/components/Seo';
-import ExtensionsSection from '@/components/ExtensionsSection';
 
 
 const fadeUp = {
@@ -283,8 +282,6 @@ export default function LandingPage() {
           </motion.p>
         </motion.div>
       </section>
-
-      <ExtensionsSection />
 
       {/* Footer */}
       </main>
