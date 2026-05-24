@@ -75,6 +75,7 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
   const { setup, unlock, hasVault, busy, error } = vault;
   const { lang } = useAppStore();
   const { t } = useTranslation(lang);
+  const vaultPrompt = isNew ? 'Crea il tuo PIN' : 'Inserisci il PIN per sbloccare';
   const [isNew, setIsNew] = useState<boolean | null>(null);
   const [pw, setPw] = useState('');
   const [confirmPw, setConfirmPw] = useState('');
@@ -166,7 +167,7 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
             <Lock className="w-8 h-8 text-primary" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">Vaulty Link</h1>
-          <p className="text-sm text-muted-foreground">{isNew ? t('setup') : t('locked')}</p>
+          <p className="text-sm text-muted-foreground">{vaultPrompt}</p>
         </div>
 
         {/* Biometric button */}
