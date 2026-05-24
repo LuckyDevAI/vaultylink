@@ -745,9 +745,16 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
             </div>
             {!biometric.enabled && (
               <div>
-                <Label className="text-xs text-muted-foreground">Password attuale (per attivare)</Label>
-                <Input type="password" value={currentPw} onChange={e => setCurrentPw(e.target.value)}
-                  className="bg-secondary border-border mt-1" placeholder="Inserisci password master" />
+                <Label className="text-xs text-muted-foreground">PIN attuale (per attivare)</Label>
+                <Input
+                  type="password"
+                  inputMode="numeric"
+                  value={currentPw}
+                  onChange={e => setCurrentPw(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                  className="bg-secondary border-border mt-1 tracking-[0.5em] text-center font-mono"
+                  maxLength={10}
+                  placeholder="Inserisci il PIN"
+                />
               </div>
             )}
           </div>
@@ -758,19 +765,25 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
       {/* Security */}
       <div ref={passwordRef} className="space-y-3">
         <Label className="text-sm text-muted-foreground flex items-center gap-2">
-          <KeyRound className="w-4 h-4" /> {t('changePw')}
+          <KeyRound className="w-4 h-4" /> Cambia PIN
         </Label>
         <p className="text-xs text-muted-foreground -mt-1">
-          Minimo 10 caratteri alfanumerici.<br />
-          <span className="text-amber-500">⚠️ Non dimenticarla: la Master Password non è recuperabile.</span>
+          Da 5 a 10 cifre.<br />
+          <span className="text-amber-500">⚠️ Non dimenticarlo: il PIN non è recuperabile.</span>
         </p>
-        <Input type="password" placeholder={t('currentPw')} value={currentPw}
-          onChange={e => setCurrentPw(e.target.value)} className="bg-secondary border-border" />
-        <Input type="password" placeholder={t('newPw')} value={newPw}
-          onChange={e => setNewPw(e.target.value)} className="bg-secondary border-border" />
-        <Input type="password" placeholder={t('confirmNewPw')} value={confirmPw}
-          onChange={e => setConfirmPw(e.target.value)} className="bg-secondary border-border" />
-        <Button onClick={handleChangePw} className="bg-primary text-primary-foreground">{t('changePwBtn')}</Button>
+        <Input type="password" inputMode="numeric" placeholder="PIN attuale" value={currentPw}
+          onChange={e => setCurrentPw(e.target.value.replace(/\D/g, '').slice(0, 10))}
+          maxLength={10}
+          className="bg-secondary border-border tracking-[0.5em] text-center font-mono" />
+        <Input type="password" inputMode="numeric" placeholder="Nuovo PIN" value={newPw}
+          onChange={e => setNewPw(e.target.value.replace(/\D/g, '').slice(0, 10))}
+          maxLength={10}
+          className="bg-secondary border-border tracking-[0.5em] text-center font-mono" />
+        <Input type="password" inputMode="numeric" placeholder="Conferma nuovo PIN" value={confirmPw}
+          onChange={e => setConfirmPw(e.target.value.replace(/\D/g, '').slice(0, 10))}
+          maxLength={10}
+          className="bg-secondary border-border tracking-[0.5em] text-center font-mono" />
+        <Button onClick={handleChangePw} className="bg-primary text-primary-foreground">Cambia PIN</Button>
       </div>
 
       <Separator className="bg-border" />
