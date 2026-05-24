@@ -126,7 +126,7 @@ export default function AdminUserTable({ users, onAction, onRefresh }: Props) {
     if (filter === 'yearly') list = list.filter(u => u.plan === 'yearly');
     if (filter === 'lifetime') list = list.filter(u => u.plan === 'lifetime');
     if (filter === 'frozen') list = list.filter(u => u.plan === 'frozen');
-    if (filter === 'free') list = list.filter(u => !u.plan);
+    if (filter === 'free') list = list.filter(u => !u.plan || u.plan === 'free');
 
     return [...list].sort((a, b) => {
       let cmp = 0;
