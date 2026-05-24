@@ -60,7 +60,6 @@ export default function AuthPage({ onBack, onAuth }: AuthPageProps) {
       }
     });
     return () => subscription.unsubscribe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
