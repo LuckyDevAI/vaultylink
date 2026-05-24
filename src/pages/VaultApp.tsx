@@ -598,8 +598,7 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
       setManualBusy(false);
     }
   };
-    input.click();
-  };
+
 
   return (
     <div className="space-y-6">
