@@ -651,12 +651,57 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
       </div>
 
       {/* Profile */}
-      <div ref={profileRef} className="space-y-2">
+      <div ref={profileRef} className="space-y-3">
         <Label className="text-sm text-muted-foreground flex items-center gap-2">
-          Profilo utente
+          <User className="w-4 h-4" /> Profilo utente
         </Label>
-        <p className="text-xs text-muted-foreground">Gestisci le impostazioni del tuo profilo.</p>
+        <div className="rounded-lg border border-border bg-secondary/40 p-4 space-y-3">
+          <div>
+            <p className="text-xs text-muted-foreground">Email account</p>
+            <p className="text-sm text-foreground font-mono break-all">{accountEmail ?? '—'}</p>
+          </div>
+          <Separator className="bg-border" />
+          <div>
+            <p className="text-xs text-muted-foreground mb-1">Piano attivo</p>
+            {profilePlan?.subscribed ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge className={profilePlan.plan === 'lifetime' ? 'bg-accent text-accent-foreground' : 'bg-primary/20 text-primary border-primary/30'}>
+                  {profilePlan.plan === 'lifetime' ? '⭐ Lifetime' : profilePlan.plan === 'yearly' ? '🔄 Annuale' : profilePlan.plan}
+                </Badge>
+                {profilePlan.plan === 'yearly' && profilePlan.subscription_end && (
+                  <span className="text-xs text-muted-foreground">
+                    {profilePlan.auto_renew ? 'Rinnovo automatico il' : 'Scade il'}{' '}
+                    {new Date(profilePlan.subscription_end).toLocaleDateString('it-IT')}
+                  </span>
+                )}
+              </div>
+            ) : (
+              <Badge variant="outline" className="border-border text-muted-foreground">Piano gratuito / locale</Badge>
+            )}
+          </div>
+          {profilePlan?.subscribed && profilePlan.plan === 'yearly' && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleManageSubscription}
+              disabled={portalLoading}
+              className="w-full border-border"
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              {portalLoading ? 'Apertura…' : 'Gestisci abbonamento (Stripe)'}
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLogoutAccount}
+            className="w-full border-border text-destructive hover:text-destructive"
+          >
+            <LogOut className="w-4 h-4 mr-2" /> Logout
+          </Button>
+        </div>
       </div>
+
 
       <Separator className="bg-border" />
 
