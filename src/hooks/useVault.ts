@@ -147,7 +147,7 @@ export function useVault() {
       setLocked(false);
       return { ok: true };
     } catch {
-      const msg = 'Password errata / Wrong password';
+      const msg = 'PIN errato / Wrong PIN';
       setError(msg);
       return { ok: false, error: msg };
     } finally { setBusy(false); }

@@ -145,7 +145,7 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
         setIsNew(true);
         setPw('');
         setConfirmPw('');
-        toast.success('Vault resettato (locale + cloud). Crea una nuova password.');
+        toast.success('Vault resettato (locale + cloud). Crea un nuovo PIN.');
       };
     };
   };
@@ -1100,7 +1100,7 @@ export default function VaultApp() {
       setAuthenticated(true);
       setLastPassword(password);
     } else {
-      toast.error('Password biometrica non valida. Riprova con la password.');
+      toast.error('PIN biometrico non valido. Riprova con il PIN.');
     }
   }, [vault]);
 
