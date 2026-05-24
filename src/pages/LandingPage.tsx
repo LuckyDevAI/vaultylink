@@ -10,7 +10,6 @@ import { PLANS } from '@/lib/stripe';
 import { toast } from 'sonner';
 import SiteHeader from '@/components/SiteHeader';
 import Seo from '@/components/Seo';
-import ExtensionsSection from '@/components/ExtensionsSection';
 
 
 const fadeUp = {
