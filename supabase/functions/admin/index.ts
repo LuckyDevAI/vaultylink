@@ -5,6 +5,12 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+function getStripePeriodEndSeconds(subscription: any): number | null {
+  const item = subscription?.items?.data?.[0];
+  const value = item?.current_period_end ?? subscription?.current_period_end;
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
