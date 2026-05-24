@@ -20,7 +20,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
-export type PlanType = 'yearly' | 'lifetime' | 'frozen' | null;
+export type PlanType = 'free' | 'yearly' | 'lifetime' | 'frozen' | null;
 
 export interface AdminUser {
   id: string;
