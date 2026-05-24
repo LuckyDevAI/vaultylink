@@ -69,6 +69,14 @@ serve(async (req) => {
       if (productId === YEARLY_PRODUCT) {
         const subscriptionEnd = new Date(sub.current_period_end * 1000).toISOString();
         logStep("Active yearly subscription found", { subscriptionEnd });
+        await supabaseClient.from("user_plans").upsert({
+          user_id: user.id,
+          plan: "yearly",
+          expires_at: subscriptionEnd,
+          auto_renew: !sub.cancel_at_period_end,
+          notified_expiry: false,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: "user_id" });
         return new Response(JSON.stringify({
           subscribed: true,
           plan: "yearly",
@@ -93,6 +101,14 @@ serve(async (req) => {
         for (const item of lineItems.data) {
           if (item.price?.product === LIFETIME_PRODUCT) {
             logStep("Lifetime purchase found");
+            await supabaseClient.from("user_plans").upsert({
+              user_id: user.id,
+              plan: "lifetime",
+              expires_at: null,
+              auto_renew: false,
+              notified_expiry: false,
+              updated_at: new Date().toISOString(),
+            }, { onConflict: "user_id" });
             return new Response(JSON.stringify({
               subscribed: true,
               plan: "lifetime",
@@ -105,6 +121,7 @@ serve(async (req) => {
         }
       }
     }
+
 
     logStep("No active plan found");
     return new Response(JSON.stringify({ subscribed: false, plan: null }), {
