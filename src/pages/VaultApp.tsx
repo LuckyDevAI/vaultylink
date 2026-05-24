@@ -742,7 +742,7 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
       {/* About */}
       <div className="space-y-1 text-xs text-muted-foreground">
         <p>{t('version')}: 10.10.10 (PWA)</p>
-        <p>{t('developer')}: VaultLink Software</p>
+        <p>{t('developer')}: Vaulty Link Software</p>
         <p>{t('builtWith')}: React, Web Crypto API, IndexedDB</p>
         <p className="pt-2">{t('privacyNote')}</p>
       </div>
