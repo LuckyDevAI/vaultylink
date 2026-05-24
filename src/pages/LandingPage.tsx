@@ -291,7 +291,7 @@ export default function LandingPage() {
             {/* Brand */}
             <div className="md:col-span-2 space-y-4">
               <div className="flex items-center gap-3">
-                <img src={logoVaulty} alt="VaultLink secure vault logo" className="w-10 h-10" />
+                <img src={logoVaulty} alt="Vaulty Link secure vault logo" className="w-10 h-10" />
                 <span className="font-semibold text-lg text-foreground">Vaulty Link</span>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
@@ -373,7 +373,7 @@ export default function LandingPage() {
           {/* Bottom bar */}
           <div className="border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-xs text-muted-foreground">
-              © {new Date().getFullYear()} VaultLink · v10.10.10
+              © {new Date().getFullYear()} Vaulty Link · v10.10.10
             </p>
             <p className="text-xs text-muted-foreground font-mono">
               {t('encrypted')}
