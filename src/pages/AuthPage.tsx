@@ -185,7 +185,22 @@ export default function AuthPage({ onBack, onAuth }: AuthPageProps) {
                 className="bg-secondary border-border mt-1" required minLength={6}
               />
             </div>
-            <Button type="submit" disabled={loading} className="w-full bg-primary text-primary-foreground">
+            <div>
+              <Label htmlFor="confirm-password" className="text-xs text-muted-foreground">Conferma password</Label>
+              <Input
+                id="confirm-password" autoComplete="new-password"
+                type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
+                className="bg-secondary border-border mt-1" required minLength={6}
+              />
+              {confirmPassword.length > 0 && newPassword !== confirmPassword && (
+                <p className="text-xs text-destructive mt-1">Le password non coincidono</p>
+              )}
+            </div>
+            <Button
+              type="submit"
+              disabled={loading || newPassword.length < 6 || newPassword !== confirmPassword}
+              className="w-full bg-primary text-primary-foreground"
+            >
               <KeyRound className="w-4 h-4 mr-2" aria-hidden="true" />
               {loading ? '...' : 'Aggiorna password'}
             </Button>
