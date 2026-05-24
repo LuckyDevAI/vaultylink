@@ -117,7 +117,7 @@ export default function ExtensionsSection() {
               <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
               <p className="text-xs text-muted-foreground">
                 <strong className="text-foreground">Sicurezza:</strong> l'estensione non legge mai i tuoi link cifrati.
-                Aggiunge solo URL nuovi a una coda che la PWA cifra al primo sblocco con la tua master password.
+                Aggiunge solo URL nuovi a una coda che la PWA cifra al primo sblocco con il tuo PIN.
               </p>
             </div>
           </details>

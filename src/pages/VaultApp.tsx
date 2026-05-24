@@ -145,7 +145,7 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
         setIsNew(true);
         setPw('');
         setConfirmPw('');
-        toast.success('Vault resettato (locale + cloud). Crea una nuova password.');
+        toast.success('Vault resettato (locale + cloud). Crea un nuovo PIN.');
       };
     };
   };
@@ -512,15 +512,15 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
       await biometric.disable();
       toast.success('Biometria disattivata');
     } else {
-      // We need the current master password to store it
+      // We need the current PIN to store it
       if (!currentPw) {
-        toast.error('Inserisci la password attuale per attivare la biometria');
+        toast.error('Inserisci il PIN attuale per attivare la biometria');
         return;
       }
-      // Verify the password first
+      // Verify the PIN first
       const res = await vault.unlock(currentPw);
       if (!res.ok) {
-        toast.error('Password errata');
+        toast.error('PIN errato');
         return;
       }
       const ok = await biometric.enroll(currentPw);
@@ -1100,7 +1100,7 @@ export default function VaultApp() {
       setAuthenticated(true);
       setLastPassword(password);
     } else {
-      toast.error('Password biometrica non valida. Riprova con la password.');
+      toast.error('PIN biometrico non valido. Riprova con il PIN.');
     }
   }, [vault]);
 
