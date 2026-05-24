@@ -168,7 +168,7 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto vault-glow">
             <Lock className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">VaultLink</h1>
+          <h1 className="text-2xl font-bold text-foreground">Vaulty Link</h1>
           <p className="text-sm text-muted-foreground">{isNew ? t('setup') : t('locked')}</p>
         </div>
 
@@ -742,7 +742,7 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
       {/* About */}
       <div className="space-y-1 text-xs text-muted-foreground">
         <p>{t('version')}: 10.10.10 (PWA)</p>
-        <p>{t('developer')}: VaultLink Software</p>
+        <p>{t('developer')}: Vaulty Link Software</p>
         <p>{t('builtWith')}: React, Web Crypto API, IndexedDB</p>
         <p className="pt-2">{t('privacyNote')}</p>
       </div>
@@ -1007,11 +1007,11 @@ export default function VaultApp() {
       <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border px-6 py-3">
         <div className="max-w-6xl mx-auto flex items-center gap-3">
           <div className="flex items-center gap-2 mr-auto">
-            <button onClick={() => { vault.lock(); setAuthenticated(false); setView('landing'); }} aria-label="VaultLink home" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <button onClick={() => { vault.lock(); setAuthenticated(false); setView('landing'); }} aria-label="Vaulty Link home" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
                 <Lock className="w-4 h-4 text-primary" aria-hidden="true" />
               </div>
-              <h1 className="font-semibold text-foreground text-lg hidden sm:inline">La mia cassaforte VaultLink</h1>
+              <h1 className="font-semibold text-foreground text-lg hidden sm:inline">La mia cassaforte Vaulty Link</h1>
               <span className="text-xs text-muted-foreground hidden md:inline ml-1">I tuoi link in cassaforte.</span>
             </button>
             {cloudUser && <SyncIndicator status={syncStatus} onRetry={handleRetrySync} />}

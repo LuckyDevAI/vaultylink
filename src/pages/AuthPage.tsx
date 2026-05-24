@@ -90,9 +90,9 @@ export default function AuthPage({ onBack, onAuth }: AuthPageProps) {
           </Button>
           <div>
             <h1 className="text-xl font-bold text-foreground">
-              {mode === 'login' ? 'Unlock your VaultLink' : 'Register'}
+              {mode === 'login' ? 'Unlock your Vaulty Link' : 'Register'}
             </h1>
-            <p className="text-xs text-muted-foreground">VaultLink Cloud Sync</p>
+            <p className="text-xs text-muted-foreground">Vaulty Link Cloud Sync</p>
           </div>
         </div>
 
