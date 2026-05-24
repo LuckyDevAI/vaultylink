@@ -493,6 +493,10 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
   }, [scrollToSection]);
 
   const handleChangePw = async () => {
+    if (!/^[A-Za-z0-9]{10,}$/.test(newPw)) {
+      toast.error('Minimo 10 caratteri alfanumerici (A-Z, a-z, 0-9)');
+      return;
+    }
     if (newPw !== confirmPw) { toast.error('Passwords do not match'); return; }
     try {
       await vault.changePassword(newPw);
