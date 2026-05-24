@@ -4,8 +4,9 @@
  * Uses IndexedDB for persistent storage
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
 // ── IndexedDB helpers ─────────────────────────────────────────────────────────
 const DB_NAME = 'vaultlink';
@@ -106,6 +107,8 @@ export function useVault() {
   const [locked, setLocked] = useState(true);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const lastPushedRef = useRef<string | null>(null);
+  const channelRef = useRef<RealtimeChannel | null>(null);
 
   const hasSalt = useCallback(async (): Promise<boolean> => {
     const stored = await dbGet('salt');
@@ -192,6 +195,7 @@ export function useVault() {
     if (!blob) return;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+    lastPushedRef.current = blob;
     const { error: err } = await supabase
       .from('vault_data')
       .upsert({ user_id: user.id, encrypted_blob: blob, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
@@ -209,6 +213,7 @@ export function useVault() {
     if (err) throw err;
     if (data?.encrypted_blob) {
       await dbSet('vaultData', data.encrypted_blob);
+      lastPushedRef.current = data.encrypted_blob;
       return true;
     }
     return false;
@@ -217,7 +222,6 @@ export function useVault() {
   const syncCloud = useCallback(async () => {
     if (!key) return;
     try {
-      // Push local data to cloud after every save
       await pushToCloud();
     } catch (e) {
       console.error('Cloud sync error:', e);
@@ -225,11 +229,62 @@ export function useVault() {
     }
   }, [key, pushToCloud]);
 
+  // ── Realtime cross-device sync ────────────────────────────────────────────
+  const subscribeRealtime = useCallback(
+    (onRemoteUpdate: () => void): (() => void) => {
+      // Tear down any existing channel
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
+
+      let cancelled = false;
+      (async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user || cancelled) return;
+
+        const ch = supabase
+          .channel(`vault_data:${user.id}`)
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'vault_data',
+              filter: `user_id=eq.${user.id}`,
+            },
+            async (payload) => {
+              const row = (payload.new ?? payload.old) as { encrypted_blob?: string } | null;
+              const incoming = row?.encrypted_blob;
+              if (!incoming) return;
+              // Ignore echo of our own push
+              if (incoming === lastPushedRef.current) return;
+              await dbSet('vaultData', incoming);
+              lastPushedRef.current = incoming;
+              onRemoteUpdate();
+            }
+          )
+          .subscribe();
+        channelRef.current = ch;
+      })();
+
+      return () => {
+        cancelled = true;
+        if (channelRef.current) {
+          supabase.removeChannel(channelRef.current);
+          channelRef.current = null;
+        }
+      };
+    },
+    []
+  );
+
   return {
     key, locked, error, busy,
     hasSalt, hasVault, setup, unlock, lock,
     saveLinks, loadLinks, changePassword,
     exportBlob, importBlob,
     pushToCloud, pullFromCloud, syncCloud,
+    subscribeRealtime,
   };
 }
