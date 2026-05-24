@@ -132,8 +132,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(JSON.stringify({
-      notified_10d: notified10.length,
-      notified_3d: notified3.length,
+      notified_20d: notified20.length,
       frozen: frozenIds.length,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
