@@ -38,6 +38,13 @@ const VIEW_TO_PATH: Record<string, string> = {
   account: '/account',
 };
 
+const isPasswordRecoveryCallback = () => {
+  if (window.location.pathname !== '/auth') return false;
+  const query = new URLSearchParams(window.location.search);
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  return query.get('type') === 'recovery' || hash.get('type') === 'recovery' || query.has('code');
+};
+
 const AppRouter = () => {
   const { view, setView, setCloudUser } = useAppStore();
 
@@ -64,6 +71,10 @@ const AppRouter = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
         setCloudUser(true);
+        if (event === 'PASSWORD_RECOVERY' || isPasswordRecoveryCallback()) {
+          setView('auth');
+          return;
+        }
         if (view === 'auth' || view === 'landing') {
           setView('vault');
         }
@@ -76,6 +87,9 @@ const AppRouter = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setCloudUser(true);
+        if (isPasswordRecoveryCallback()) {
+          setView('auth');
+        }
       }
     });
 
