@@ -76,6 +76,7 @@ export default function LandingPage() {
 
       <SiteHeader />
 
+      <main>
       {/* Hero */}
       <section className="relative z-10 max-w-5xl mx-auto px-6 pt-16 pb-24 text-center">
         <motion.div
@@ -270,6 +271,8 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
+      </main>
+
       <footer className="relative z-10 border-t border-border mt-12">
         <div className="max-w-6xl mx-auto px-6 py-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8 mb-10">
