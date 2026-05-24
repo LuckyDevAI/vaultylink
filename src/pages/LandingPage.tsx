@@ -110,11 +110,7 @@ export default function LandingPage() {
             className="text-primary/90 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed font-semibold whitespace-pre-line"
           >
             {t('heroSub')}
-          </motion.p>
-
-          <motion.p variants={fadeUp} custom={2}
-            className="text-primary/90 text-base md:text-lg max-w-2xl mx-auto leading-relaxed font-semibold"
-          >
+            <br />
             Piano Con Sincronizzazione.
             <br />
             Backup cifrato su Cloud Criptato.
