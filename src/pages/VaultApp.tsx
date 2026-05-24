@@ -193,41 +193,41 @@ function AuthScreen({ onAuth, vault, biometric, onBiometricUnlock }: {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label className="text-muted-foreground text-xs">{t('masterPw')}</Label>
+            <Label className="text-muted-foreground text-xs">PIN (5-10 cifre)</Label>
             <Input
-              type="password" value={pw} onChange={e => setPw(e.target.value)}
-              className="bg-secondary border-border mt-1" autoFocus={!biometric.enabled}
-              minLength={10}
+              type="password"
+              inputMode="numeric"
+              pattern="\d{5,10}"
+              autoComplete="one-time-code"
+              value={pw}
+              onChange={e => setPw(e.target.value.replace(/\D/g, '').slice(0, 10))}
+              className="bg-secondary border-border mt-1 tracking-[0.5em] text-center text-lg font-mono"
+              autoFocus={!biometric.enabled}
+              minLength={5}
+              maxLength={10}
+              placeholder="•••••"
             />
-            {isNew && pw.length > 0 && pwStrength && (
-              <div className="mt-2 space-y-1">
-                <div className="flex gap-1">
-                  {[0, 1, 2, 3].map(i => (
-                    <div
-                      key={i}
-                      className={`h-1.5 flex-1 rounded-full transition-colors ${
-                        i <= pwStrength.score ? strengthColors[pwStrength.score] : 'bg-muted'
-                      }`}
-                    />
-                  ))}
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">
-                    {strengthLabels[pwStrength.score]}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {pw.length}/10 min
-                  </span>
-                </div>
+            {isNew && pw.length > 0 && (
+              <div className="mt-2 flex justify-between items-center">
+                <span className="text-xs text-muted-foreground">
+                  {pw.length < 5 ? 'Troppo corto' : 'OK'}
+                </span>
+                <span className="text-xs text-muted-foreground">{pw.length}/10</span>
               </div>
             )}
           </div>
           {isNew && (
             <div>
-              <Label className="text-muted-foreground text-xs">{t('confirmPw')}</Label>
+              <Label className="text-muted-foreground text-xs">Conferma PIN</Label>
               <Input
-                type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)}
-                className="bg-secondary border-border mt-1"
+                type="password"
+                inputMode="numeric"
+                pattern="\d{5,10}"
+                value={confirmPw}
+                onChange={e => setConfirmPw(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                className="bg-secondary border-border mt-1 tracking-[0.5em] text-center text-lg font-mono"
+                maxLength={10}
+                placeholder="•••••"
               />
             </div>
           )}
