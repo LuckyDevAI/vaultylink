@@ -14,7 +14,8 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -430,6 +431,9 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
   const [currentPw, setCurrentPw] = useState('');
   const [newPw, setNewPw] = useState('');
   const [confirmPw, setConfirmPw] = useState('');
+  const [manualOpen, setManualOpen] = useState(false);
+  const [manualText, setManualText] = useState('');
+  const [manualBusy, setManualBusy] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   const passwordRef = useRef<HTMLDivElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);
@@ -537,6 +541,65 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
     input.click();
   };
 
+
+  const handleManualImport = async () => {
+    const lines = manualText.split('\n').map(l => l.trim()).filter(Boolean);
+    if (lines.length === 0) {
+      toast.error('Inserisci almeno un link');
+      return;
+    }
+    setManualBusy(true);
+    try {
+      const now = Date.now();
+      const parsed: VaultLink[] = [];
+      for (const line of lines) {
+        // Accept "URL", "URL | Title", or "URL | Title | Topic"
+        const parts = line.split('|').map(p => p.trim());
+        let raw = parts[0];
+        if (!/^https?:\/\//i.test(raw)) raw = 'https://' + raw;
+        let urlObj: URL;
+        try { urlObj = new URL(raw); } catch { continue; }
+        const siteName = urlObj.hostname.replace(/^www\./, '');
+        parsed.push({
+          id: crypto.randomUUID(),
+          url: urlObj.toString(),
+          title: parts[1] || siteName,
+          siteName,
+          topic: parts[2] || '',
+          type: 'main',
+          favorite: false,
+          private: false,
+          createdAt: now,
+          updatedAt: now,
+        });
+      }
+      if (parsed.length === 0) {
+        toast.error('Nessun URL valido trovato');
+        setManualBusy(false);
+        return;
+      }
+      const current = await vault.loadLinks();
+      const existingUrls = new Set(current.map(l => l.url));
+      const newLinks = parsed.filter(l => !existingUrls.has(l.url));
+      if (newLinks.length === 0) {
+        toast.info('Tutti i link sono già presenti');
+        setManualBusy(false);
+        return;
+      }
+      const merged = [...current, ...newLinks];
+      await vault.saveLinks(merged);
+      if (onImportDone) onImportDone(merged);
+      toast.success(`Importati ${newLinks.length} link (${parsed.length - newLinks.length} duplicati ignorati)`);
+      setManualText('');
+      setManualOpen(false);
+    } catch (e) {
+      toast.error('Errore durante l\'importazione');
+    } finally {
+      setManualBusy(false);
+    }
+  };
+
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -641,7 +704,38 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
           <Upload className="w-4 h-4 mr-2" /> Importa da file .HTML
         </Button>
         <p className="text-xs text-muted-foreground">Importa bookmark esportati da Chrome, Firefox, Edge, Safari, Opera</p>
+        <Separator className="my-2 bg-border" />
+        <Label className="text-sm text-muted-foreground flex items-center gap-2">
+          <Upload className="w-4 h-4" /> Importazione manuale
+        </Label>
+        <Button variant="outline" onClick={() => setManualOpen(true)} className="w-full border-border">
+          <Upload className="w-4 h-4 mr-2" /> Aggiungi link manualmente
+        </Button>
+        <p className="text-xs text-muted-foreground">Incolla uno o più link (uno per riga). Ideale per prima installazione o nuovi device.</p>
       </div>
+
+      <Dialog open={manualOpen} onOpenChange={(o) => { setManualOpen(o); if (!o) setManualText(''); }}>
+        <DialogContent className="bg-card border-border max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Importazione manuale link</DialogTitle>
+            <DialogDescription>
+              Incolla un link per riga. Formato opzionale: <code className="text-xs">URL | Titolo | Argomento</code>
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={manualText}
+            onChange={(e) => setManualText(e.target.value)}
+            placeholder={'https://example.com\nhttps://github.com | GitHub | Lavoro\nyoutube.com | YouTube | Svago'}
+            className="min-h-[200px] font-mono text-xs bg-secondary border-border"
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setManualOpen(false)} className="border-border">Annulla</Button>
+            <Button onClick={handleManualImport} disabled={manualBusy} className="bg-primary text-primary-foreground">
+              {manualBusy ? 'Importazione...' : 'Importa'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Separator className="bg-border" />
 
