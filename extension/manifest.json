@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "Vaulty Link",
+  "version": "1.0.0",
+  "description": "Salva, organizza e proteggi i tuoi link con crittografia AES-256-GCM. Estensione ufficiale di Vaulty Link.",
+  "default_locale": "it",
+  "icons": {
+    "48": "icon-48.png",
+    "128": "icon-128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "48": "icon-48.png",
+      "128": "icon-128.png"
+    },
+    "default_title": "Salva in Vaulty Link"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "storage",
+    "contextMenus",
+    "notifications"
+  ],
+  "host_permissions": [
+    "https://ejeodmaptmgdfguierdn.supabase.co/*"
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "extension@vaultylink.app",
+      "strict_min_version": "115.0"
+    }
+  }
+}
