@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vaulty Link</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="vl-header">
+      <img src="icon-48.png" alt="Vaulty Link" class="vl-logo" />
+      <div>
+        <h1>Vaulty Link</h1>
+        <p class="vl-tagline">Cassaforte dei tuoi link</p>
+      </div>
+      <div id="status-dot" class="vl-dot vl-dot--offline" title="Non connesso"></div>
+    </header>
+
+    <main id="app" class="vl-main">
+      <!-- Quick save: visible sempre -->
+      <section id="current-tab" class="vl-section">
+        <p class="vl-label">Pagina corrente</p>
+        <div class="vl-card">
+          <img id="ct-favicon" src="" alt="" class="vl-favicon" />
+          <div class="vl-card__body">
+            <p id="ct-title" class="vl-card__title">—</p>
+            <p id="ct-url" class="vl-card__url">—</p>
+          </div>
+        </div>
+        <button id="save-btn" class="vl-btn vl-btn--primary">
+          <span>＋ Salva questo link</span>
+        </button>
+        <p id="save-feedback" class="vl-feedback"></p>
+      </section>
+
+      <!-- Login state -->
+      <section id="auth-section" class="vl-section">
+        <details class="vl-details">
+          <summary id="auth-summary">🔌 Connetti il tuo account (consigliato)</summary>
+
+          <div id="login-form" class="vl-form">
+            <p class="vl-hint">
+              Sincronizza i link salvati con la tua app Vaulty Link.
+              Senza login restano salvati solo in locale nel browser.
+            </p>
+            <input id="email" type="email" placeholder="Email" autocomplete="username" />
+            <input id="password" type="password" placeholder="Password" autocomplete="current-password" />
+            <button id="login-btn" class="vl-btn vl-btn--primary">Accedi</button>
+            <p class="vl-hint vl-hint--mini">
+              Non hai un account?
+              <a href="https://vaultylink.app/auth" target="_blank" rel="noopener">Registrati</a>
+            </p>
+            <p id="login-feedback" class="vl-feedback"></p>
+          </div>
+
+          <div id="logged-in" class="vl-form" hidden>
+            <p class="vl-hint">Connesso come <strong id="user-email"></strong></p>
+            <button id="logout-btn" class="vl-btn vl-btn--ghost">Disconnetti</button>
+          </div>
+        </details>
+      </section>
+
+      <!-- Queue stats -->
+      <section class="vl-section">
+        <div class="vl-stats">
+          <div class="vl-stat">
+            <span class="vl-stat__num" id="queue-count">0</span>
+            <span class="vl-stat__lbl">In coda locale</span>
+          </div>
+          <button id="open-app" class="vl-btn vl-btn--ghost vl-btn--sm">Apri app ↗</button>
+        </div>
+      </section>
+
+      <section id="queue-list-section" class="vl-section" hidden>
+        <p class="vl-label">Ultimi link salvati</p>
+        <ul id="queue-list" class="vl-list"></ul>
+        <button id="clear-queue" class="vl-btn vl-btn--ghost vl-btn--sm">Svuota coda locale</button>
+      </section>
+    </main>
+
+    <footer class="vl-footer">
+      <span>v1.0.0 · E2EE AES-256-GCM</span>
+      <a href="https://vaultylink.app" target="_blank" rel="noopener">vaultylink.app</a>
+    </footer>
+
+    <script src="popup.js" type="module"></script>
+  </body>
+</html>
