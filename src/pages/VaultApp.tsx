@@ -1159,6 +1159,17 @@ export default function VaultApp() {
             className="bg-primary text-primary-foreground h-8 px-3 text-xs">
             <Plus className="w-3.5 h-3.5 mr-1" aria-hidden="true" />{t('addLink')}
           </Button>
+          {cloudUser && (
+            <Button
+              size="sm"
+              onClick={() => setView('account')}
+              className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-3 text-xs font-semibold tracking-wide"
+              title="Account"
+            >
+              <UserCog className="w-3.5 h-3.5 mr-1.5" aria-hidden="true" />
+              ACCOUNT
+            </Button>
+          )}
           {isAdmin && (
             <Button size="sm" variant="ghost" onClick={() => setView('admin')} aria-label="Pannello Admin" className="h-8 w-8 p-0" title="Admin">
               <Shield className="w-4 h-4 text-primary" aria-hidden="true" />
