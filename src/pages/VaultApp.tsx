@@ -887,6 +887,11 @@ export default function VaultApp() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [userPlan, setUserPlan] = useState<{ subscribed: boolean; plan: string | null; subscription_end?: string } | null>(null);
 
+  // Auto-authenticate if vault session was restored (within 50 min window)
+  useEffect(() => {
+    if (!vault.locked && !authenticated) setAuthenticated(true);
+  }, [vault.locked, authenticated]);
+
   // Auto-switch to settings when settingsSection is set
   useEffect(() => {
     if (settingsSection && authenticated) {
