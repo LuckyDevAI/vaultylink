@@ -16,7 +16,7 @@ function parseBookmarkHTML(html: string): BookmarkNode[] {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
 
-  function walk(parent: Element, folder: string): BookmarkNode[] {
+  function walk(parent: Element, folderPath: string): BookmarkNode[] {
     const nodes: BookmarkNode[] = [];
     const children = parent.children;
 
@@ -32,17 +32,17 @@ function parseBookmarkHTML(html: string): BookmarkNode[] {
           nodes.push({
             title: a.textContent?.trim() || '',
             url: a.getAttribute('HREF') || '',
-            folder,
+            folder: folderPath,
           });
         } else if (h3 && dl) {
           const folderName = h3.textContent?.trim() || '';
-          const subNodes = walk(dl, folderName);
-          nodes.push(...subNodes);
+          const nextPath = folderPath ? `${folderPath} / ${folderName}` : folderName;
+          nodes.push(...walk(dl, nextPath));
         } else if (dl) {
-          nodes.push(...walk(dl, folder));
+          nodes.push(...walk(dl, folderPath));
         }
       } else if (el.tagName === 'DL') {
-        nodes.push(...walk(el, folder));
+        nodes.push(...walk(el, folderPath));
       }
     }
 
