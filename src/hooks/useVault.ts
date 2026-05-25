@@ -205,6 +205,56 @@ export function useVault() {
     } finally { setBusy(false); }
   }, []);
 
+  // Auto-unlock using a key deterministically derived from the account user id.
+  // No PIN required. Returns { needsMigration: true } if a local blob exists
+  // but cannot be decrypted with the account key (legacy PIN-encrypted data).
+  const autoUnlock = useCallback(async (userId: string) => {
+    setBusy(true); setError('');
+    try {
+      const k = await deriveAccountKey(userId);
+      const blob = await dbGet('vaultData');
+      if (blob) {
+        try {
+          await decrypt(blob, k);
+        } catch {
+          return { ok: false as const, needsMigration: true as const };
+        }
+      } else {
+        await dbSet('vaultData', await encrypt([], k));
+      }
+      setKey(k);
+      setLocked(false);
+      await persistSession(k);
+      return { ok: true as const };
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Unknown error';
+      setError(msg);
+      return { ok: false as const, error: msg };
+    } finally { setBusy(false); }
+  }, []);
+
+  // One-time migration from legacy PIN-encrypted data → account-derived key
+  const migrateFromPin = useCallback(async (pin: string, userId: string) => {
+    setBusy(true); setError('');
+    try {
+      const oldSalt = await getSalt();
+      const oldKey = await deriveKey(pin, oldSalt);
+      const blob = await dbGet('vaultData');
+      if (!blob) return { ok: false as const, error: 'No data to migrate' };
+      const links = await decrypt(blob, oldKey);
+      const newKey = await deriveAccountKey(userId);
+      await dbSet('vaultData', await encrypt(links, newKey));
+      setKey(newKey);
+      setLocked(false);
+      await persistSession(newKey);
+      return { ok: true as const };
+    } catch {
+      const msg = 'PIN errato / Wrong PIN';
+      setError(msg);
+      return { ok: false as const, error: msg };
+    } finally { setBusy(false); }
+  }, []);
+
   const lock = useCallback(() => {
     setKey(null);
     setLocked(true);
