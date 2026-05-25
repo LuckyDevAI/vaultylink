@@ -874,6 +874,8 @@ export default function VaultApp() {
   const [editLink, setEditLink] = useState<VaultLink | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<VaultLink | null>(null);
+  const [showDeleteAll, setShowDeleteAll] = useState(false);
+  const [deleteAllText, setDeleteAllText] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [userPlan, setUserPlan] = useState<{ subscribed: boolean; plan: string | null; subscription_end?: string } | null>(null);
 
@@ -1233,6 +1235,18 @@ export default function VaultApp() {
                 <SelectItem value="topic">{t('sortTopic')}</SelectItem>
               </SelectContent>
             </Select>
+            {links.length > 0 && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => { setDeleteAllText(''); setShowDeleteAll(true); }}
+                className="h-7 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                aria-label="Cancella tutti i link"
+              >
+                <Trash2 className="w-3 h-3 mr-1" />
+                Cancella tutti
+              </Button>
+            )}
           </div>
         </div>
 
@@ -1376,6 +1390,38 @@ export default function VaultApp() {
             <AlertDialogCancel className="border-border">{t('cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
               {t('delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete All Dialog */}
+      <AlertDialog open={showDeleteAll} onOpenChange={(o) => { setShowDeleteAll(o); if (!o) setDeleteAllText(''); }}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-foreground">Cancella tutti i link</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                <p>Stai per eliminare <strong className="text-destructive">tutti i {links.length} link</strong> dalla cassaforte. Questa azione è irreversibile.</p>
+                <p className="text-xs">Scrivi <strong>ELIMINA</strong> per confermare:</p>
+                <Input
+                  value={deleteAllText}
+                  onChange={(e) => setDeleteAllText(e.target.value)}
+                  placeholder="ELIMINA"
+                  className="bg-background border-border"
+                  autoFocus
+                />
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-border">Annulla</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleteAllText !== 'ELIMINA'}
+              onClick={() => { persist([]); setShowDeleteAll(false); setDeleteAllText(''); toast.success('Tutti i link sono stati cancellati'); }}
+              className="bg-destructive text-destructive-foreground disabled:opacity-50"
+            >
+              Cancella tutti
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
