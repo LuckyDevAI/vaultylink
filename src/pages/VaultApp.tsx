@@ -1321,7 +1321,7 @@ export default function VaultApp() {
           const visibleIds = visibleLinks.map(l => l.id);
           const selectedCount = visibleIds.filter(id => selectedIds.has(id)).length;
           const allSelected = visibleIds.length > 0 && selectedCount === visibleIds.length;
-          if (visibleLinks.length === 0) return null;
+          if (!selectionMode || visibleLinks.length === 0) return null;
           return (
             <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-secondary/40 border border-border">
               <Checkbox
