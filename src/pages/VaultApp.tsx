@@ -1120,9 +1120,14 @@ export default function VaultApp() {
     }
   }, [vault]);
 
+  if (!vault.sessionRestored) {
+    return <div className="min-h-screen bg-background" />;
+  }
+
   if (!authenticated) {
     return <AuthScreen onAuth={handleAuth} vault={vault} biometric={biometric} onBiometricUnlock={handleBiometricUnlock} />;
   }
+
 
   if (tab === 'settings') {
     return (
