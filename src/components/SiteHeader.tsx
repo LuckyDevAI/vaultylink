@@ -69,18 +69,26 @@ export default function SiteHeader({ showBack, onBack }: { showBack?: boolean; o
           </Select>
 
           {cloudUser && userEmail ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="border-border text-foreground hover:bg-secondary h-8 text-xs"
-                >
-                  <User className="w-3.5 h-3.5 mr-1.5" />
-                  <span className="hidden sm:inline max-w-[120px] truncate">{userEmail}</span>
-                  <span className="sm:hidden">Profilo</span>
-                </Button>
-              </DropdownMenuTrigger>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                onClick={() => setView('account')}
+                className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 text-xs font-semibold tracking-wide"
+              >
+                <UserCog className="w-3.5 h-3.5 mr-1.5" />
+                ACCOUNT
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    className="border-border text-foreground hover:bg-secondary h-8 w-8"
+                    aria-label="Menu profilo"
+                  >
+                    <User className="w-3.5 h-3.5" />
+                  </Button>
+                </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-52 bg-card border-border">
                 <div className="px-3 py-2 border-b border-border">
                   <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
