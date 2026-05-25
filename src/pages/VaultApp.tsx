@@ -1253,6 +1253,49 @@ export default function VaultApp() {
           </div>
         </div>
 
+        {/* Selection bar */}
+        {(() => {
+          const visibleLinks = tab === 'folders'
+            ? groupedByFolder.flatMap(([, ls]) => ls)
+            : filteredLinks;
+          const visibleIds = visibleLinks.map(l => l.id);
+          const selectedCount = visibleIds.filter(id => selectedIds.has(id)).length;
+          const allSelected = visibleIds.length > 0 && selectedCount === visibleIds.length;
+          if (visibleLinks.length === 0) return null;
+          return (
+            <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-secondary/40 border border-border">
+              <Checkbox
+                checked={allSelected}
+                onCheckedChange={(checked) => {
+                  setSelectedIds(prev => {
+                    const next = new Set(prev);
+                    if (checked) visibleIds.forEach(id => next.add(id));
+                    else visibleIds.forEach(id => next.delete(id));
+                    return next;
+                  });
+                }}
+                aria-label="Seleziona tutti i link visibili"
+              />
+              <span className="text-xs text-muted-foreground">
+                {selectedCount > 0
+                  ? `${selectedCount} selezionati`
+                  : `Seleziona tutti (${visibleLinks.length})`}
+              </span>
+              {selectedCount > 0 && (
+                <div className="ml-auto flex items-center gap-2">
+                  <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())} className="h-7 text-xs text-muted-foreground">
+                    Annulla
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setShowDeleteSelected(true)} className="h-7 text-xs text-destructive hover:text-destructive hover:bg-destructive/10">
+                    <Trash2 className="w-3 h-3 mr-1" />
+                    Cancella selezionati
+                  </Button>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
         {/* Links list */}
         {tab === 'folders' ? (
           <div className="space-y-4">
