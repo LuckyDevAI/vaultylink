@@ -883,6 +883,7 @@ export default function VaultApp() {
   const [deleteAllText, setDeleteAllText] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showDeleteSelected, setShowDeleteSelected] = useState(false);
+  const [selectionMode, setSelectionMode] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userPlan, setUserPlan] = useState<{ subscribed: boolean; plan: string | null; subscription_end?: string } | null>(null);
 
