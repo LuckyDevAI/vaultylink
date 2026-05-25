@@ -1244,16 +1244,71 @@ export default function VaultApp() {
               </SelectContent>
             </Select>
             {links.length > 0 && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => { setDeleteAllText(''); setShowDeleteAll(true); }}
-                className="h-7 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
-                aria-label="Cancella tutti i link"
-              >
-                <Trash2 className="w-3 h-3 mr-1" />
-                Cancella tutti
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="sm" variant="ghost" className="h-7 text-xs text-foreground">
+                    <ListChecks className="w-3.5 h-3.5 mr-1.5" />
+                    Gestisci Link
+                    <ChevronDown className="w-3 h-3 ml-1" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52 bg-card border-border">
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setSelectionMode(m => {
+                        if (m) setSelectedIds(new Set());
+                        return !m;
+                      });
+                    }}
+                    className="cursor-pointer gap-2 text-foreground"
+                  >
+                    {selectionMode ? <Square className="w-4 h-4" /> : <CheckSquare className="w-4 h-4" />}
+                    {selectionMode ? 'Esci da selezione' : 'Seleziona'}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      const visible = (tab === 'folders'
+                        ? groupedByFolder.flatMap(([, ls]) => ls)
+                        : filteredLinks).map(l => l.id);
+                      setSelectionMode(true);
+                      setSelectedIds(new Set(visible));
+                    }}
+                    className="cursor-pointer gap-2 text-foreground"
+                  >
+                    <CheckSquare className="w-4 h-4" />
+                    Seleziona tutti
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-border" />
+                  <DropdownMenuItem
+                    disabled={selectedIds.size !== 1}
+                    onClick={() => {
+                      const id = Array.from(selectedIds)[0];
+                      const link = links.find(l => l.id === id);
+                      if (link) { setEditLink(link); setFormOpen(true); }
+                    }}
+                    className="cursor-pointer gap-2 text-foreground"
+                  >
+                    <Edit className="w-4 h-4" />
+                    Modifica {selectedIds.size === 1 ? '' : '(1 selezionato)'}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    disabled={selectedIds.size === 0}
+                    onClick={() => setShowDeleteSelected(true)}
+                    className="cursor-pointer gap-2 text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Elimina selezionati ({selectedIds.size})
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-border" />
+                  <DropdownMenuItem
+                    onClick={() => { setDeleteAllText(''); setShowDeleteAll(true); }}
+                    className="cursor-pointer gap-2 text-destructive focus:text-destructive"
+                  >
+                    <AlertTriangle className="w-4 h-4" />
+                    Cancella tutti
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
         </div>
