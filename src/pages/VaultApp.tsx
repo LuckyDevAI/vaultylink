@@ -1170,10 +1170,79 @@ export default function VaultApp() {
               className="pl-9 bg-secondary border-border h-8 text-sm"
             />
           </div>
-          <Button size="sm" onClick={() => { setEditLink(null); setFormOpen(true); }}
-            className="bg-primary text-primary-foreground h-8 px-3 text-xs">
-            <Plus className="w-3.5 h-3.5 mr-1" aria-hidden="true" />{t('addLink')}
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" className="bg-primary text-primary-foreground h-8 px-3 text-xs">
+                <ListChecks className="w-3.5 h-3.5 mr-1" aria-hidden="true" />
+                Gestisci
+                <ChevronDown className="w-3 h-3 ml-1" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 bg-card border-border">
+              <DropdownMenuItem
+                onClick={() => { setEditLink(null); setFormOpen(true); }}
+                className="cursor-pointer gap-2 text-foreground"
+              >
+                <Plus className="w-4 h-4" />
+                {t('addLink')}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-border" />
+              <DropdownMenuItem
+                onClick={() => {
+                  setSelectionMode(m => {
+                    if (m) setSelectedIds(new Set());
+                    return !m;
+                  });
+                }}
+                className="cursor-pointer gap-2 text-foreground"
+              >
+                {selectionMode ? <Square className="w-4 h-4" /> : <CheckSquare className="w-4 h-4" />}
+                {selectionMode ? 'Esci da selezione' : 'Seleziona'}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  const visible = (tab === 'folders'
+                    ? groupedByFolder.flatMap(([, ls]) => ls)
+                    : filteredLinks).map(l => l.id);
+                  setSelectionMode(true);
+                  setSelectedIds(new Set(visible));
+                }}
+                className="cursor-pointer gap-2 text-foreground"
+              >
+                <CheckSquare className="w-4 h-4" />
+                Seleziona tutti
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={selectedIds.size !== 1}
+                onClick={() => {
+                  const id = Array.from(selectedIds)[0];
+                  const link = links.find(l => l.id === id);
+                  if (link) { setEditLink(link); setFormOpen(true); }
+                }}
+                className="cursor-pointer gap-2 text-foreground"
+              >
+                <Edit className="w-4 h-4" />
+                Modifica selezionato
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={selectedIds.size === 0}
+                onClick={() => setShowDeleteSelected(true)}
+                className="cursor-pointer gap-2 text-destructive focus:text-destructive"
+              >
+                <Trash2 className="w-4 h-4" />
+                Elimina selezionati ({selectedIds.size})
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-border" />
+              <DropdownMenuItem
+                disabled={links.length === 0}
+                onClick={() => { setDeleteAllText(''); setShowDeleteAll(true); }}
+                className="cursor-pointer gap-2 text-destructive focus:text-destructive"
+              >
+                <AlertTriangle className="w-4 h-4" />
+                Cancella tutti
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           {cloudUser && (
             <Button
               size="sm"
