@@ -132,8 +132,21 @@ export function useVault() {
   const [locked, setLocked] = useState(true);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [sessionRestored, setSessionRestored] = useState(false);
   const lastPushedRef = useRef<string | null>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
+
+  // Try to restore a recent unlock session (≤ 50 min) on mount
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const k = await restoreSession();
+      if (cancelled) return;
+      if (k) { setKey(k); setLocked(false); }
+      setSessionRestored(true);
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const hasSalt = useCallback(async (): Promise<boolean> => {
     const stored = await dbGet('salt');
@@ -153,6 +166,7 @@ export function useVault() {
       await dbSet('vaultData', await encrypt([], k));
       setKey(k);
       setLocked(false);
+      await persistSession(k);
       return { ok: true };
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Unknown error';
@@ -170,6 +184,7 @@ export function useVault() {
       if (blob) await decrypt(blob, k);
       setKey(k);
       setLocked(false);
+      await persistSession(k);
       return { ok: true };
     } catch {
       const msg = 'PIN errato / Wrong PIN';
@@ -181,6 +196,7 @@ export function useVault() {
   const lock = useCallback(() => {
     setKey(null);
     setLocked(true);
+    clearSession();
   }, []);
 
   const saveLinks = useCallback(async (links: VaultLink[]) => {
