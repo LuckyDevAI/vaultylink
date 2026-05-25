@@ -1463,6 +1463,32 @@ export default function VaultApp() {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Delete Selected Dialog */}
+      <AlertDialog open={showDeleteSelected} onOpenChange={setShowDeleteSelected}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-foreground">Cancella selezionati</AlertDialogTitle>
+            <AlertDialogDescription>
+              Stai per eliminare <strong className="text-destructive">{selectedIds.size} link</strong>. L'azione è irreversibile.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-border">Annulla</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                persist(links.filter(l => !selectedIds.has(l.id)));
+                toast.success(`${selectedIds.size} link cancellati`);
+                setSelectedIds(new Set());
+                setShowDeleteSelected(false);
+              }}
+              className="bg-destructive text-destructive-foreground"
+            >
+              Cancella
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Delete All Dialog */}
       <AlertDialog open={showDeleteAll} onOpenChange={(o) => { setShowDeleteAll(o); if (!o) setDeleteAllText(''); }}>
         <AlertDialogContent className="bg-card border-border">
