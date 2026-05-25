@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
@@ -876,6 +877,8 @@ export default function VaultApp() {
   const [deleteTarget, setDeleteTarget] = useState<VaultLink | null>(null);
   const [showDeleteAll, setShowDeleteAll] = useState(false);
   const [deleteAllText, setDeleteAllText] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showDeleteSelected, setShowDeleteSelected] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userPlan, setUserPlan] = useState<{ subscribed: boolean; plan: string | null; subscription_end?: string } | null>(null);
 
@@ -1250,6 +1253,49 @@ export default function VaultApp() {
           </div>
         </div>
 
+        {/* Selection bar */}
+        {(() => {
+          const visibleLinks = tab === 'folders'
+            ? groupedByFolder.flatMap(([, ls]) => ls)
+            : filteredLinks;
+          const visibleIds = visibleLinks.map(l => l.id);
+          const selectedCount = visibleIds.filter(id => selectedIds.has(id)).length;
+          const allSelected = visibleIds.length > 0 && selectedCount === visibleIds.length;
+          if (visibleLinks.length === 0) return null;
+          return (
+            <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-secondary/40 border border-border">
+              <Checkbox
+                checked={allSelected}
+                onCheckedChange={(checked) => {
+                  setSelectedIds(prev => {
+                    const next = new Set(prev);
+                    if (checked) visibleIds.forEach(id => next.add(id));
+                    else visibleIds.forEach(id => next.delete(id));
+                    return next;
+                  });
+                }}
+                aria-label="Seleziona tutti i link visibili"
+              />
+              <span className="text-xs text-muted-foreground">
+                {selectedCount > 0
+                  ? `${selectedCount} selezionati`
+                  : `Seleziona tutti (${visibleLinks.length})`}
+              </span>
+              {selectedCount > 0 && (
+                <div className="ml-auto flex items-center gap-2">
+                  <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())} className="h-7 text-xs text-muted-foreground">
+                    Annulla
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setShowDeleteSelected(true)} className="h-7 text-xs text-destructive hover:text-destructive hover:bg-destructive/10">
+                    <Trash2 className="w-3 h-3 mr-1" />
+                    Cancella selezionati
+                  </Button>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
         {/* Links list */}
         {tab === 'folders' ? (
           <div className="space-y-4">
@@ -1273,6 +1319,17 @@ export default function VaultApp() {
                       transition={{ delay: i * 0.02 }}
                       className="group flex items-center gap-3 p-3 rounded-lg bg-card border border-border hover:border-primary/20 transition-colors ml-4"
                     >
+                      <Checkbox
+                        checked={selectedIds.has(link.id)}
+                        onCheckedChange={(c) => {
+                          setSelectedIds(prev => {
+                            const n = new Set(prev);
+                            if (c) n.add(link.id); else n.delete(link.id);
+                            return n;
+                          });
+                        }}
+                        aria-label={`Seleziona ${link.title}`}
+                      />
                       <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center shrink-0">
                         {link.favorite ? <Star className="w-4 h-4 text-vault-gold fill-vault-gold" /> : <ExternalLink className="w-4 h-4 text-muted-foreground" />}
                       </div>
@@ -1322,6 +1379,17 @@ export default function VaultApp() {
                   transition={{ delay: i * 0.02 }}
                   className="group flex items-center gap-3 p-3 rounded-lg bg-card border border-border hover:border-primary/20 transition-colors"
                 >
+                  <Checkbox
+                    checked={selectedIds.has(link.id)}
+                    onCheckedChange={(c) => {
+                      setSelectedIds(prev => {
+                        const n = new Set(prev);
+                        if (c) n.add(link.id); else n.delete(link.id);
+                        return n;
+                      });
+                    }}
+                    aria-label={`Seleziona ${link.title}`}
+                  />
                   <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center shrink-0">
                     {link.favorite ? (
                       <Star className="w-4 h-4 text-vault-gold fill-vault-gold" />
@@ -1390,6 +1458,32 @@ export default function VaultApp() {
             <AlertDialogCancel className="border-border">{t('cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
               {t('delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Selected Dialog */}
+      <AlertDialog open={showDeleteSelected} onOpenChange={setShowDeleteSelected}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-foreground">Cancella selezionati</AlertDialogTitle>
+            <AlertDialogDescription>
+              Stai per eliminare <strong className="text-destructive">{selectedIds.size} link</strong>. L'azione è irreversibile.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-border">Annulla</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                persist(links.filter(l => !selectedIds.has(l.id)));
+                toast.success(`${selectedIds.size} link cancellati`);
+                setSelectedIds(new Set());
+                setShowDeleteSelected(false);
+              }}
+              className="bg-destructive text-destructive-foreground"
+            >
+              Cancella
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
