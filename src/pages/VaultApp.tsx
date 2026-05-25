@@ -4,8 +4,12 @@ import {
   Lock, Plus, Search, Star, Clock, Eye, EyeOff, Settings,
   ExternalLink, Trash2, Edit, ArrowLeft, ChevronDown, LogOut,
   Shield, Globe, Download, Upload, KeyRound, FolderOpen,
-  Cloud, CloudOff, Check, Loader2, RefreshCw, AlertTriangle, User, UserCog
+  Cloud, CloudOff, Check, Loader2, RefreshCw, AlertTriangle, User, UserCog,
+  ListChecks, CheckSquare, Square
 } from 'lucide-react';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
