@@ -128,6 +128,7 @@ export default function SiteHeader({ showBack, onBack }: { showBack?: boolean; o
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            </div>
           ) : (
             <Button
               size="sm"
