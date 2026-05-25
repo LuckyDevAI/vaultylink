@@ -4,7 +4,7 @@
  * Uses IndexedDB for persistent storage
  */
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
@@ -61,9 +61,34 @@ async function deriveKey(password: string, salt: BufferSource): Promise<CryptoKe
     { name: 'PBKDF2', salt, iterations: 100_000, hash: 'SHA-256' },
     raw,
     { name: 'AES-GCM', length: 256 },
-    false,
+    true, // extractable so we can persist a short-lived session
     ['encrypt', 'decrypt']
   );
+}
+
+// ── Session persistence (50 min) ─────────────────────────────────────────────
+const SESSION_KEY = 'vl_session_v1';
+const SESSION_TTL_MS = 50 * 60 * 1000;
+
+async function persistSession(key: CryptoKey): Promise<void> {
+  try {
+    const jwk = await crypto.subtle.exportKey('jwk', key);
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ jwk, expiresAt: Date.now() + SESSION_TTL_MS }));
+  } catch { /* ignore */ }
+}
+
+function clearSession(): void {
+  try { localStorage.removeItem(SESSION_KEY); } catch { /* ignore */ }
+}
+
+async function restoreSession(): Promise<CryptoKey | null> {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    const { jwk, expiresAt } = JSON.parse(raw);
+    if (!jwk || !expiresAt || Date.now() > expiresAt) { clearSession(); return null; }
+    return await crypto.subtle.importKey('jwk', jwk, { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+  } catch { clearSession(); return null; }
 }
 
 async function encrypt(data: unknown, key: CryptoKey): Promise<string> {
@@ -107,8 +132,21 @@ export function useVault() {
   const [locked, setLocked] = useState(true);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [sessionRestored, setSessionRestored] = useState(false);
   const lastPushedRef = useRef<string | null>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
+
+  // Try to restore a recent unlock session (≤ 50 min) on mount
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const k = await restoreSession();
+      if (cancelled) return;
+      if (k) { setKey(k); setLocked(false); }
+      setSessionRestored(true);
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const hasSalt = useCallback(async (): Promise<boolean> => {
     const stored = await dbGet('salt');
@@ -128,6 +166,7 @@ export function useVault() {
       await dbSet('vaultData', await encrypt([], k));
       setKey(k);
       setLocked(false);
+      await persistSession(k);
       return { ok: true };
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Unknown error';
@@ -145,6 +184,7 @@ export function useVault() {
       if (blob) await decrypt(blob, k);
       setKey(k);
       setLocked(false);
+      await persistSession(k);
       return { ok: true };
     } catch {
       const msg = 'PIN errato / Wrong PIN';
@@ -156,6 +196,7 @@ export function useVault() {
   const lock = useCallback(() => {
     setKey(null);
     setLocked(true);
+    clearSession();
   }, []);
 
   const saveLinks = useCallback(async (links: VaultLink[]) => {
