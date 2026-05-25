@@ -1235,6 +1235,18 @@ export default function VaultApp() {
                 <SelectItem value="topic">{t('sortTopic')}</SelectItem>
               </SelectContent>
             </Select>
+            {links.length > 0 && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => { setDeleteAllText(''); setShowDeleteAll(true); }}
+                className="h-7 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                aria-label="Cancella tutti i link"
+              >
+                <Trash2 className="w-3 h-3 mr-1" />
+                Cancella tutti
+              </Button>
+            )}
           </div>
         </div>
 
