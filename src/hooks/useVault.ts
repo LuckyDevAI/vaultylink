@@ -384,7 +384,7 @@ export function useVault() {
 
   return {
     key, locked, error, busy, sessionRestored,
-    hasSalt, hasVault, setup, unlock, lock,
+    hasSalt, hasVault, setup, unlock, autoUnlock, migrateFromPin, lock,
     saveLinks, loadLinks, changePassword,
     exportBlob, importBlob,
     pushToCloud, pullFromCloud, syncCloud,
