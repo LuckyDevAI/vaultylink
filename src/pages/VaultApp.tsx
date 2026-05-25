@@ -887,10 +887,55 @@ export default function VaultApp() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [userPlan, setUserPlan] = useState<{ subscribed: boolean; plan: string | null; subscription_end?: string } | null>(null);
 
+  // Migration state for legacy PIN-encrypted data
+  const [needsMigration, setNeedsMigration] = useState(false);
+  const [migrationPin, setMigrationPin] = useState('');
+  const [migrationError, setMigrationError] = useState('');
+  const [autoUnlockTried, setAutoUnlockTried] = useState(false);
+
   // Auto-authenticate if vault session was restored (within 50 min window)
   useEffect(() => {
     if (!vault.locked && !authenticated) setAuthenticated(true);
   }, [vault.locked, authenticated]);
+
+  // No login → send to auth page
+  useEffect(() => {
+    if (vault.sessionRestored && !cloudUser && !authenticated) {
+      setView('auth');
+    }
+  }, [vault.sessionRestored, cloudUser, authenticated, setView]);
+
+  // Auto-unlock the vault using a key derived from the logged-in account
+  useEffect(() => {
+    if (!vault.sessionRestored || !cloudUser || !vault.locked || autoUnlockTried) return;
+    setAutoUnlockTried(true);
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      // Pull latest cloud blob first so migration uses up-to-date data
+      try { await vault.pullFromCloud(); } catch { /* ignore */ }
+      const res = await vault.autoUnlock(user.id);
+      if (!res.ok && 'needsMigration' in res && res.needsMigration) {
+        setNeedsMigration(true);
+      }
+    })();
+  }, [vault.sessionRestored, cloudUser, vault.locked, autoUnlockTried, vault]);
+
+  const handleMigration = useCallback(async () => {
+    setMigrationError('');
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const res = await vault.migrateFromPin(migrationPin, user.id);
+    if (res.ok) {
+      setNeedsMigration(false);
+      setMigrationPin('');
+      try { await vault.pushToCloud(); } catch { /* ignore */ }
+      toast.success('Migrazione completata — il PIN non è più richiesto.');
+    } else {
+      setMigrationError('PIN errato. Riprova.');
+    }
+  }, [migrationPin, vault]);
+
 
   // Auto-switch to settings when settingsSection is set
   useEffect(() => {
