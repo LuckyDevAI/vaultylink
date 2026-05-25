@@ -53,6 +53,13 @@ async function getSalt(): Promise<Uint8Array<ArrayBuffer>> {
   return s as Uint8Array<ArrayBuffer>;
 }
 
+// Deterministic salt derived from userId — same on every device for the same account
+async function getDeterministicSalt(userId: string): Promise<Uint8Array<ArrayBuffer>> {
+  const data = new TextEncoder().encode(`vlk-salt-v1:${userId}`);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return new Uint8Array(hash.slice(0, 16)) as Uint8Array<ArrayBuffer>;
+}
+
 async function deriveKey(password: string, salt: BufferSource): Promise<CryptoKey> {
   const raw = await crypto.subtle.importKey(
     'raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']
@@ -64,6 +71,11 @@ async function deriveKey(password: string, salt: BufferSource): Promise<CryptoKe
     true, // extractable so we can persist a short-lived session
     ['encrypt', 'decrypt']
   );
+}
+
+async function deriveAccountKey(userId: string): Promise<CryptoKey> {
+  const salt = await getDeterministicSalt(userId);
+  return deriveKey(`vlk-account-v1:${userId}`, salt);
 }
 
 // ── Session persistence (50 min) ─────────────────────────────────────────────
@@ -190,6 +202,56 @@ export function useVault() {
       const msg = 'PIN errato / Wrong PIN';
       setError(msg);
       return { ok: false, error: msg };
+    } finally { setBusy(false); }
+  }, []);
+
+  // Auto-unlock using a key deterministically derived from the account user id.
+  // No PIN required. Returns { needsMigration: true } if a local blob exists
+  // but cannot be decrypted with the account key (legacy PIN-encrypted data).
+  const autoUnlock = useCallback(async (userId: string) => {
+    setBusy(true); setError('');
+    try {
+      const k = await deriveAccountKey(userId);
+      const blob = await dbGet('vaultData');
+      if (blob) {
+        try {
+          await decrypt(blob, k);
+        } catch {
+          return { ok: false as const, needsMigration: true as const };
+        }
+      } else {
+        await dbSet('vaultData', await encrypt([], k));
+      }
+      setKey(k);
+      setLocked(false);
+      await persistSession(k);
+      return { ok: true as const };
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Unknown error';
+      setError(msg);
+      return { ok: false as const, error: msg };
+    } finally { setBusy(false); }
+  }, []);
+
+  // One-time migration from legacy PIN-encrypted data → account-derived key
+  const migrateFromPin = useCallback(async (pin: string, userId: string) => {
+    setBusy(true); setError('');
+    try {
+      const oldSalt = await getSalt();
+      const oldKey = await deriveKey(pin, oldSalt);
+      const blob = await dbGet('vaultData');
+      if (!blob) return { ok: false as const, error: 'No data to migrate' };
+      const links = await decrypt(blob, oldKey);
+      const newKey = await deriveAccountKey(userId);
+      await dbSet('vaultData', await encrypt(links, newKey));
+      setKey(newKey);
+      setLocked(false);
+      await persistSession(newKey);
+      return { ok: true as const };
+    } catch {
+      const msg = 'PIN errato / Wrong PIN';
+      setError(msg);
+      return { ok: false as const, error: msg };
     } finally { setBusy(false); }
   }, []);
 
@@ -322,7 +384,7 @@ export function useVault() {
 
   return {
     key, locked, error, busy, sessionRestored,
-    hasSalt, hasVault, setup, unlock, lock,
+    hasSalt, hasVault, setup, unlock, autoUnlock, migrateFromPin, lock,
     saveLinks, loadLinks, changePassword,
     exportBlob, importBlob,
     pushToCloud, pullFromCloud, syncCloud,

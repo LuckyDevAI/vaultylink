@@ -887,10 +887,55 @@ export default function VaultApp() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [userPlan, setUserPlan] = useState<{ subscribed: boolean; plan: string | null; subscription_end?: string } | null>(null);
 
+  // Migration state for legacy PIN-encrypted data
+  const [needsMigration, setNeedsMigration] = useState(false);
+  const [migrationPin, setMigrationPin] = useState('');
+  const [migrationError, setMigrationError] = useState('');
+  const [autoUnlockTried, setAutoUnlockTried] = useState(false);
+
   // Auto-authenticate if vault session was restored (within 50 min window)
   useEffect(() => {
     if (!vault.locked && !authenticated) setAuthenticated(true);
   }, [vault.locked, authenticated]);
+
+  // No login → send to auth page
+  useEffect(() => {
+    if (vault.sessionRestored && !cloudUser && !authenticated) {
+      setView('auth');
+    }
+  }, [vault.sessionRestored, cloudUser, authenticated, setView]);
+
+  // Auto-unlock the vault using a key derived from the logged-in account
+  useEffect(() => {
+    if (!vault.sessionRestored || !cloudUser || !vault.locked || autoUnlockTried) return;
+    setAutoUnlockTried(true);
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      // Pull latest cloud blob first so migration uses up-to-date data
+      try { await vault.pullFromCloud(); } catch { /* ignore */ }
+      const res = await vault.autoUnlock(user.id);
+      if (!res.ok && 'needsMigration' in res && res.needsMigration) {
+        setNeedsMigration(true);
+      }
+    })();
+  }, [vault.sessionRestored, cloudUser, vault.locked, autoUnlockTried, vault]);
+
+  const handleMigration = useCallback(async () => {
+    setMigrationError('');
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const res = await vault.migrateFromPin(migrationPin, user.id);
+    if (res.ok) {
+      setNeedsMigration(false);
+      setMigrationPin('');
+      try { await vault.pushToCloud(); } catch { /* ignore */ }
+      toast.success('Migrazione completata — il PIN non è più richiesto.');
+    } else {
+      setMigrationError('PIN errato. Riprova.');
+    }
+  }, [migrationPin, vault]);
+
 
   // Auto-switch to settings when settingsSection is set
   useEffect(() => {
@@ -1124,8 +1169,49 @@ export default function VaultApp() {
     return <div className="min-h-screen bg-background" />;
   }
 
+  // Legacy data migration: ask the old PIN one time to re-encrypt with the account key
+  if (needsMigration) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="w-full max-w-md space-y-6">
+          <div className="text-center space-y-2">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-primary/10 flex items-center justify-center">
+              <KeyRound className="w-8 h-8 text-primary" />
+            </div>
+            <h1 className="text-2xl font-bold">Migrazione dati</h1>
+            <p className="text-sm text-muted-foreground">
+              Inserisci il tuo ultimo PIN per migrare i dati esistenti. Dopo questa operazione il PIN non sarà più richiesto.
+            </p>
+          </div>
+          <div className="space-y-3">
+            <Label htmlFor="migration-pin">PIN attuale</Label>
+            <Input
+              id="migration-pin"
+              type="password"
+              inputMode="numeric"
+              autoFocus
+              value={migrationPin}
+              onChange={(e) => setMigrationPin(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleMigration(); }}
+              placeholder="••••"
+            />
+            {migrationError && <p className="text-sm text-destructive">{migrationError}</p>}
+            <Button className="w-full" onClick={handleMigration} disabled={!migrationPin || vault.busy}>
+              {vault.busy ? 'Migrazione...' : 'Migra e continua'}
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!authenticated) {
-    return <AuthScreen onAuth={handleAuth} vault={vault} biometric={biometric} onBiometricUnlock={handleBiometricUnlock} />;
+    // Auto-unlock in progress (or redirecting to /auth)
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
   }
 
 
