@@ -1169,8 +1169,49 @@ export default function VaultApp() {
     return <div className="min-h-screen bg-background" />;
   }
 
+  // Legacy data migration: ask the old PIN one time to re-encrypt with the account key
+  if (needsMigration) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="w-full max-w-md space-y-6">
+          <div className="text-center space-y-2">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-primary/10 flex items-center justify-center">
+              <KeyRound className="w-8 h-8 text-primary" />
+            </div>
+            <h1 className="text-2xl font-bold">Migrazione dati</h1>
+            <p className="text-sm text-muted-foreground">
+              Inserisci il tuo ultimo PIN per migrare i dati esistenti. Dopo questa operazione il PIN non sarà più richiesto.
+            </p>
+          </div>
+          <div className="space-y-3">
+            <Label htmlFor="migration-pin">PIN attuale</Label>
+            <Input
+              id="migration-pin"
+              type="password"
+              inputMode="numeric"
+              autoFocus
+              value={migrationPin}
+              onChange={(e) => setMigrationPin(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleMigration(); }}
+              placeholder="••••"
+            />
+            {migrationError && <p className="text-sm text-destructive">{migrationError}</p>}
+            <Button className="w-full" onClick={handleMigration} disabled={!migrationPin || vault.busy}>
+              {vault.busy ? 'Migrazione...' : 'Migra e continua'}
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!authenticated) {
-    return <AuthScreen onAuth={handleAuth} vault={vault} biometric={biometric} onBiometricUnlock={handleBiometricUnlock} />;
+    // Auto-unlock in progress (or redirecting to /auth)
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
   }
 
 
