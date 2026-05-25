@@ -61,9 +61,34 @@ async function deriveKey(password: string, salt: BufferSource): Promise<CryptoKe
     { name: 'PBKDF2', salt, iterations: 100_000, hash: 'SHA-256' },
     raw,
     { name: 'AES-GCM', length: 256 },
-    false,
+    true, // extractable so we can persist a short-lived session
     ['encrypt', 'decrypt']
   );
+}
+
+// ── Session persistence (50 min) ─────────────────────────────────────────────
+const SESSION_KEY = 'vl_session_v1';
+const SESSION_TTL_MS = 50 * 60 * 1000;
+
+async function persistSession(key: CryptoKey): Promise<void> {
+  try {
+    const jwk = await crypto.subtle.exportKey('jwk', key);
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ jwk, expiresAt: Date.now() + SESSION_TTL_MS }));
+  } catch { /* ignore */ }
+}
+
+function clearSession(): void {
+  try { localStorage.removeItem(SESSION_KEY); } catch { /* ignore */ }
+}
+
+async function restoreSession(): Promise<CryptoKey | null> {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    const { jwk, expiresAt } = JSON.parse(raw);
+    if (!jwk || !expiresAt || Date.now() > expiresAt) { clearSession(); return null; }
+    return await crypto.subtle.importKey('jwk', jwk, { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+  } catch { clearSession(); return null; }
 }
 
 async function encrypt(data: unknown, key: CryptoKey): Promise<string> {
