@@ -53,6 +53,13 @@ async function getSalt(): Promise<Uint8Array<ArrayBuffer>> {
   return s as Uint8Array<ArrayBuffer>;
 }
 
+// Deterministic salt derived from userId — same on every device for the same account
+async function getDeterministicSalt(userId: string): Promise<Uint8Array<ArrayBuffer>> {
+  const data = new TextEncoder().encode(`vlk-salt-v1:${userId}`);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return new Uint8Array(hash.slice(0, 16)) as Uint8Array<ArrayBuffer>;
+}
+
 async function deriveKey(password: string, salt: BufferSource): Promise<CryptoKey> {
   const raw = await crypto.subtle.importKey(
     'raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']
@@ -64,6 +71,11 @@ async function deriveKey(password: string, salt: BufferSource): Promise<CryptoKe
     true, // extractable so we can persist a short-lived session
     ['encrypt', 'decrypt']
   );
+}
+
+async function deriveAccountKey(userId: string): Promise<CryptoKey> {
+  const salt = await getDeterministicSalt(userId);
+  return deriveKey(`vlk-account-v1:${userId}`, salt);
 }
 
 // ── Session persistence (50 min) ─────────────────────────────────────────────
