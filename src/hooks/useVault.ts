@@ -321,7 +321,7 @@ export function useVault() {
   );
 
   return {
-    key, locked, error, busy,
+    key, locked, error, busy, sessionRestored,
     hasSalt, hasVault, setup, unlock, lock,
     saveLinks, loadLinks, changePassword,
     exportBlob, importBlob,
