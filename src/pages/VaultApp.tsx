@@ -4,8 +4,12 @@ import {
   Lock, Plus, Search, Star, Clock, Eye, EyeOff, Settings,
   ExternalLink, Trash2, Edit, ArrowLeft, ChevronDown, LogOut,
   Shield, Globe, Download, Upload, KeyRound, FolderOpen,
-  Cloud, CloudOff, Check, Loader2, RefreshCw, AlertTriangle, User, UserCog
+  Cloud, CloudOff, Check, Loader2, RefreshCw, AlertTriangle, User, UserCog,
+  ListChecks, CheckSquare, Square
 } from 'lucide-react';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -879,6 +883,7 @@ export default function VaultApp() {
   const [deleteAllText, setDeleteAllText] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showDeleteSelected, setShowDeleteSelected] = useState(false);
+  const [selectionMode, setSelectionMode] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userPlan, setUserPlan] = useState<{ subscribed: boolean; plan: string | null; subscription_end?: string } | null>(null);
 
@@ -1239,16 +1244,71 @@ export default function VaultApp() {
               </SelectContent>
             </Select>
             {links.length > 0 && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => { setDeleteAllText(''); setShowDeleteAll(true); }}
-                className="h-7 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
-                aria-label="Cancella tutti i link"
-              >
-                <Trash2 className="w-3 h-3 mr-1" />
-                Cancella tutti
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="sm" variant="ghost" className="h-7 text-xs text-foreground">
+                    <ListChecks className="w-3.5 h-3.5 mr-1.5" />
+                    Gestisci Link
+                    <ChevronDown className="w-3 h-3 ml-1" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52 bg-card border-border">
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setSelectionMode(m => {
+                        if (m) setSelectedIds(new Set());
+                        return !m;
+                      });
+                    }}
+                    className="cursor-pointer gap-2 text-foreground"
+                  >
+                    {selectionMode ? <Square className="w-4 h-4" /> : <CheckSquare className="w-4 h-4" />}
+                    {selectionMode ? 'Esci da selezione' : 'Seleziona'}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      const visible = (tab === 'folders'
+                        ? groupedByFolder.flatMap(([, ls]) => ls)
+                        : filteredLinks).map(l => l.id);
+                      setSelectionMode(true);
+                      setSelectedIds(new Set(visible));
+                    }}
+                    className="cursor-pointer gap-2 text-foreground"
+                  >
+                    <CheckSquare className="w-4 h-4" />
+                    Seleziona tutti
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-border" />
+                  <DropdownMenuItem
+                    disabled={selectedIds.size !== 1}
+                    onClick={() => {
+                      const id = Array.from(selectedIds)[0];
+                      const link = links.find(l => l.id === id);
+                      if (link) { setEditLink(link); setFormOpen(true); }
+                    }}
+                    className="cursor-pointer gap-2 text-foreground"
+                  >
+                    <Edit className="w-4 h-4" />
+                    Modifica {selectedIds.size === 1 ? '' : '(1 selezionato)'}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    disabled={selectedIds.size === 0}
+                    onClick={() => setShowDeleteSelected(true)}
+                    className="cursor-pointer gap-2 text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Elimina selezionati ({selectedIds.size})
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-border" />
+                  <DropdownMenuItem
+                    onClick={() => { setDeleteAllText(''); setShowDeleteAll(true); }}
+                    className="cursor-pointer gap-2 text-destructive focus:text-destructive"
+                  >
+                    <AlertTriangle className="w-4 h-4" />
+                    Cancella tutti
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
         </div>
@@ -1261,7 +1321,7 @@ export default function VaultApp() {
           const visibleIds = visibleLinks.map(l => l.id);
           const selectedCount = visibleIds.filter(id => selectedIds.has(id)).length;
           const allSelected = visibleIds.length > 0 && selectedCount === visibleIds.length;
-          if (visibleLinks.length === 0) return null;
+          if (!selectionMode || visibleLinks.length === 0) return null;
           return (
             <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-secondary/40 border border-border">
               <Checkbox
@@ -1319,17 +1379,19 @@ export default function VaultApp() {
                       transition={{ delay: i * 0.02 }}
                       className="group flex items-center gap-3 p-3 rounded-lg bg-card border border-border hover:border-primary/20 transition-colors ml-4"
                     >
-                      <Checkbox
-                        checked={selectedIds.has(link.id)}
-                        onCheckedChange={(c) => {
-                          setSelectedIds(prev => {
-                            const n = new Set(prev);
-                            if (c) n.add(link.id); else n.delete(link.id);
-                            return n;
-                          });
-                        }}
-                        aria-label={`Seleziona ${link.title}`}
-                      />
+                      {selectionMode && (
+                        <Checkbox
+                          checked={selectedIds.has(link.id)}
+                          onCheckedChange={(c) => {
+                            setSelectedIds(prev => {
+                              const n = new Set(prev);
+                              if (c) n.add(link.id); else n.delete(link.id);
+                              return n;
+                            });
+                          }}
+                          aria-label={`Seleziona ${link.title}`}
+                        />
+                      )}
                       <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center shrink-0">
                         {link.favorite ? <Star className="w-4 h-4 text-vault-gold fill-vault-gold" /> : <ExternalLink className="w-4 h-4 text-muted-foreground" />}
                       </div>
@@ -1379,17 +1441,19 @@ export default function VaultApp() {
                   transition={{ delay: i * 0.02 }}
                   className="group flex items-center gap-3 p-3 rounded-lg bg-card border border-border hover:border-primary/20 transition-colors"
                 >
-                  <Checkbox
-                    checked={selectedIds.has(link.id)}
-                    onCheckedChange={(c) => {
-                      setSelectedIds(prev => {
-                        const n = new Set(prev);
-                        if (c) n.add(link.id); else n.delete(link.id);
-                        return n;
-                      });
-                    }}
-                    aria-label={`Seleziona ${link.title}`}
-                  />
+                  {selectionMode && (
+                    <Checkbox
+                      checked={selectedIds.has(link.id)}
+                      onCheckedChange={(c) => {
+                        setSelectedIds(prev => {
+                          const n = new Set(prev);
+                          if (c) n.add(link.id); else n.delete(link.id);
+                          return n;
+                        });
+                      }}
+                      aria-label={`Seleziona ${link.title}`}
+                    />
+                  )}
                   <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center shrink-0">
                     {link.favorite ? (
                       <Star className="w-4 h-4 text-vault-gold fill-vault-gold" />
