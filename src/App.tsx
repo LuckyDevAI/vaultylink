@@ -121,6 +121,8 @@ const AppRouter = () => {
       return <TermsPage />;
     case 'eula':
       return <EulaPage />;
+    case 'sitemap':
+      return <SitemapPage />;
     default:
       return <LandingPage />;
   }
