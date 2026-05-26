@@ -45,6 +45,10 @@ const isPasswordRecoveryCallback = () => {
   return query.get('type') === 'recovery' || hash.get('type') === 'recovery' || query.has('code');
 };
 
+if (typeof window !== 'undefined' && window.location.pathname.replace(/\/+$/, '') === '/sitemap') {
+  window.location.replace('/sitemap.xml');
+}
+
 const AppRouter = () => {
   const { view, setView, setCloudUser } = useAppStore();
   const [hasSyncedInitialPath, setHasSyncedInitialPath] = useState(false);
