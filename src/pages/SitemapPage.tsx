@@ -78,27 +78,51 @@ export default function SitemapPage() {
         </header>
 
         <Section title="Pagine pubbliche" items={publicEntries} />
-        <Section title="Area applicazione" items={appEntries} />
 
-        <section className="space-y-3 max-w-sm">
-          <h2 className="text-sm font-mono uppercase tracking-widest text-primary flex items-center gap-2">
-            <Languages className="w-4 h-4" /> Scegli lingua
-          </h2>
-          <Select value={lang} onValueChange={(v) => setLang(v as LangCode)}>
-            <SelectTrigger className="w-full bg-card border-border">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {(Object.entries(LANG_NAMES) as [LangCode, string][]).map(([code, name]) => (
-                <SelectItem key={code} value={code}>
-                  <span className="flex items-center gap-2">
-                    <span>{name}</span>
-                    <span className="font-mono text-xs text-muted-foreground uppercase">{code}</span>
-                  </span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <section className="space-y-4">
+          <h2 className="text-sm font-mono uppercase tracking-widest text-primary">Area applicazione</h2>
+          <ul className="grid sm:grid-cols-2 gap-3">
+            {appEntries.map((e) => (
+              <li key={e.path}>
+                <button
+                  onClick={() => go(e)}
+                  className="w-full h-full text-left group flex items-start gap-3 p-4 rounded-lg border border-border bg-card hover:border-primary/60 hover:bg-card/80 transition-colors"
+                >
+                  <e.icon className="w-5 h-5 mt-0.5 text-primary shrink-0" />
+                  <div className="min-w-0">
+                    <div className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                      {e.label}
+                    </div>
+                    <div className="text-xs font-mono text-muted-foreground mt-0.5 truncate">{e.path}</div>
+                    <div className="text-sm text-muted-foreground mt-1">{e.desc}</div>
+                  </div>
+                </button>
+              </li>
+            ))}
+            <li>
+              <div className="w-full h-full flex items-start gap-3 p-4 rounded-lg border border-border bg-card">
+                <Languages className="w-5 h-5 mt-0.5 text-primary shrink-0" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div className="font-semibold text-foreground">Scegli lingua</div>
+                  <Select value={lang} onValueChange={(v) => setLang(v as LangCode)}>
+                    <SelectTrigger className="w-full bg-background border-border h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(Object.entries(LANG_NAMES) as [LangCode, string][]).map(([code, name]) => (
+                        <SelectItem key={code} value={code}>
+                          <span className="flex items-center gap-2">
+                            <span>{name}</span>
+                            <span className="font-mono text-xs text-muted-foreground uppercase">{code}</span>
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </li>
+          </ul>
         </section>
       </main>
     </div>
