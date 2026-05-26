@@ -1,7 +1,8 @@
 import { useAppStore } from '@/stores/appStore';
 import SiteHeader from '@/components/SiteHeader';
 import Seo from '@/components/Seo';
-import { Home, Shield, FileText, ScrollText, LogIn, Lock, User, Map } from 'lucide-react';
+import { Home, Shield, FileText, ScrollText, LogIn, Lock, User, Map, Languages, Check } from 'lucide-react';
+import { LANG_NAMES, type LangCode } from '@/lib/i18n';
 
 type Entry = { path: string; label: string; desc: string; icon: React.ComponentType<{ className?: string }>; view?: string };
 
