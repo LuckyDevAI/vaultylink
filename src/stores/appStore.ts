@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { LangCode } from '@/lib/i18n';
 
-type AppView = 'landing' | 'vault' | 'auth' | 'privacy' | 'terms' | 'eula' | 'admin' | 'account';
+type AppView = 'landing' | 'vault' | 'auth' | 'privacy' | 'terms' | 'eula' | 'admin' | 'account' | 'sitemap';
 export type SettingsSection = 'profile' | 'password' | 'pin' | 'general' | null;
 
 interface AppState {

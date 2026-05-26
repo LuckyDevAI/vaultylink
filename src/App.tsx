@@ -13,6 +13,7 @@ import TermsPage from "@/pages/TermsPage";
 import EulaPage from "@/pages/EulaPage";
 import AdminPage from "@/pages/AdminPage";
 import AccountPage from "@/pages/AccountPage";
+import SitemapPage from "@/pages/SitemapPage";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,7 @@ const PATH_TO_VIEW: Record<string, string> = {
   '/auth': 'auth',
   '/vault': 'vault',
   '/account': 'account',
+  '/sitemap': 'sitemap',
 };
 
 const VIEW_TO_PATH: Record<string, string> = {
@@ -36,6 +38,7 @@ const VIEW_TO_PATH: Record<string, string> = {
   auth: '/auth',
   vault: '/vault',
   account: '/account',
+  sitemap: '/sitemap',
 };
 
 const isPasswordRecoveryCallback = () => {
@@ -45,9 +48,7 @@ const isPasswordRecoveryCallback = () => {
   return query.get('type') === 'recovery' || hash.get('type') === 'recovery' || query.has('code');
 };
 
-if (typeof window !== 'undefined' && window.location.pathname.replace(/\/+$/, '') === '/sitemap') {
-  window.location.replace('/sitemap.xml');
-}
+
 
 const AppRouter = () => {
   const { view, setView, setCloudUser } = useAppStore();
@@ -120,6 +121,8 @@ const AppRouter = () => {
       return <TermsPage />;
     case 'eula':
       return <EulaPage />;
+    case 'sitemap':
+      return <SitemapPage />;
     default:
       return <LandingPage />;
   }
