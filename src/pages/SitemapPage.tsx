@@ -20,7 +20,7 @@ const appEntries: Entry[] = [
 ];
 
 export default function SitemapPage() {
-  const { setView } = useAppStore();
+  const { setView, lang, setLang } = useAppStore();
 
   const go = (e: Entry) => {
     if (e.view) setView(e.view as never);
