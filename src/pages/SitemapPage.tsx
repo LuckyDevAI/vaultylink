@@ -1,8 +1,9 @@
 import { useAppStore } from '@/stores/appStore';
 import SiteHeader from '@/components/SiteHeader';
 import Seo from '@/components/Seo';
-import { Home, Shield, FileText, ScrollText, LogIn, Lock, User, Map, Languages, Check } from 'lucide-react';
+import { Home, Shield, FileText, ScrollText, LogIn, Lock, User, Map, Languages } from 'lucide-react';
 import { LANG_NAMES, type LangCode } from '@/lib/i18n';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type Entry = { path: string; label: string; desc: string; icon: React.ComponentType<{ className?: string }>; view?: string };
 
@@ -79,34 +80,25 @@ export default function SitemapPage() {
         <Section title="Pagine pubbliche" items={publicEntries} />
         <Section title="Area applicazione" items={appEntries} />
 
-        <section className="space-y-4">
+        <section className="space-y-3 max-w-sm">
           <h2 className="text-sm font-mono uppercase tracking-widest text-primary flex items-center gap-2">
             <Languages className="w-4 h-4" /> Scegli lingua
           </h2>
-          <ul className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {(Object.entries(LANG_NAMES) as [LangCode, string][]).map(([code, name]) => {
-              const active = code === lang;
-              return (
-                <li key={code}>
-                  <button
-                    onClick={() => setLang(code)}
-                    className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg border text-sm transition-colors ${
-                      active
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-border bg-card hover:border-primary/60 text-foreground'
-                    }`}
-                  >
-                    <span className="truncate">{name}</span>
-                    {active ? (
-                      <Check className="w-4 h-4 shrink-0" />
-                    ) : (
-                      <span className="font-mono text-xs text-muted-foreground uppercase">{code}</span>
-                    )}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+          <Select value={lang} onValueChange={(v) => setLang(v as LangCode)}>
+            <SelectTrigger className="w-full bg-card border-border">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {(Object.entries(LANG_NAMES) as [LangCode, string][]).map(([code, name]) => (
+                <SelectItem key={code} value={code}>
+                  <span className="flex items-center gap-2">
+                    <span>{name}</span>
+                    <span className="font-mono text-xs text-muted-foreground uppercase">{code}</span>
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </section>
       </main>
     </div>
