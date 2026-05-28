@@ -79,6 +79,7 @@ const AppRouter = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
         setCloudUser(true);
+        void loadRemoteLang();
         if (event === 'PASSWORD_RECOVERY' || isPasswordRecoveryCallback()) {
           sessionStorage.setItem('vl_password_recovery', '1');
           setView('auth');
@@ -94,6 +95,15 @@ const AppRouter = () => {
 
     // Check existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setCloudUser(true);
+        void loadRemoteLang();
+        if (isPasswordRecoveryCallback()) {
+          sessionStorage.setItem('vl_password_recovery', '1');
+          setView('auth');
+        }
+      }
+    });
       if (session?.user) {
         setCloudUser(true);
         if (isPasswordRecoveryCallback()) {
