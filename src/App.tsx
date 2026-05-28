@@ -104,17 +104,9 @@ const AppRouter = () => {
         }
       }
     });
-      if (session?.user) {
-        setCloudUser(true);
-        if (isPasswordRecoveryCallback()) {
-          sessionStorage.setItem('vl_password_recovery', '1');
-          setView('auth');
-        }
-      }
-    });
 
     return () => subscription.unsubscribe();
-  }, [setCloudUser, setView, view]);
+  }, [setCloudUser, setView, view, loadRemoteLang]);
 
   switch (view) {
     case 'auth':
