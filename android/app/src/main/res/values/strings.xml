@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">vaultylink</string>
+    <string name="title_activity_main">vaultylink</string>
+    <string name="package_name">app.lovable.d8793afc9904408d93a13fc60852fa47</string>
+    <string name="custom_url_scheme">app.lovable.d8793afc9904408d93a13fc60852fa47</string>
+</resources>
