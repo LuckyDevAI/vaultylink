@@ -51,7 +51,7 @@ const isPasswordRecoveryCallback = () => {
 
 
 const AppRouter = () => {
-  const { view, setView, setCloudUser } = useAppStore();
+  const { view, setView, setCloudUser, loadRemoteLang } = useAppStore();
   const [hasSyncedInitialPath, setHasSyncedInitialPath] = useState(false);
 
   // Sync URL path → view on mount
