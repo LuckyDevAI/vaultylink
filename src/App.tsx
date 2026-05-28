@@ -51,7 +51,7 @@ const isPasswordRecoveryCallback = () => {
 
 
 const AppRouter = () => {
-  const { view, setView, setCloudUser } = useAppStore();
+  const { view, setView, setCloudUser, loadRemoteLang } = useAppStore();
   const [hasSyncedInitialPath, setHasSyncedInitialPath] = useState(false);
 
   // Sync URL path → view on mount
@@ -79,6 +79,7 @@ const AppRouter = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
         setCloudUser(true);
+        void loadRemoteLang();
         if (event === 'PASSWORD_RECOVERY' || isPasswordRecoveryCallback()) {
           sessionStorage.setItem('vl_password_recovery', '1');
           setView('auth');
@@ -96,6 +97,7 @@ const AppRouter = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setCloudUser(true);
+        void loadRemoteLang();
         if (isPasswordRecoveryCallback()) {
           sessionStorage.setItem('vl_password_recovery', '1');
           setView('auth');
@@ -104,7 +106,7 @@ const AppRouter = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [setCloudUser, setView, view]);
+  }, [setCloudUser, setView, view, loadRemoteLang]);
 
   switch (view) {
     case 'auth':

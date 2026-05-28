@@ -188,6 +188,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_preferences: {
+        Row: {
+          id: string
+          lang: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          lang?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          lang?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
