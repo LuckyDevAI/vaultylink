@@ -4,6 +4,7 @@ import Seo from '@/components/Seo';
 import { Home, Shield, FileText, ScrollText, LogIn, Lock, User, Map, Languages } from 'lucide-react';
 import { LANG_NAMES, type LangCode } from '@/lib/i18n';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 type Entry = { path: string; label: string; desc: string; icon: React.ComponentType<{ className?: string }>; view?: string };
 
