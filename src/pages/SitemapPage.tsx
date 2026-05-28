@@ -103,23 +103,34 @@ export default function SitemapPage() {
             <li>
               <div className="w-full h-full flex items-start gap-3 p-4 rounded-lg border border-border bg-card">
                 <Languages className="w-5 h-5 mt-0.5 text-primary shrink-0" />
-                <div className="min-w-0 flex-1 space-y-2">
+              <div className="min-w-0 flex-1 space-y-2">
                   <div className="font-semibold text-foreground">Scegli lingua</div>
-                  <Select value={lang} onValueChange={(v) => setLang(v as LangCode)}>
-                    <SelectTrigger className="w-full bg-background border-border h-9">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {(Object.entries(LANG_NAMES) as [LangCode, string][]).map(([code, name]) => (
-                        <SelectItem key={code} value={code}>
-                          <span className="flex items-center gap-2">
-                            <span>{name}</span>
-                            <span className="font-mono text-xs text-muted-foreground uppercase">{code}</span>
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Select value={lang} onValueChange={(v) => setLang(v as LangCode)}>
+                          <SelectTrigger className="w-full bg-background border-border h-9">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {(Object.entries(LANG_NAMES) as [LangCode, string][]).map(([code, name]) => (
+                              <SelectItem key={code} value={code}>
+                                <span className="flex items-center gap-2">
+                                  <span>{name}</span>
+                                  <span className="font-mono text-xs text-muted-foreground uppercase">{code}</span>
+                                </span>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p className="max-w-xs text-xs">
+                          Lingua corrente: <strong>{LANG_NAMES[lang]}</strong>. Clicca per cambiare la lingua dell&apos;interfaccia.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </div>
             </li>
