@@ -30,7 +30,7 @@ export const PlanExpiryEmail = ({
 }: PlanExpiryEmailProps) => (
   <Html lang="it" dir="ltr">
     <Head />
-    <Preview>Il tuo piano VaultLink scade tra {daysLeft} giorni</Preview>
+    <Preview>{`Il tuo piano VaultLink scade tra ${daysLeft} giorni`}</Preview>
     <Body style={main}>
       <Container style={container}>
         <Text style={logo}>🔐 VaultLink</Text>
