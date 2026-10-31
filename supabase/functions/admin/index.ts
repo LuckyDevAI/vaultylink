@@ -1,9 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { EmailAPIError, sendLovableEmail } from "npm:@lovable.dev/email-js@0.4.0";
+import { recordEmailOutcome } from "../_shared/email-audit.ts";
+import { z } from "npm:zod@3.25.76";
 
 function getStripePeriodEndSeconds(subscription: any): number | null {
   const item = subscription?.items?.data?.[0];
@@ -277,20 +276,38 @@ Deno.serve(async (req) => {
         }
 
         const messageId = `admin-send-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-        const { error: enqErr } = await supabase.rpc('enqueue_email', {
-          queue_name: 'transactional_emails',
-          payload: {
-            to: recipientEmail,
+        const parsed = z.object({
+          recipient: z.string().email(),
+          subject: z.string().min(1).max(998),
+          html: z.string().min(1).max(200000),
+          label: z.enum(['plan-expiry-10', 'plan-expiry-3', 'plan-frozen', 'custom']),
+        }).parse({ recipient: recipientEmail, subject: emailSubject, html: emailBody, label: tpl || 'custom' });
+        const apiKey = Deno.env.get('LOVABLE_API_KEY');
+        if (!apiKey) throw new Error('Email configuration missing');
+        try {
+          await sendLovableEmail({
+            to: parsed.recipient,
             from: 'VaultLink <noreply@notify.vaultylink.com>',
             sender_domain: 'notify.vaultylink.com',
-            subject: emailSubject,
-            html: emailBody,
-            label: tpl || 'custom',
-            message_id: messageId,
-            queued_at: new Date().toISOString(),
-          },
-        });
-        if (enqErr) throw enqErr;
+            subject: parsed.subject,
+            html: parsed.html,
+            text: parsed.html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(),
+            purpose: 'transactional',
+            label: parsed.label,
+            idempotency_key: messageId,
+          }, { apiKey, sendUrl: Deno.env.get('LOVABLE_SEND_URL') });
+          await recordEmailOutcome(messageId, parsed.label, parsed.recipient, 'sent');
+        } catch (error) {
+          if (error instanceof EmailAPIError && error.code === 'recipient_suppressed') {
+            await recordEmailOutcome(messageId, parsed.label, parsed.recipient, 'suppressed');
+            return new Response(JSON.stringify({ success: false, sent: false, reason: 'recipient_suppressed' }), {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          }
+          await recordEmailOutcome(messageId, parsed.label, parsed.recipient, 'failed',
+            error instanceof Error ? error.message : String(error));
+          throw error;
+        }
 
         return new Response(JSON.stringify({ success: true, message_id: messageId }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },

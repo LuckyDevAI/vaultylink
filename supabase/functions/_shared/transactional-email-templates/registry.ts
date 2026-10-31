@@ -1,3 +1,6 @@
+import { template as renewal } from './plan-renewal.tsx'
+import { template as frozen } from './plan-frozen.tsx'
+import { template as purchase } from './purchase-confirmation.tsx'
 import type { ComponentType } from 'npm:react@18.3.1'
 
 export interface TemplateEntry {
@@ -18,6 +21,7 @@ export interface TemplateEntry {
  *   // then add to TEMPLATES: 'welcome': welcomeTemplate
  */
 export const TEMPLATES: Record<string, TemplateEntry> = {
-  // Add templates here as they are created, e.g.:
-  // 'welcome': welcomeTemplate,
+  'plan-renewal-20d': renewal,
+  'plan-frozen': frozen,
+  'purchase-confirmation': purchase,
 }

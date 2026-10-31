@@ -27,33 +27,32 @@ export const SignupEmail = ({
   recipient,
   confirmationUrl,
 }: SignupEmailProps) => (
-  <Html lang="en" dir="ltr">
-    <Head>
-      <style>{darkModeCss}</style>
-    </Head>
-    <Preview>Confirm your email for {siteName}</Preview>
+  <Html lang="it" dir="ltr">
+    <Head />
+    <Preview>Conferma la tua email per VaultLink</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Confirm your email</Heading>
+        <Text style={logo}>🔐 VaultLink</Text>
+        <Heading style={h1}>Conferma la tua email</Heading>
         <Text style={text}>
-          Thanks for signing up for{' '}
+          Grazie per esserti registrato su{' '}
           <Link href={siteUrl} style={link}>
-            <strong>{siteName}</strong>
+            <strong>VaultLink</strong>
           </Link>
-          !
+          ! I tuoi link in cassaforte.
         </Text>
         <Text style={text}>
-          Please confirm your email address (
+          Conferma il tuo indirizzo email (
           <Link href={`mailto:${recipient}`} style={link}>
             {recipient}
           </Link>
-          ) by clicking the button below:
+          ) cliccando il pulsante qui sotto:
         </Text>
-        <Button className="dm-btn" style={button} href={confirmationUrl}>
-          Verify Email
+        <Button style={button} href={confirmationUrl}>
+          Verifica Email
         </Button>
         <Text style={footer}>
-          If you didn't create an account, you can safely ignore this email.
+          Se non hai creato un account, puoi ignorare questa email.
         </Text>
       </Container>
     </Body>
@@ -62,36 +61,19 @@ export const SignupEmail = ({
 
 export default SignupEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
+const main = { backgroundColor: '#ffffff', fontFamily: "'Space Grotesk', Arial, sans-serif" }
 const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
-}
-const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
-}
-const link = { color: 'inherit', textDecoration: 'underline' }
+const logo = { fontSize: '18px', fontWeight: 'bold' as const, color: '#0fa968', margin: '0 0 24px' }
+const h1 = { fontSize: '22px', fontWeight: 'bold' as const, color: '#111827', margin: '0 0 20px' }
+const text = { fontSize: '14px', color: '#6b7280', lineHeight: '1.5', margin: '0 0 25px' }
+const link = { color: '#0fa968', textDecoration: 'underline' }
 const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
+  backgroundColor: '#0fa968',
+  color: '#0f1419',
   fontSize: '14px',
-  border: '1px solid #000000',
-  borderRadius: '8px',
-  padding: '12px 20px',
+  fontWeight: 'bold' as const,
+  borderRadius: '12px',
+  padding: '12px 24px',
   textDecoration: 'none',
 }
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
-// Rendered as a text child, which React may HTML-escape: keep this CSS free of >, &, and quotes.
-const darkModeCss = `
-  @media (prefers-color-scheme: dark) {
-    .dm-btn { background-color: #ffffff !important; color: #000000 !important; }
-  }
-  [data-ogsc] .dm-btn { background-color: #ffffff !important; color: #000000 !important; }
-  [data-ogsb] .dm-btn { background-color: #ffffff !important; color: #000000 !important; }
-`
+const footer = { fontSize: '12px', color: '#9ca3af', margin: '30px 0 0' }
