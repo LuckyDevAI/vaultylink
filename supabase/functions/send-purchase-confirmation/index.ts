@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "npm:stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
+import { LIFETIME_AMOUNT_CENTS } from "../_shared/billing-policy.ts";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { sendAuditedTemplateEmail } from "../_shared/transactional-email-templates/send-audited-email.ts";
 
@@ -116,7 +117,7 @@ serve(async (req) => {
       }
       identifier = paidSession.id;
       planLabel = "Lifetime";
-      amount = paidSession.amount_total ?? 4999;
+      amount = paidSession.amount_total ?? LIFETIME_AMOUNT_CENTS;
       currency = paidSession.currency ?? "eur";
     }
 
