@@ -36,5 +36,5 @@ export const template = {
   component: Email,
   subject: (data) => `✅ Acquisto confermato — Piano ${data.planLabel ?? ''} (${data.amountFormatted ?? ''})`,
   displayName: 'Conferma acquisto',
-  previewData: { email: 'user@example.test', planLabel: 'Lifetime', amountFormatted: '19,90 €', licenseCode: 'VL-ABCD-EFGH-JKLM' },
+  previewData: { email: 'user@example.test', planLabel: 'Lifetime', amountFormatted: '49,99 €', licenseCode: 'VL-ABCD-EFGH-JKLM' },
 } satisfies TemplateEntry
