@@ -85,7 +85,7 @@ export default function AdminPlansTab({ users }: { users: AdminUser[] }) {
       color: 'text-accent',
       bgColor: 'bg-accent/10',
       borderColor: 'border-accent/20',
-      price: '€19,90 una tantum',
+      price: '€49,99 una tantum',
       users: planStats.lifetime.users,
     },
     {
@@ -158,7 +158,7 @@ export default function AdminPlansTab({ users }: { users: AdminUser[] }) {
           <div>
             <p className="text-xs text-muted-foreground">Revenue lifetime</p>
             <p className="text-lg font-bold text-accent">
-              €{(planStats.lifetime.count * 19.90).toFixed(2)}
+              €{(planStats.lifetime.count * 49.99).toFixed(2)}
             </p>
           </div>
         </div>
