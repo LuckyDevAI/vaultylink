@@ -17,6 +17,7 @@ import {
 interface EmailChangeEmailProps {
   siteName: string
   email: string
+  oldEmail?: string
   newEmail: string
   confirmationUrl: string
 }
@@ -24,6 +25,7 @@ interface EmailChangeEmailProps {
 export const EmailChangeEmail = ({
   siteName,
   email,
+  oldEmail,
   newEmail,
   confirmationUrl,
 }: EmailChangeEmailProps) => (
@@ -36,8 +38,8 @@ export const EmailChangeEmail = ({
         <Heading style={h1}>Conferma il cambio email</Heading>
         <Text style={text}>
           Hai richiesto di cambiare il tuo indirizzo email per VaultLink da{' '}
-          <Link href={`mailto:${email}`} style={link}>
-            {email}
+          <Link href={`mailto:${oldEmail || email}`} style={link}>
+            {oldEmail || email}
           </Link>{' '}
           a{' '}
           <Link href={`mailto:${newEmail}`} style={link}>

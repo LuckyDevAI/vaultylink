@@ -44,12 +44,16 @@ export default function AdminEmailTab({ users }: { users: AdminUser[] }) {
     }
     setSending(true);
     try {
-      await adminCall('send_email', {
+      const result = await adminCall('send_email', {
         template,
         recipient,
         subject: subject || undefined,
         body: body || undefined,
       });
+      if (result?.reason === 'recipient_suppressed') {
+        toast.info('Email non inviata: il destinatario non può ricevere queste email.');
+        return;
+      }
       toast.success(`Email inviata a ${recipient}`);
       setRecipient('');
       setSubject('');

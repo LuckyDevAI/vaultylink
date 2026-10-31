@@ -1,10 +1,17 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { sendAuditedTemplateEmail } from "../_shared/transactional-email-templates/send-audited-email.ts";
+import { EmailAPIError } from "npm:@lovable.dev/email-js@0.4.0";
+
+async function sendWithRateLimitWait(...args: Parameters<typeof sendAuditedTemplateEmail>) {
+  try { return await sendAuditedTemplateEmail(...args); }
+  catch (error) {
+    if (!(error instanceof EmailAPIError) || error.status !== 429) throw error;
+    await new Promise(resolve => setTimeout(resolve, (error.retryAfterSeconds ?? 60) * 1000));
+    return sendAuditedTemplateEmail(...args);
+  }
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -38,7 +45,8 @@ Deno.serve(async (req) => {
         const user = allUsers?.find(u => u.id === plan.user_id);
         if (!user?.email) continue;
 
-        const expiryDate = new Date(plan.expires_at!);
+        if (!plan.expires_at) continue;
+        const expiryDate = new Date(plan.expires_at);
         const daysLeft = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
         const formattedDate = expiryDate.toLocaleDateString('it-IT', {
@@ -46,34 +54,16 @@ Deno.serve(async (req) => {
         });
 
         const messageId = `plan-renewal-20d-${plan.user_id}-${expiryDate.toISOString().slice(0, 10)}`;
-        const emailSubject = plan.auto_renew
-          ? `🔄 Promemoria: rinnovo automatico tra ${daysLeft} giorni`
-          : `⚠️ Il tuo piano VaultLink scade tra ${daysLeft} giorni`;
-
         try {
-          const { error: enqueueError } = await supabase.rpc('enqueue_email', {
-            queue_name: 'transactional_emails',
-            payload: {
-              to: user.email,
-              from: 'VaultLink <noreply@notify.vaultylink.com>',
-              sender_domain: 'notify.vaultylink.com',
-              subject: emailSubject,
-              html: buildExpiryEmailHtml(user.email, daysLeft, formattedDate, plan.auto_renew),
-              label: 'plan-renewal-20d',
-              message_id: messageId,
-              queued_at: new Date().toISOString(),
-            },
+          const result = await sendWithRateLimitWait('plan-renewal-20d', user.email, {
+            idempotencyKey: messageId,
+            templateData: { email: user.email, daysLeft, expiryDate: formattedDate, autoRenew: plan.auto_renew },
           });
-
-          if (enqueueError) {
-            console.error(`[PLAN-EXPIRY] Enqueue error for ${user.email}:`, enqueueError);
-            continue;
-          }
-
-          console.log(`[PLAN-EXPIRY] Email 20d accodata: ${user.email} - scade tra ${daysLeft} giorni`);
+          // Suppression is a terminal outcome, not a reason to retry the reminder.
           notified20.push(plan.user_id);
-        } catch (emailErr) {
-          console.error(`[PLAN-EXPIRY] Email error for ${user.email}:`, emailErr);
+          console.log('[PLAN-EXPIRY] Reminder completed', { sent: result.sent, userId: plan.user_id });
+        } catch (error) {
+          console.error('[PLAN-EXPIRY] Reminder failed', { message: error instanceof Error ? error.message : String(error) });
         }
       }
 
@@ -110,18 +100,9 @@ Deno.serve(async (req) => {
         const user = allUsers?.find(u => u.id === plan.user_id);
         if (user?.email) {
           try {
-            await supabase.rpc('enqueue_email', {
-              queue_name: 'transactional_emails',
-              payload: {
-                to: user.email,
-                from: 'VaultLink <noreply@notify.vaultylink.com>',
-                sender_domain: 'notify.vaultylink.com',
-                subject: '❄️ Il tuo piano VaultLink è stato sospeso',
-                html: buildFrozenEmailHtml(user.email),
-                label: 'plan-frozen',
-                message_id: `plan-frozen-${plan.user_id}`,
-                queued_at: new Date().toISOString(),
-              },
+            await sendWithRateLimitWait('plan-frozen', user.email, {
+              idempotencyKey: `plan-frozen-${plan.user_id}`,
+              templateData: { email: user.email },
             });
           } catch (e) {
             console.error(`[PLAN-EXPIRY] Frozen email error:`, e);
@@ -148,63 +129,3 @@ Deno.serve(async (req) => {
     });
   }
 });
-
-function buildExpiryEmailHtml(email: string, daysLeft: number, expiryDate: string, autoRenew: boolean): string {
-  const urgencyTitle = daysLeft <= 3
-    ? '⚠️ Il tuo piano sta per scadere!'
-    : 'Il tuo piano sta per scadere';
-
-  const renewInfo = autoRenew
-    ? `<p style="font-size:14px;color:#6b7280;line-height:1.5;margin:0 0 25px">
-        Il rinnovo automatico è <strong>attivo</strong>. Il tuo piano verrà rinnovato automaticamente.
-        Se desideri annullare il rinnovo, puoi farlo entro 7 giorni prima della scadenza.
-      </p>
-      <a href="https://vaultylink.com" style="display:inline-block;background-color:#0fa968;color:#0f1419;font-size:14px;font-weight:bold;border-radius:12px;padding:12px 24px;text-decoration:none">Gestisci Abbonamento</a>`
-    : `<p style="font-size:14px;color:#6b7280;line-height:1.5;margin:0 0 25px">
-        Il rinnovo automatico è <strong>disattivato</strong>. Se non rinnovi entro la scadenza,
-        il tuo piano passerà allo stato <strong>Frozen</strong> e l'accesso cloud sarà sospeso.
-      </p>
-      <a href="https://vaultylink.com" style="display:inline-block;background-color:#0fa968;color:#0f1419;font-size:14px;font-weight:bold;border-radius:12px;padding:12px 24px;text-decoration:none">Rinnova Ora</a>`;
-
-  return `<!DOCTYPE html>
-<html lang="it">
-<head><meta charset="UTF-8"></head>
-<body style="background-color:#ffffff;font-family:'Space Grotesk',Arial,sans-serif">
-<div style="padding:20px 25px">
-  <p style="font-size:18px;font-weight:bold;color:#0fa968;margin:0 0 24px">🔐 VaultLink</p>
-  <h1 style="font-size:22px;font-weight:bold;color:#111827;margin:0 0 20px">${urgencyTitle}</h1>
-  <p style="font-size:14px;color:#6b7280;line-height:1.5;margin:0 0 25px">
-    Ciao, il tuo piano <strong>Yearly</strong> su VaultLink scadrà il <strong>${expiryDate}</strong> (tra ${daysLeft} giorni).
-  </p>
-  ${renewInfo}
-  <p style="font-size:12px;color:#9ca3af;margin:30px 0 0">
-    Questa email è stata inviata a ${email} perché hai un piano attivo su VaultLink.
-  </p>
-</div>
-</body>
-</html>`;
-}
-
-function buildFrozenEmailHtml(email: string): string {
-  return `<!DOCTYPE html>
-<html lang="it">
-<head><meta charset="UTF-8"></head>
-<body style="background-color:#ffffff;font-family:'Space Grotesk',Arial,sans-serif">
-<div style="padding:20px 25px">
-  <p style="font-size:18px;font-weight:bold;color:#0fa968;margin:0 0 24px">🔐 VaultLink</p>
-  <h1 style="font-size:22px;font-weight:bold;color:#111827;margin:0 0 20px">❄️ Piano sospeso</h1>
-  <p style="font-size:14px;color:#6b7280;line-height:1.5;margin:0 0 25px">
-    Il tuo piano <strong>Yearly</strong> su VaultLink è scaduto e non è stato rinnovato.
-    Il tuo account è ora in stato <strong>Frozen</strong> e l'accesso alla sincronizzazione cloud è sospeso.
-  </p>
-  <p style="font-size:14px;color:#6b7280;line-height:1.5;margin:0 0 25px">
-    Per riattivare il servizio, rinnova il tuo abbonamento.
-  </p>
-  <a href="https://vaultylink.com" style="display:inline-block;background-color:#0fa968;color:#0f1419;font-size:14px;font-weight:bold;border-radius:12px;padding:12px 24px;text-decoration:none">Rinnova Ora</a>
-  <p style="font-size:12px;color:#9ca3af;margin:30px 0 0">
-    Questa email è stata inviata a ${email}.
-  </p>
-</div>
-</body>
-</html>`;
-}

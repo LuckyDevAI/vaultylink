@@ -1,12 +1,9 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
+import Stripe from "npm:stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { sendAuditedTemplateEmail } from "../_shared/transactional-email-templates/send-audited-email.ts";
 
 const log = (step: string, details?: unknown) => {
   const d = details ? ` - ${JSON.stringify(details)}` : "";
@@ -34,51 +31,6 @@ function formatPrice(amount: number, currency: string): string {
     style: "currency",
     currency: currency.toUpperCase(),
   }).format(amount / 100);
-}
-
-function buildEmailHtml(opts: {
-  email: string;
-  planLabel: string;
-  amountFormatted: string;
-  licenseCode: string;
-  isYearly: boolean;
-  nextRenewalDate?: string;
-}): string {
-  const renewalBlock = opts.isYearly && opts.nextRenewalDate
-    ? `<p style="font-size:14px;color:#6b7280;line-height:1.5;margin:0 0 25px">
-        Il tuo piano si rinnoverà automaticamente il <strong>${opts.nextRenewalDate}</strong>.
-        Riceverai una email di promemoria 20 giorni prima del rinnovo.
-      </p>`
-    : "";
-
-  return `<!DOCTYPE html>
-<html lang="it">
-<head><meta charset="UTF-8"></head>
-<body style="background-color:#ffffff;font-family:'Space Grotesk',Arial,sans-serif">
-<div style="max-width:560px;margin:0 auto;padding:24px">
-  <p style="font-size:18px;font-weight:bold;color:#0fa968;margin:0 0 24px">🔐 VaultLink</p>
-  <h1 style="font-size:24px;font-weight:bold;color:#111827;margin:0 0 16px">Grazie per il tuo acquisto!</h1>
-  <p style="font-size:14px;color:#6b7280;line-height:1.5;margin:0 0 24px">
-    Il tuo piano <strong>${opts.planLabel}</strong> è ora attivo.
-  </p>
-
-  <div style="background:#f8faf9;border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin:0 0 24px">
-    <p style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px">Codice di licenza</p>
-    <p style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:bold;color:#0fa968;letter-spacing:.05em;margin:0 0 16px">${opts.licenseCode}</p>
-    <p style="font-size:12px;color:#6b7280;margin:0 0 12px">Importo pagato</p>
-    <p style="font-size:18px;font-weight:bold;color:#111827;margin:0">${opts.amountFormatted}</p>
-  </div>
-
-  ${renewalBlock}
-
-  <a href="https://vaultylink.com" style="display:inline-block;background-color:#0fa968;color:#0f1419;font-size:14px;font-weight:bold;border-radius:12px;padding:12px 24px;text-decoration:none">Apri VaultLink</a>
-
-  <p style="font-size:12px;color:#9ca3af;margin:32px 0 0">
-    Conserva questo codice come ricevuta del tuo acquisto. Email inviata a ${opts.email}.
-  </p>
-</div>
-</body>
-</html>`;
 }
 
 serve(async (req) => {
@@ -137,7 +89,7 @@ serve(async (req) => {
       const price = sub.items.data[0]?.price;
       amount = price?.unit_amount ?? 991;
       currency = price?.currency ?? "eur";
-      nextRenewalDate = new Date(sub.current_period_end * 1000).toLocaleDateString("it-IT", {
+      nextRenewalDate = new Date((sub.items.data[0]?.current_period_end ?? 0) * 1000).toLocaleDateString("it-IT", {
         day: "2-digit", month: "long", year: "numeric",
       });
     } else {
@@ -168,6 +120,7 @@ serve(async (req) => {
       .from("email_send_log")
       .select("id")
       .eq("message_id", messageId)
+      .eq("status", "sent")
       .limit(1);
     if (existing && existing.length > 0) {
       log("Already sent", { messageId });
@@ -179,35 +132,16 @@ serve(async (req) => {
 
     const licenseCode = await generateLicenseCode(identifier);
     const amountFormatted = formatPrice(amount, currency);
-    const html = buildEmailHtml({
-      email: user.email,
-      planLabel,
-      amountFormatted,
-      licenseCode,
-      isYearly,
-      nextRenewalDate,
+    const result = await sendAuditedTemplateEmail('purchase-confirmation', user.email ?? '', {
+      idempotencyKey: messageId,
+      templateData: { email: user.email, planLabel, amountFormatted, licenseCode, isYearly, nextRenewalDate },
     });
-
-    const { error: enqueueError } = await supabase.rpc("enqueue_email", {
-      queue_name: "transactional_emails",
-      payload: {
-        to: user.email,
-        from: "VaultLink <noreply@notify.vaultylink.com>",
-        sender_domain: "notify.vaultylink.com",
-        subject: `✅ Acquisto confermato — Piano ${planLabel} (${amountFormatted})`,
-        html,
-        label: "purchase-confirmation",
-        message_id: messageId,
-        queued_at: new Date().toISOString(),
-      },
-    });
-
-    if (enqueueError) {
-      log("Enqueue error", enqueueError);
-      throw new Error(`Enqueue failed: ${enqueueError.message}`);
+    if (!result.sent) {
+      return new Response(JSON.stringify(result), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200,
+      });
     }
-
-    log("Email enqueued", { messageId, licenseCode });
+    log("Email sent", { messageId });
 
     return new Response(
       JSON.stringify({ sent: true, licenseCode, plan: planLabel, amount: amountFormatted }),
