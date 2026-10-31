@@ -1,11 +1,9 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
+import Stripe from "npm:stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { annualState } from "../_shared/billing-policy.ts";
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
@@ -17,7 +15,7 @@ const YEARLY_PRODUCT = "prod_UA4sfi1uPvB1AN";
 const LIFETIME_PRODUCT = "prod_UA4sxOEr0mEKOy";
 
 const planPayload = (planRow: any) => ({
-  subscribed: planRow?.plan === "yearly" || planRow?.plan === "lifetime",
+  subscribed: planRow?.plan === "lifetime" || (planRow?.plan === "yearly" && !!planRow.expires_at && new Date(planRow.expires_at).getTime() > Date.now()),
   plan: planRow?.plan ?? null,
   subscription_end: planRow?.expires_at ?? null,
   auto_renew: planRow?.auto_renew ?? null,
@@ -52,7 +50,7 @@ serve(async (req) => {
 
     const { data: existingPlan } = await supabaseClient
       .from("user_plans")
-      .select("plan, expires_at, auto_renew")
+      .select("plan, expires_at, auto_renew, notified_expiry")
       .eq("user_id", user.id)
       .maybeSingle();
 
@@ -73,38 +71,24 @@ serve(async (req) => {
     // Check active subscriptions (yearly plan)
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
-      status: "active",
-      limit: 10,
+      status: "all",
+      limit: 100,
     });
 
-    for (const sub of subscriptions.data) {
-      const item = sub.items.data[0];
-      const productId = item?.price?.product;
-      if (productId === YEARLY_PRODUCT) {
-        // In Stripe API 2025-08-27.basil current_period_end is on the subscription item
-        const periodEndSec = (item as any)?.current_period_end ?? (sub as any).current_period_end;
-        const subscriptionEnd = periodEndSec
-          ? new Date(periodEndSec * 1000).toISOString()
-          : new Date(Date.now() + 365 * 24 * 3600 * 1000).toISOString();
-        logStep("Active yearly subscription found", { subscriptionEnd });
-        await supabaseClient.from("user_plans").upsert({
-          user_id: user.id,
-          plan: "yearly",
-          expires_at: subscriptionEnd,
-          auto_renew: !sub.cancel_at_period_end,
-          notified_expiry: false,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: "user_id" });
-        return new Response(JSON.stringify({
-          subscribed: true,
-          plan: "yearly",
-          product_id: YEARLY_PRODUCT,
-          subscription_end: subscriptionEnd,
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        });
-      }
+    const annual = subscriptions.data.map(sub => ({ sub, state: annualState(sub) }));
+    const current = annual.find(({ state }) => state?.subscribed);
+    if (current?.state) {
+      const state = current.state;
+      const { error: syncError } = await supabaseClient.from("user_plans").upsert({
+        user_id: user.id, plan: state.plan, expires_at: state.subscription_end,
+        auto_renew: state.auto_renew,
+        notified_expiry: state.trialing || (existingPlan?.expires_at === state.subscription_end && existingPlan?.notified_expiry === true),
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "user_id" });
+      if (syncError) throw syncError;
+      return new Response(JSON.stringify({ ...state, product_id: YEARLY_PRODUCT }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
+      });
     }
 
     // Check one-time payments (lifetime plan)
@@ -141,6 +125,12 @@ serve(async (req) => {
     }
 
 
+    // A canceled or unpaid Stripe annual plan must not fall back to stale yearly access.
+    if (annual.some(({ state }) => state) && existingPlan?.plan === "yearly") {
+      const { error } = await supabaseClient.from("user_plans").update({ plan: "frozen", auto_renew: false, updated_at: new Date().toISOString() }).eq("user_id", user.id);
+      if (error) throw error;
+      return new Response(JSON.stringify({ subscribed: false, plan: "frozen", auto_renew: false, trialing: false }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
     logStep("No active Stripe plan found, using stored plan fallback");
     return new Response(JSON.stringify(planPayload(existingPlan)), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

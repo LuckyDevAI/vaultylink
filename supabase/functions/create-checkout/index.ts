@@ -1,11 +1,10 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
+import Stripe from "npm:stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { z } from "npm:zod@3.25.76";
+import { checkoutPolicy, YEARLY_PRODUCT } from "../_shared/billing-policy.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -18,14 +17,19 @@ serve(async (req) => {
   );
 
   try {
-    const authHeader = req.headers.get("Authorization")!;
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) return new Response(JSON.stringify({ error: "Accesso richiesto" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     const token = authHeader.replace("Bearer ", "");
     const { data } = await supabaseClient.auth.getUser(token);
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
 
-    const { priceId, mode } = await req.json();
-    if (!priceId) throw new Error("priceId is required");
+    const parsed = z.object({ priceId: z.string().min(1).max(100), mode: z.enum(["payment", "subscription"]).optional() }).safeParse(await req.json());
+    if (!parsed.success) return new Response(JSON.stringify({ error: "Piano non valido" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    let policy;
+    try { policy = checkoutPolicy(parsed.data.priceId); }
+    catch { return new Response(JSON.stringify({ error: "Piano non valido" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }); }
+    const { priceId } = parsed.data;
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
@@ -37,13 +41,22 @@ serve(async (req) => {
       customerId = customers.data[0].id;
     }
 
+    if (customerId && policy.mode === "subscription") {
+      const subs = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 100 });
+      if (subs.data.some(sub => ["active", "trialing"].includes(sub.status) && sub.items.data.some(item => item.price.product === YEARLY_PRODUCT))) {
+        return new Response(JSON.stringify({ error: "Cloud Sync è già attivo: gestisci l’abbonamento dal tuo account." }), { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
+    const origin = req.headers.get("origin");
+    if (!origin || !/^https?:\/\//.test(origin)) throw new Error("Missing origin");
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [{ price: priceId, quantity: 1 }],
-      mode: mode || "payment",
-      success_url: `${req.headers.get("origin")}/?payment=success`,
-      cancel_url: `${req.headers.get("origin")}/?payment=canceled`,
+      ...policy,
+      client_reference_id: user.id,
+      success_url: `${origin}/account?payment=success`,
+      cancel_url: `${origin}/account?payment=canceled`,
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
