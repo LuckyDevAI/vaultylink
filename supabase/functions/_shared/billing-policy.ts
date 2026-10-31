@@ -1,6 +1,6 @@
 export const YEARLY_PRICE = 'price_1TBkipCRiYFDB9U6JvyCLg2K';
 export const YEARLY_PRODUCT = 'prod_UA4sfi1uPvB1AN';
-export const LIFETIME_PRICE = 'price_1TBkjDCRiYFDB9U6np6oVFxs';
+export const LIFETIME_PRICE = 'price_1UWb2ACRiYFDB9U6iXitz0Xn';
 export const TRIAL_DAYS = 10;
 
 export function checkoutPolicy(priceId: string) {

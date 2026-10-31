@@ -116,7 +116,7 @@ serve(async (req) => {
       }
       identifier = paidSession.id;
       planLabel = "Lifetime";
-      amount = paidSession.amount_total ?? 1990;
+      amount = paidSession.amount_total ?? 4999;
       currency = paidSession.currency ?? "eur";
     }
 

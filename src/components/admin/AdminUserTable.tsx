@@ -345,7 +345,7 @@ export default function AdminUserTable({ users, onAction, onRefresh }: Props) {
                   <SelectItem value="none">Nessuno</SelectItem>
                   <SelectItem value="free">🆓 Free — trial 10 giorni</SelectItem>
                   <SelectItem value="yearly">🔄 Yearly — €9,91/anno</SelectItem>
-                  <SelectItem value="lifetime">⭐ Lifetime — €19,90</SelectItem>
+                  <SelectItem value="lifetime">⭐ Lifetime — €49,99</SelectItem>
                   <SelectItem value="frozen">❄️ Frozen</SelectItem>
                 </SelectContent>
               </Select>
