@@ -255,6 +255,29 @@ export function useVault() {
     } finally { setBusy(false); }
   }, []);
 
+  // Discard unreadable legacy data and start a fresh vault with the account key
+  const resetLegacy = useCallback(async (userId: string) => {
+    setBusy(true); setError('');
+    try {
+      const k = await deriveAccountKey(userId);
+      const blob = await encrypt([], k);
+      await dbSet('vaultData', blob);
+      const { error: err } = await supabase
+        .from('vault_data')
+        .upsert({ user_id: userId, encrypted_blob: blob, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+      if (err) throw err;
+      lastPushedRef.current = blob;
+      setKey(k);
+      setLocked(false);
+      await persistSession(k);
+      return { ok: true as const };
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Unknown error';
+      setError(msg);
+      return { ok: false as const, error: msg };
+    } finally { setBusy(false); }
+  }, []);
+
   const lock = useCallback(() => {
     setKey(null);
     setLocked(true);
@@ -384,7 +407,7 @@ export function useVault() {
 
   return {
     key, locked, error, busy, sessionRestored,
-    hasSalt, hasVault, setup, unlock, autoUnlock, migrateFromPin, lock,
+    hasSalt, hasVault, setup, unlock, autoUnlock, migrateFromPin, resetLegacy, lock,
     saveLinks, loadLinks, changePassword,
     exportBlob, importBlob,
     pushToCloud, pullFromCloud, syncCloud,
