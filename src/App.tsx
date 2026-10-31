@@ -20,6 +20,7 @@ const queryClient = new QueryClient();
 const PATH_TO_VIEW: Record<string, string> = {
   '/': 'landing',
   '/amministra': 'admin',
+  '/admin': 'admin',
   '/privacy': 'privacy',
   '/terms': 'terms',
   '/eula': 'eula',
@@ -31,7 +32,7 @@ const PATH_TO_VIEW: Record<string, string> = {
 
 const VIEW_TO_PATH: Record<string, string> = {
   landing: '/',
-  admin: '/amministra',
+  admin: '/admin',
   privacy: '/privacy',
   terms: '/terms',
   eula: '/eula',
