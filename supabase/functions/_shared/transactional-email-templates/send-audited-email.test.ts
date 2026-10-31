@@ -16,7 +16,7 @@ for (const outcome of ['sent', 'suppressed', 'failed'] as const) {
     const requests: { url: string; body: Record<string, unknown> }[] = []
     globalThis.fetch = async (input, init) => {
       const url = input instanceof Request ? input.url : String(input)
-      const body = JSON.parse(String(init?.body ?? '{}'))
+      const body = JSON.parse(String(init && 'body' in init ? init.body : '{}'))
       requests.push({ url, body })
       if (url.includes('audit.example.test')) return new Response(null, { status: 201 })
       if (outcome === 'suppressed') return Response.json({ error: 'Recipient suppressed', code: 'recipient_suppressed' }, { status: 403 })
