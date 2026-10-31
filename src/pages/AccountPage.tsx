@@ -222,7 +222,7 @@ export default function AccountPage() {
                   <h3 className="font-semibold text-foreground">Lifetime</h3>
                 </div>
                 <p className="text-3xl font-bold text-foreground">
-                  €49,99<span className="text-sm font-normal text-muted-foreground"> una tantum</span>
+                  €49,90<span className="text-sm font-normal text-muted-foreground"> una tantum</span>
                 </p>
                 <ul className="mt-4 space-y-2 text-sm text-foreground flex-1">
                   <li className="flex gap-2"><Check className="w-4 h-4 text-primary mt-0.5 shrink-0" /> Tutto del piano Cloud Sync</li>

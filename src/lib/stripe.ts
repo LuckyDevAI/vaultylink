@@ -6,7 +6,7 @@ export const PLANS = {
     mode: "subscription" as const,
   },
   lifetime: {
-    priceId: "price_1UWb2ACRiYFDB9U6iXitz0Xn",
+    priceId: "price_1UWb3VCRiYFDB9U6SGxRYVUk",
     productId: "prod_UA4sxOEr0mEKOy",
     mode: "payment" as const,
   },

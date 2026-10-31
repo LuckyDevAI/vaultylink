@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { annualState, checkoutPolicy, YEARLY_PRICE, YEARLY_PRODUCT, LIFETIME_PRICE } from '../../supabase/functions/_shared/billing-policy';
+import { annualState, checkoutPolicy, YEARLY_PRICE, YEARLY_PRODUCT, LIFETIME_PRICE, LIFETIME_AMOUNT_CENTS } from '../../supabase/functions/_shared/billing-policy';
 
 const now = Date.UTC(2026, 9, 31);
 const end = now / 1000 + 10 * 86400;
@@ -26,6 +26,10 @@ describe('Cloud Sync annuale', () => {
   it('non concede accesso dopo cancellazione o pagamento fallito', () => {
     expect(annualState(subscription('canceled'), now)?.subscribed).toBe(false);
     expect(annualState(subscription('past_due'), now)?.subscribed).toBe(false);
+  });
+  it('imposta Lifetime a 49,90 euro per acquisto singolo', () => {
+    expect(LIFETIME_AMOUNT_CENTS).toBe(4990);
+    expect(checkoutPolicy(LIFETIME_PRICE).mode).toBe('payment');
   });
   it('non modifica il pagamento lifetime', () => {
     expect(checkoutPolicy(LIFETIME_PRICE)).toEqual({ mode: 'payment' });
