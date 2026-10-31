@@ -377,7 +377,7 @@ export default function LandingPage() {
           {/* Bottom bar */}
           <div className="border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-xs text-muted-foreground">
-              © {new Date().getFullYear()} Vaulty Link · v10.10.10
+              © 2026-2030 Vaulty Link. all right reserved.
             </p>
             <p className="text-xs text-muted-foreground font-mono">
               {t('encrypted')}
