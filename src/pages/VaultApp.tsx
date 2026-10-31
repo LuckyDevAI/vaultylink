@@ -927,6 +927,21 @@ export default function VaultApp() {
     }
   }, [migrationPin, vault]);
 
+  const handleLegacyReset = useCallback(async () => {
+    const answer = window.prompt('Tutti i link del vecchio archivio verranno eliminati definitivamente. Scrivi RESET per confermare.');
+    if (answer?.trim() !== 'RESET') return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const res = await vault.resetLegacy(user.id);
+    if (res.ok) {
+      setNeedsMigration(false);
+      setMigrationPin('');
+      toast.success('Nuovo Vault creato — il PIN non è più richiesto.');
+    } else {
+      setMigrationError('Reset non riuscito. Riprova.');
+    }
+  }, [vault]);
+
 
   // Auto-switch to settings when settingsSection is set
   useEffect(() => {
@@ -1193,6 +1208,9 @@ export default function VaultApp() {
             {migrationError && <p className="text-sm text-destructive">{migrationError}</p>}
             <Button className="w-full" onClick={handleMigration} disabled={!migrationPin || vault.busy}>
               {vault.busy ? 'Migrazione...' : 'Migra e continua'}
+            </Button>
+            <Button variant="ghost" className="w-full text-destructive" onClick={handleLegacyReset} disabled={vault.busy}>
+              Non ricordo il PIN — Resetta e inizia da zero
             </Button>
           </div>
         </div>
