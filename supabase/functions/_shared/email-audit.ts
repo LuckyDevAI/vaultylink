@@ -10,6 +10,7 @@ export async function recordEmailOutcome(
   const client = createClient(
     Deno.env.get('SUPABASE_URL') ?? '',
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+    { auth: { persistSession: false, autoRefreshToken: false } },
   )
   const { error } = await client.from('email_send_log').insert({
     message_id: messageId,

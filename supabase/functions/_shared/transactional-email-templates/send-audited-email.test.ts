@@ -19,8 +19,8 @@ for (const outcome of ['sent', 'suppressed', 'failed'] as const) {
       const body = JSON.parse(String(init && 'body' in init ? init.body : '{}'))
       requests.push({ url, body })
       if (url.includes('audit.example.test')) return new Response(null, { status: 201 })
-      if (outcome === 'suppressed') return Response.json({ error: 'Recipient suppressed', code: 'recipient_suppressed' }, { status: 403 })
-      if (outcome === 'failed') return Response.json({ error: 'Send failed', code: 'internal_error' }, { status: 500 })
+      if (outcome === 'suppressed') return Response.json({ error: 'Recipient suppressed', type: 'recipient_suppressed' }, { status: 403 })
+      if (outcome === 'failed') return Response.json({ error: 'Send failed', type: 'internal_error' }, { status: 500 })
       return Response.json({ success: true })
     }
     try {
