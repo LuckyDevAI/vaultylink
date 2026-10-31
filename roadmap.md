@@ -1,5 +1,5 @@
 # Reset archivio legacy
-- [ ] Sostituire il popup con una conferma nell’app e verificare conferma, annullamento ed errori.
+- [x] Sostituire il popup con una conferma nell’app: 3 test superati (RESET obbligatorio, annullamento, errore); anteprima senza errori. Cancellazione reale non eseguita per preservare i link; la sessione di verifica non mostra la migrazione.
 
 # Aggiornamento email
 - [x] Ripristinare testi e stile delle email di accesso.
