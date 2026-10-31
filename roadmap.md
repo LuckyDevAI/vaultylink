@@ -1,3 +1,6 @@
+# Reset archivio legacy
+- [ ] Sostituire il popup con una conferma nell’app e verificare conferma, annullamento ed errori.
+
 # Aggiornamento email
 - [x] Ripristinare testi e stile delle email di accesso.
 - [x] Convertire gli invii di acquisto, scadenza e amministrazione.
