@@ -175,6 +175,7 @@ Deno.serve(async (req) => {
         // Get all users
         const { data: { users: allUsers } } = await supabase.auth.admin.listUsers({ perPage: 1000 });
         const yearlyUsers: { email: string; subscription_end?: string }[] = [];
+        const trialUsers: { email: string; subscription_end?: string }[] = [];
         const lifetimeUsers: { email: string }[] = [];
 
         for (const u of allUsers || []) {
@@ -184,15 +185,15 @@ Deno.serve(async (req) => {
           const customerId = customers.data[0].id;
 
           // Check yearly subscriptions
-          const subs = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 10 });
+          const subs = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 100 });
           let found = false;
           for (const sub of subs.data) {
             const prodId = sub.items.data[0]?.price?.product;
-            if (prodId === YEARLY_PRODUCT) {
+            if (prodId === YEARLY_PRODUCT && (sub.status === 'active' || sub.status === 'trialing')) {
               const periodEndSec = getStripePeriodEndSeconds(sub);
-              yearlyUsers.push({
+              (sub.status === 'trialing' ? trialUsers : yearlyUsers).push({
                 email: u.email,
-                subscription_end: periodEndSec ? new Date(periodEndSec * 1000).toISOString() : undefined,
+                subscription_end: sub.status === 'trialing' && sub.trial_end ? new Date(sub.trial_end * 1000).toISOString() : periodEndSec ? new Date(periodEndSec * 1000).toISOString() : undefined,
               });
               found = true;
               break;
@@ -222,8 +223,9 @@ Deno.serve(async (req) => {
 
         return new Response(JSON.stringify({
           yearly: { count: yearlyUsers.length, users: yearlyUsers },
+          trial: { count: trialUsers.length, users: trialUsers },
           lifetime: { count: lifetimeUsers.length, users: lifetimeUsers },
-          free: { count: totalUsers - paidCount },
+          free: { count: totalUsers - paidCount - trialUsers.length },
         }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });

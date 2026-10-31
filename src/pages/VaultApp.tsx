@@ -438,7 +438,7 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
   const [manualText, setManualText] = useState('');
   const [manualBusy, setManualBusy] = useState(false);
   const [accountEmail, setAccountEmail] = useState<string | null>(null);
-  const [profilePlan, setProfilePlan] = useState<{ subscribed: boolean; plan: string | null; subscription_end?: string; auto_renew?: boolean } | null>(null);
+  const [profilePlan, setProfilePlan] = useState<{ subscribed: boolean; plan: string | null; subscription_end?: string; auto_renew?: boolean; trialing?: boolean } | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   const passwordRef = useRef<HTMLDivElement>(null);
@@ -451,15 +451,6 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
         supabase.functions.invoke('check-subscription').then(({ data, error }) => {
           if (!error && data) setProfilePlan(data);
         });
-        supabase.from('user_plans').select('auto_renew, expires_at, plan').eq('user_id', user.id).maybeSingle()
-          .then(({ data }) => {
-            if (data) setProfilePlan(p => ({
-              subscribed: p?.subscribed ?? (data.plan !== 'frozen'),
-              plan: data.plan,
-              subscription_end: data.expires_at ?? p?.subscription_end,
-              auto_renew: data.auto_renew,
-            }));
-          });
       }
     });
   }, []);
@@ -672,11 +663,11 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
             {profilePlan?.subscribed ? (
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className={profilePlan.plan === 'lifetime' ? 'bg-accent text-accent-foreground' : 'bg-primary/20 text-primary border-primary/30'}>
-                  {profilePlan.plan === 'lifetime' ? '⭐ Lifetime' : profilePlan.plan === 'yearly' ? '🔄 Annuale' : profilePlan.plan}
+                  {profilePlan.plan === 'lifetime' ? '⭐ Lifetime' : profilePlan.plan === 'yearly' ? (profilePlan.trialing ? 'Cloud Sync · prova gratuita' : '🔄 Cloud Sync annuale') : profilePlan.plan}
                 </Badge>
                 {profilePlan.plan === 'yearly' && profilePlan.subscription_end && (
                   <span className="text-xs text-muted-foreground">
-                    {profilePlan.auto_renew ? 'Rinnovo automatico il' : 'Scade il'}{' '}
+                    {profilePlan.trialing ? (profilePlan.auto_renew ? 'Primo addebito il' : 'Prova disdetta · fine il') : profilePlan.auto_renew ? 'Rinnovo automatico il' : 'Scade il'}{' '}
                     {new Date(profilePlan.subscription_end).toLocaleDateString('it-IT')}
                   </span>
                 )}
@@ -981,6 +972,10 @@ export default function VaultApp() {
       }
     };
     run();
+    const timer = window.setInterval(() => { void run(); }, 60000);
+    const refresh = () => { void run(); };
+    window.addEventListener('focus', refresh);
+    return () => { window.clearInterval(timer); window.removeEventListener('focus', refresh); };
   }, [cloudUser]);
   // Load links when authenticated — pull from cloud first if available
   useEffect(() => {

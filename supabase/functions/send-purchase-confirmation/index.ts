@@ -67,6 +67,13 @@ serve(async (req) => {
     }
     const customerId = customers.data[0].id;
 
+    const trials = await stripe.subscriptions.list({ customer: customerId, status: 'trialing', limit: 100 });
+    if (trials.data.some(sub => sub.items.data.some(item => item.price.product === 'prod_UA4sfi1uPvB1AN'))) {
+      return new Response(JSON.stringify({ sent: false, reason: 'trial_not_paid' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200,
+      });
+    }
+
     // Find most recent paid session OR active subscription
     let identifier = "";
     let planLabel = "";
