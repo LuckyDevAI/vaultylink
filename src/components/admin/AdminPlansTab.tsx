@@ -9,6 +9,7 @@ import type { AdminUser } from './AdminUserTable';
 
 interface PlanStats {
   yearly: { count: number; users: { email: string; subscription_end?: string }[] };
+  trial: { count: number; users: { email: string; subscription_end?: string }[] };
   lifetime: { count: number; users: { email: string }[] };
   free: { count: number };
 }
@@ -36,6 +37,7 @@ export default function AdminPlansTab({ users }: { users: AdminUser[] }) {
       // Fallback: show just user count as free
       setPlanStats({
         yearly: { count: 0, users: [] },
+        trial: { count: 0, users: [] },
         lifetime: { count: 0, users: [] },
         free: { count: users.length },
       });
@@ -60,7 +62,7 @@ export default function AdminPlansTab({ users }: { users: AdminUser[] }) {
 
   const plans = [
     {
-      name: 'Yearly',
+      name: 'Cloud Sync annuale',
       icon: '🔄',
       count: planStats.yearly.count,
       color: 'text-primary',
@@ -68,6 +70,13 @@ export default function AdminPlansTab({ users }: { users: AdminUser[] }) {
       borderColor: 'border-primary/20',
       price: '€9,91/anno',
       users: planStats.yearly.users,
+    },
+    {
+      name: 'Cloud Sync in prova',
+      icon: '⏳',
+      count: planStats.trial?.count ?? 0,
+      color: 'text-primary', bgColor: 'bg-primary/10', borderColor: 'border-primary/20',
+      price: '10 giorni gratis', users: planStats.trial?.users ?? [],
     },
     {
       name: 'Lifetime',
@@ -94,7 +103,7 @@ export default function AdminPlansTab({ users }: { users: AdminUser[] }) {
   return (
     <div className="space-y-5">
       {/* Summary cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {plans.map((plan, i) => (
           <motion.div
             key={plan.name}
@@ -156,7 +165,7 @@ export default function AdminPlansTab({ users }: { users: AdminUser[] }) {
       </motion.div>
 
       {/* Paid users list */}
-      {(planStats.yearly.users.length > 0 || planStats.lifetime.users.length > 0) && (
+      {(planStats.yearly.users.length > 0 || planStats.lifetime.users.length > 0 || (planStats.trial?.count ?? 0) > 0) && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -169,6 +178,15 @@ export default function AdminPlansTab({ users }: { users: AdminUser[] }) {
             <Badge variant="secondary" className="text-[10px] h-5">{totalPaid}</Badge>
           </div>
           <div className="divide-y divide-border">
+            {(planStats.trial?.users ?? []).map(u => (
+              <div key={u.email} className="px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+                <span className="text-sm text-foreground break-all">{u.email}</span>
+                <div className="flex flex-wrap gap-2 items-center">
+                  <Badge variant="secondary">Prova gratuita</Badge>
+                  {u.subscription_end && <span className="text-xs text-muted-foreground">fine {new Date(u.subscription_end).toLocaleDateString('it-IT')}</span>}
+                </div>
+              </div>
+            ))}
             {planStats.yearly.users.map(u => (
               <div key={u.email} className="px-4 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-2 min-w-0">
