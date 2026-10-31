@@ -68,7 +68,7 @@ export default function AdminPlansTab({ users }: { users: AdminUser[] }) {
       color: 'text-primary',
       bgColor: 'bg-primary/10',
       borderColor: 'border-primary/20',
-      price: '€9,91/anno',
+      price: '€9,90/anno',
       users: planStats.yearly.users,
     },
     {
@@ -152,7 +152,7 @@ export default function AdminPlansTab({ users }: { users: AdminUser[] }) {
           <div>
             <p className="text-xs text-muted-foreground">MRR stimato</p>
             <p className="text-lg font-bold text-primary">
-              €{((planStats.yearly.count * 9.91) / 12).toFixed(2)}
+              €{((planStats.yearly.count * 9.90) / 12).toFixed(2)}
             </p>
           </div>
           <div>

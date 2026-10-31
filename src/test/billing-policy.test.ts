@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { annualState, checkoutPolicy, YEARLY_PRICE, YEARLY_PRODUCT, LIFETIME_PRICE, LIFETIME_AMOUNT_CENTS } from '../../supabase/functions/_shared/billing-policy';
+import { annualState, checkoutPolicy, YEARLY_PRICE, YEARLY_PRODUCT, LIFETIME_PRICE, LIFETIME_AMOUNT_CENTS, YEARLY_AMOUNT_CENTS } from '../../supabase/functions/_shared/billing-policy';
 
 const now = Date.UTC(2026, 9, 31);
 const end = now / 1000 + 10 * 86400;
@@ -9,6 +9,10 @@ const subscription = (status: string, canceled = false) => ({
 });
 
 describe('Cloud Sync annuale', () => {
+  it('imposta Cloud Sync a 9,90 euro annui', () => {
+    expect(YEARLY_AMOUNT_CENTS).toBe(990);
+    expect(checkoutPolicy(YEARLY_PRICE).mode).toBe('subscription');
+  });
   it('avvia esattamente 10 giorni gratuiti', () => {
     expect(checkoutPolicy(YEARLY_PRICE).subscription_data?.trial_period_days).toBe(10);
   });

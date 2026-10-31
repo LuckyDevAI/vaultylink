@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "npm:stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-import { LIFETIME_AMOUNT_CENTS } from "../_shared/billing-policy.ts";
+import { LIFETIME_AMOUNT_CENTS, YEARLY_AMOUNT_CENTS } from "../_shared/billing-policy.ts";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { sendAuditedTemplateEmail } from "../_shared/transactional-email-templates/send-audited-email.ts";
 
@@ -95,7 +95,7 @@ serve(async (req) => {
       isYearly = true;
       planLabel = "Annuale (Yearly)";
       const price = sub.items.data[0]?.price;
-      amount = price?.unit_amount ?? 991;
+      amount = price?.unit_amount ?? YEARLY_AMOUNT_CENTS;
       currency = price?.currency ?? "eur";
       nextRenewalDate = new Date((sub.items.data[0]?.current_period_end ?? 0) * 1000).toLocaleDateString("it-IT", {
         day: "2-digit", month: "long", year: "numeric",

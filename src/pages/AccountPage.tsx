@@ -149,7 +149,7 @@ export default function AccountPage() {
           {plan?.trialing && (
             <p className="text-sm text-muted-foreground">
               {plan.auto_renew
-                ? 'Oggi €0. Alla fine dei 10 giorni: €9,91/anno, salvo disdetta prima della fine della prova.'
+                ? 'Oggi €0. Alla fine dei 10 giorni: €9,90/anno, salvo disdetta prima della fine della prova.'
                 : 'Prova disdetta: nessun addebito. Cloud Sync resta disponibile fino alla fine della prova.'}
             </p>
           )}
@@ -193,10 +193,10 @@ export default function AccountPage() {
                   <h3 className="font-semibold text-foreground">Cloud Sync</h3>
                 </div>
                 <p className="text-3xl font-bold text-foreground">
-                  €9,91<span className="text-sm font-normal text-muted-foreground">/anno</span>
+                  €9,90<span className="text-sm font-normal text-muted-foreground">/anno</span>
                 </p>
                 <p className="mt-2 text-sm text-primary font-semibold">10 giorni gratis · oggi €0</p>
-                <p className="mt-2 text-xs text-muted-foreground">Inserisci il metodo di pagamento. Poi €9,91/anno con rinnovo automatico, salvo disdetta nei primi 10 giorni.</p>
+                <p className="mt-2 text-xs text-muted-foreground">Inserisci il metodo di pagamento. Poi €9,90/anno con rinnovo automatico, salvo disdetta nei primi 10 giorni.</p>
                 <ul className="mt-4 space-y-2 text-sm text-foreground flex-1">
                   <li className="flex gap-2"><Check className="w-4 h-4 text-primary mt-0.5 shrink-0" /> Sincronizzazione cloud E2EE</li>
                   <li className="flex gap-2"><Check className="w-4 h-4 text-primary mt-0.5 shrink-0" /> Multi-dispositivo in tempo reale</li>
