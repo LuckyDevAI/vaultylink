@@ -3,6 +3,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { sendAuditedTemplateEmail } from "../_shared/transactional-email-templates/send-audited-email.ts";
 import { EmailAPIError } from "npm:@lovable.dev/email-js@0.4.0";
+import Stripe from "npm:stripe@18.5.0";
+import { annualState } from "../_shared/billing-policy.ts";
 
 async function sendWithRateLimitWait(...args: Parameters<typeof sendAuditedTemplateEmail>) {
   try { return await sendAuditedTemplateEmail(...args); }
@@ -19,12 +21,38 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? '';
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? '';
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const now = new Date();
     const twentyDaysFromNow = new Date(now.getTime() + 20 * 24 * 60 * 60 * 1000);
+
+    // Reconcile due annual plans before reminders/freezing: Stripe owns trial transitions.
+    const { data: duePlans, error: dueError } = await supabase.from('user_plans')
+      .select('user_id, expires_at, notified_expiry').eq('plan', 'yearly')
+      .lte('expires_at', twentyDaysFromNow.toISOString());
+    if (dueError) throw dueError;
+    if (duePlans?.length) {
+      const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', { apiVersion: '2025-08-27.basil' });
+      for (const plan of duePlans) {
+        const { data: userData } = await supabase.auth.admin.getUserById(plan.user_id);
+        if (!userData.user?.email) continue;
+        const customers = await stripe.customers.list({ email: userData.user.email, limit: 1 });
+        if (!customers.data[0]) continue;
+        const subs = await stripe.subscriptions.list({ customer: customers.data[0].id, status: 'all', limit: 100 });
+        const states = subs.data.map(sub => annualState(sub));
+        const state = states.find(s => s?.subscribed) ?? states.find(s => s);
+        if (!state) continue; // Retain manually assigned plans without a Stripe subscription.
+        const end = state.subscribed ? state.subscription_end : now.toISOString();
+        const { error } = await supabase.from('user_plans').update({
+          expires_at: end, auto_renew: state.auto_renew,
+          notified_expiry: state.trialing || (plan.expires_at === end && plan.notified_expiry),
+          updated_at: now.toISOString(),
+        }).eq('user_id', plan.user_id);
+        if (error) throw error;
+      }
+    }
 
     // Get yearly plans expiring within 20 days that have not been notified yet
     const { data: expiringPlans } = await supabase

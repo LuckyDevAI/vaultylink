@@ -220,8 +220,10 @@ export default function LandingPage() {
               </div>
               <p className="text-sm text-muted-foreground mb-6 whitespace-pre-line">{t('pricingYearlyDesc')}</p>
               <div className="mb-6">
+                <p className="text-sm font-semibold text-primary mb-2">{t('pricingTrialBadge')}</p>
                 <span className="text-4xl font-bold text-foreground">€{t('pricingYearlyPrice')}</span>
                 <span className="text-muted-foreground text-sm">{t('pricingYearlyPeriod')}</span>
+                <p className="mt-3 text-xs text-muted-foreground">{t('pricingTrialTerms')}</p>
               </div>
               <ul className="space-y-3 mb-8 flex-1">
                 {['pricingYearlyFeat1','pricingYearlyFeat2','pricingYearlyFeat3','pricingYearlyFeat4'].map(k => (
@@ -237,7 +239,7 @@ export default function LandingPage() {
                 onClick={() => handleCheckout('yearly')}
                 disabled={loadingPlan === 'yearly'}
               >
-                {loadingPlan === 'yearly' ? '...' : t('pricingCta')}
+                {loadingPlan === 'yearly' ? '...' : t('pricingTrialCta')}
               </Button>
             </motion.div>
 

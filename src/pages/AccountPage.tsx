@@ -6,7 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { useAppStore } from '@/stores/appStore';
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
-import { User, LogOut, CreditCard, Lock, ExternalLink, Shield, Cloud, Crown, Check, Sparkles } from 'lucide-react';
+import { User, LogOut, CreditCard, Lock, ExternalLink, Shield, Cloud, Crown, Check, Sparkles, RefreshCw, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { PLANS } from '@/lib/stripe';
 
@@ -15,6 +15,8 @@ interface PlanInfo {
   plan?: string | null;
   subscription_end?: string | null;
   auto_renew?: boolean | null;
+  trialing?: boolean;
+  trial_end?: string | null;
 }
 
 export default function AccountPage() {
@@ -24,6 +26,17 @@ export default function AccountPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState<'yearly' | 'lifetime' | null>(null);
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const [refreshLoading, setRefreshLoading] = useState(false);
+
+  const refreshPlan = async () => {
+    setRefreshLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('check-subscription');
+      if (error) throw error;
+      if (data) setPlan(data);
+    } finally { setRefreshLoading(false); }
+  };
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -34,20 +47,31 @@ export default function AccountPage() {
       setEmail(user.email ?? null);
       supabase.from('user_roles').select('role').eq('user_id', user.id).eq('role', 'admin').maybeSingle()
         .then(({ data }) => setIsAdmin(!!data));
-      supabase.functions.invoke('check-subscription').then(({ data, error }) => {
-        if (!error && data) setPlan(data);
-      });
-      supabase.from('user_plans').select('auto_renew, expires_at, plan').eq('user_id', user.id).maybeSingle()
-        .then(({ data }) => {
-          if (data) setPlan(p => ({
-            subscribed: p?.subscribed ?? (data.plan !== 'frozen'),
-            plan: data.plan,
-            subscription_end: data.expires_at ?? p?.subscription_end ?? null,
-            auto_renew: data.auto_renew,
-          }));
-        });
+      void refreshPlan().catch(() => toast.error('Impossibile verificare il piano'));
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('payment') === 'success') {
+        toast.success('Sottoscrizione completata');
+        void supabase.functions.invoke('send-purchase-confirmation');
+      } else if (params.get('payment') === 'canceled') toast.info('Sottoscrizione non completata');
+      if (params.has('payment')) window.history.replaceState({}, '', '/account');
     });
+    const refresh = () => { void refreshPlan().catch(() => {}); };
+    const timer = window.setInterval(refresh, 60000);
+    window.addEventListener('focus', refresh);
+    return () => { window.clearInterval(timer); window.removeEventListener('focus', refresh); };
   }, [cloudUser, setView]);
+
+  const cancelTrial = async () => {
+    if (!window.confirm('Disdire la prova Cloud Sync? Nessun addebito; accesso fino alla fine dei 10 giorni.')) return;
+    setCancelLoading(true);
+    try {
+      const { error } = await supabase.functions.invoke('cancel-trial');
+      if (error) throw error;
+      await refreshPlan();
+      toast.success('Prova disdetta: nessun addebito alla scadenza');
+    } catch { toast.error('Disdetta non riuscita. Riprova.'); }
+    finally { setCancelLoading(false); }
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -73,12 +97,12 @@ export default function AccountPage() {
     : null;
 
   const planLabel = plan?.plan === 'lifetime' ? 'Lifetime'
-    : plan?.plan === 'yearly' ? 'Annuale'
+    : plan?.plan === 'yearly' ? (plan.trialing ? 'Cloud Sync — prova gratuita' : 'Cloud Sync — annuale')
     : plan?.plan === 'frozen' ? 'Frozen (scaduto)'
     : plan?.plan === 'free' ? `Free (scade tra ${freeDaysLeft ?? '—'} giorni)`
     : plan?.subscribed ? 'Attivo' : 'Free';
 
-  const isFree = !plan?.subscribed && (plan?.plan == null || plan?.plan === 'free');
+  const isFree = !!plan && !plan.subscribed;
 
 
   const handleCheckout = async (which: 'yearly' | 'lifetime') => {
@@ -117,11 +141,26 @@ export default function AccountPage() {
               {planLabel}
               {plan?.subscription_end && (
                 <span className="text-sm text-muted-foreground ml-2">
-                  · scade {new Date(plan.subscription_end).toLocaleDateString()}
+                  · {plan.trialing ? 'fine prova' : plan.auto_renew ? 'rinnovo' : 'scadenza'} {new Date(plan.subscription_end).toLocaleDateString('it-IT')}
                 </span>
               )}
             </p>
           </div>
+          {plan?.trialing && (
+            <p className="text-sm text-muted-foreground">
+              {plan.auto_renew
+                ? 'Oggi €0. Alla fine dei 10 giorni: €9,91/anno, salvo disdetta prima della fine della prova.'
+                : 'Prova disdetta: nessun addebito. Cloud Sync resta disponibile fino alla fine della prova.'}
+            </p>
+          )}
+          {plan?.trialing && plan.auto_renew && (
+            <Button variant="outline" onClick={cancelTrial} disabled={cancelLoading}>
+              <X className="w-4 h-4 mr-2" />{cancelLoading ? 'Disdetta…' : 'Disdici la prova'}
+            </Button>
+          )}
+          <Button variant="ghost" size="sm" onClick={() => void refreshPlan().catch(() => toast.error('Impossibile verificare il piano'))} disabled={refreshLoading}>
+            <RefreshCw className="w-4 h-4 mr-2" />Aggiorna piano
+          </Button>
           {plan?.subscribed && plan?.plan !== 'lifetime' && (
             <Button
               variant="outline"
@@ -156,6 +195,8 @@ export default function AccountPage() {
                 <p className="text-3xl font-bold text-foreground">
                   €9,91<span className="text-sm font-normal text-muted-foreground">/anno</span>
                 </p>
+                <p className="mt-2 text-sm text-primary font-semibold">10 giorni gratis · oggi €0</p>
+                <p className="mt-2 text-xs text-muted-foreground">Inserisci il metodo di pagamento. Poi €9,91/anno con rinnovo automatico, salvo disdetta nei primi 10 giorni.</p>
                 <ul className="mt-4 space-y-2 text-sm text-foreground flex-1">
                   <li className="flex gap-2"><Check className="w-4 h-4 text-primary mt-0.5 shrink-0" /> Sincronizzazione cloud E2EE</li>
                   <li className="flex gap-2"><Check className="w-4 h-4 text-primary mt-0.5 shrink-0" /> Multi-dispositivo in tempo reale</li>
@@ -167,7 +208,7 @@ export default function AccountPage() {
                   disabled={checkoutLoading !== null}
                   className="mt-5 bg-primary text-primary-foreground"
                 >
-                  {checkoutLoading === 'yearly' ? 'Apertura…' : 'Abbonati'}
+                  {checkoutLoading === 'yearly' ? 'Apertura…' : 'Inizia i 10 giorni gratis'}
                 </Button>
               </Card>
 
