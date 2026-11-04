@@ -1023,6 +1023,9 @@ export default function VaultApp() {
               setTimeout(() => setSyncStatus('idle'), 3000);
             })
             .catch(() => setSyncStatus('error'));
+        } else if (cloudUser) {
+          setSyncStatus(s => (s === 'syncing' ? 'synced' : s));
+          setTimeout(() => setSyncStatus(s => (s === 'synced' ? 'idle' : s)), 3000);
         }
       };
       load();
@@ -1232,7 +1235,7 @@ export default function VaultApp() {
   if (tab === 'settings') {
     return (
       <div className="min-h-screen bg-background p-6 max-w-2xl mx-auto">
-        <SettingsPanel onBack={() => { setTab('all'); setSettingsSection(null); }} vault={vault} biometric={biometric} onImportDone={(newLinks) => setLinks(newLinks)} scrollToSection={settingsSection} />
+        <SettingsPanel onBack={() => { setTab('all'); setSettingsSection(null); }} vault={vault} biometric={biometric} onImportDone={(newLinks) => { void persist(newLinks); }} scrollToSection={settingsSection} />
       </div>
     );
   }
@@ -1504,9 +1507,15 @@ export default function VaultApp() {
                           aria-label={`Seleziona ${link.title}`}
                         />
                       )}
-                      <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center shrink-0">
-                        {link.favorite ? <Star className="w-4 h-4 text-vault-gold fill-vault-gold" /> : <ExternalLink className="w-4 h-4 text-muted-foreground" />}
-                      </div>
+                      <button
+                        type="button"
+                        aria-label={link.favorite ? `Rimuovi ${link.title} dai preferiti` : `Aggiungi ${link.title} ai preferiti`}
+                        aria-pressed={link.favorite}
+                        onClick={() => persist(links.map(l => l.id === link.id ? { ...l, favorite: !l.favorite } : l))}
+                        className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center shrink-0 hover:bg-secondary/70"
+                      >
+                        <Star className={link.favorite ? "w-4 h-4 text-vault-gold fill-vault-gold" : "w-4 h-4 text-muted-foreground"} />
+                      </button>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-foreground hover:text-primary truncate">{link.title}</a>
