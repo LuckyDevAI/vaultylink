@@ -995,7 +995,45 @@ export default function VaultApp() {
   // Load links when authenticated — pull from cloud first if available
   useEffect(() => {
     if (authenticated && !vault.locked) {
+      const drainExtensionQueue = async () => {
+        if (!cloudUser) return;
+        try {
+          const { data: rows, error } = await supabase
+            .from('extension_queue')
+            .select('id,url,title')
+            .order('created_at', { ascending: true });
+          if (error || !rows || rows.length === 0) return;
+          const current = await vault.loadLinks();
+          const known = new Set(current.map(l => l.url));
+          const now = Date.now();
+          const added: VaultLink[] = [];
+          for (const r of rows) {
+            if (!r.url || known.has(r.url)) continue;
+            known.add(r.url);
+            let host = r.url;
+            try { host = new URL(r.url).hostname.replace(/^www\./, ''); } catch { /* keep raw */ }
+            added.push({
+              id: crypto.randomUUID(), url: r.url, title: r.title || host, siteName: host,
+              topic: '', type: 'main', favorite: false, private: false, createdAt: now, updatedAt: now,
+            });
+          }
+          if (added.length > 0) {
+            const merged = [...current, ...added];
+            setLinks(merged);
+            await vault.saveLinks(merged);
+            await vault.syncCloud();
+            toast.success(`${added.length} link aggiunti dall'estensione`);
+          }
+          await supabase.from('extension_queue').delete().in('id', rows.map(r => r.id));
+        } catch (e) {
+          console.error('Extension queue import failed:', e);
+        }
+      };
       const load = async () => {
+        await loadInner();
+        await drainExtensionQueue();
+      };
+      const loadInner = async () => {
         if (cloudUser) {
           setSyncStatus('syncing');
           try {
