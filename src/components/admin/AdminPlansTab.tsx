@@ -79,7 +79,7 @@ export default function AdminPlansTab({ users }: { users: AdminUser[] }) {
       price: '10 giorni gratis', users: planStats.trial?.users ?? [],
     },
     {
-      name: 'Lifetime',
+      name: 'Solo Locale Lifetime',
       icon: '⭐',
       count: planStats.lifetime.count,
       color: 'text-accent',

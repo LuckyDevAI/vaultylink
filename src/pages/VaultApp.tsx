@@ -38,6 +38,7 @@ import { toast } from 'sonner';
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import LegacyResetDialog from '@/components/LegacyResetDialog';
+import { canSyncCloud, type VaultPlan } from '@/lib/planAccess';
 
 type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error' | 'offline';
 
@@ -855,7 +856,9 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
 
 // ── Main Vault App ────────────────────────────────────────────────────────────
 export default function VaultApp() {
-  const vault = useVault();
+  const [userPlan, setUserPlan] = useState<VaultPlan | null>(null);
+  const cloudEnabled = canSyncCloud(userPlan);
+  const vault = useVault(cloudEnabled);
   const biometric = useBiometric();
   const { lang, setView, cloudUser, settingsSection, setSettingsSection } = useAppStore();
   const { t } = useTranslation(lang);
@@ -877,7 +880,6 @@ export default function VaultApp() {
   const [showDeleteSelected, setShowDeleteSelected] = useState(false);
   const [selectionMode, setSelectionMode] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [userPlan, setUserPlan] = useState<{ subscribed: boolean; plan: string | null; subscription_end?: string } | null>(null);
 
   // Migration state for legacy PIN-encrypted data
   const [needsMigration, setNeedsMigration] = useState(false);
@@ -900,19 +902,19 @@ export default function VaultApp() {
 
   // Auto-unlock the vault using a key derived from the logged-in account
   useEffect(() => {
-    if (!vault.sessionRestored || !cloudUser || !vault.locked || autoUnlockTried) return;
+    if (!vault.sessionRestored || !cloudUser || !userPlan || !vault.locked || autoUnlockTried) return;
     setAutoUnlockTried(true);
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       // Pull latest cloud blob first so migration uses up-to-date data
-      try { await vault.pullFromCloud(); } catch { /* ignore */ }
+      if (cloudEnabled) try { await vault.pullFromCloud(); } catch { /* ignore */ }
       const res = await vault.autoUnlock(user.id);
       if (!res.ok && 'needsMigration' in res && res.needsMigration) {
         setNeedsMigration(true);
       }
     })();
-  }, [vault.sessionRestored, cloudUser, vault.locked, autoUnlockTried, vault]);
+  }, [vault.sessionRestored, cloudUser, userPlan, cloudEnabled, vault.locked, autoUnlockTried, vault]);
 
   const handleMigration = useCallback(async () => {
     setMigrationError('');
@@ -922,12 +924,12 @@ export default function VaultApp() {
     if (res.ok) {
       setNeedsMigration(false);
       setMigrationPin('');
-      try { await vault.pushToCloud(); } catch { /* ignore */ }
+      if (cloudEnabled) try { await vault.pushToCloud(); } catch { /* ignore */ }
       toast.success('Migrazione completata — il PIN non è più richiesto.');
     } else {
       setMigrationError('PIN errato. Riprova.');
     }
-  }, [migrationPin, vault]);
+  }, [migrationPin, vault, cloudEnabled]);
 
   const handleLegacyReset = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -996,7 +998,7 @@ export default function VaultApp() {
   useEffect(() => {
     if (authenticated && !vault.locked) {
       const drainExtensionQueue = async () => {
-        if (!cloudUser) return;
+        if (!cloudUser || !cloudEnabled) return;
         try {
           const { data: rows, error } = await supabase
             .from('extension_queue')
@@ -1034,7 +1036,7 @@ export default function VaultApp() {
         await drainExtensionQueue();
       };
       const loadInner = async () => {
-        if (cloudUser) {
+        if (cloudUser && cloudEnabled) {
           setSyncStatus('syncing');
           try {
             const pulled = await vault.pullFromCloud();
@@ -1054,25 +1056,25 @@ export default function VaultApp() {
         }
         const localLinks = await vault.loadLinks();
         setLinks(localLinks);
-        if (cloudUser && localLinks.length > 0) {
+        if (cloudUser && cloudEnabled && localLinks.length > 0) {
           vault.pushToCloud()
             .then(() => {
               setSyncStatus('synced');
               setTimeout(() => setSyncStatus('idle'), 3000);
             })
             .catch(() => setSyncStatus('error'));
-        } else if (cloudUser) {
+        } else if (cloudUser && cloudEnabled) {
           setSyncStatus(s => (s === 'syncing' ? 'synced' : s));
           setTimeout(() => setSyncStatus(s => (s === 'synced' ? 'idle' : s)), 3000);
         }
       };
       load();
     }
-  }, [authenticated, vault.locked, cloudUser]);
+  }, [authenticated, vault.locked, cloudUser, cloudEnabled]);
 
   // Realtime cross-device sync: subscribe while unlocked
   useEffect(() => {
-    if (!authenticated || vault.locked || !cloudUser) return;
+    if (!authenticated || vault.locked || !cloudUser || !cloudEnabled) return;
     const unsubscribe = vault.subscribeRealtime(async () => {
       try {
         setSyncStatus('syncing');
@@ -1086,14 +1088,14 @@ export default function VaultApp() {
       }
     });
     return unsubscribe;
-  }, [authenticated, vault.locked, cloudUser, vault]);
+  }, [authenticated, vault.locked, cloudUser, cloudEnabled, vault]);
 
   
 
   const persist = useCallback(async (newLinks: VaultLink[]) => {
     setLinks(newLinks);
     await vault.saveLinks(newLinks);
-    if (cloudUser) {
+    if (cloudUser && cloudEnabled) {
       setSyncStatus('syncing');
       vault.syncCloud()
         .then(() => {
@@ -1102,10 +1104,10 @@ export default function VaultApp() {
         })
         .catch(() => setSyncStatus('error'));
     }
-  }, [vault, cloudUser]);
+  }, [vault, cloudUser, cloudEnabled]);
 
   const handleRetrySync = useCallback(() => {
-    if (!cloudUser) return;
+    if (!cloudUser || !cloudEnabled) return;
     setSyncStatus('syncing');
     vault.syncCloud()
       .then(() => {
@@ -1113,7 +1115,7 @@ export default function VaultApp() {
         setTimeout(() => setSyncStatus('idle'), 3000);
       })
       .catch(() => setSyncStatus('error'));
-  }, [vault, cloudUser]);
+  }, [vault, cloudUser, cloudEnabled]);
 
   const handleSaveLink = useCallback((link: VaultLink) => {
     const existing = links.find(l => l.id === link.id);
@@ -1299,10 +1301,10 @@ export default function VaultApp() {
               <h1 className="font-semibold text-foreground text-lg hidden sm:inline">La mia cassaforte Vaulty Link</h1>
               <span className="text-xs text-muted-foreground hidden md:inline ml-1">I tuoi link in cassaforte.</span>
             </button>
-            {cloudUser && <SyncIndicator status={syncStatus} onRetry={handleRetrySync} />}
+            {cloudUser && cloudEnabled && <SyncIndicator status={syncStatus} onRetry={handleRetrySync} />}
             {userPlan?.subscribed && (
               <Badge className={`text-[10px] h-5 px-2 ${userPlan.plan === 'lifetime' ? 'bg-accent text-accent-foreground' : 'bg-primary/20 text-primary border-primary/30'}`}>
-                {userPlan.plan === 'lifetime' ? '⭐ Lifetime' : '🔄 Yearly'}
+                {userPlan.plan === 'lifetime' ? '⭐ Solo Locale Lifetime' : '🔄 Cloud Sync'}
               </Badge>
             )}
           </div>

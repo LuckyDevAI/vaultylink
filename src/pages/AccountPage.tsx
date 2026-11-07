@@ -9,6 +9,7 @@ import SiteFooter from '@/components/SiteFooter';
 import { User, LogOut, CreditCard, Lock, ExternalLink, Shield, Cloud, Crown, Check, Sparkles, RefreshCw, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { PLANS } from '@/lib/stripe';
+import { useTranslation } from '@/lib/i18n';
 
 interface PlanInfo {
   subscribed?: boolean;
@@ -20,7 +21,8 @@ interface PlanInfo {
 }
 
 export default function AccountPage() {
-  const { setView, cloudUser } = useAppStore();
+  const { setView, cloudUser, lang } = useAppStore();
+  const { t } = useTranslation(lang);
   const [email, setEmail] = useState<string | null>(null);
   const [plan, setPlan] = useState<PlanInfo | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -96,7 +98,7 @@ export default function AccountPage() {
     ? Math.max(0, Math.ceil((new Date(plan.subscription_end).getTime() - Date.now()) / 86400000))
     : null;
 
-  const planLabel = plan?.plan === 'lifetime' ? 'Lifetime'
+  const planLabel = plan?.plan === 'lifetime' ? t('pricingLifetimeName')
     : plan?.plan === 'yearly' ? (plan.trialing ? 'Cloud Sync — prova gratuita' : 'Cloud Sync — annuale')
     : plan?.plan === 'frozen' ? 'Frozen (scaduto)'
     : plan?.plan === 'free' ? `Free (scade tra ${freeDaysLeft ?? '—'} giorni)`
@@ -182,7 +184,7 @@ export default function AccountPage() {
               <h2 className="text-lg font-semibold text-foreground">Passa a un piano premium</h2>
             </div>
             <p className="text-sm text-muted-foreground">
-              Sblocca la sincronizzazione cloud cifrata end-to-end su tutti i tuoi dispositivi.
+              {t('pricingFree')}
             </p>
 
             <div className="grid sm:grid-cols-2 gap-4">
@@ -196,7 +198,7 @@ export default function AccountPage() {
                   €9,90<span className="text-sm font-normal text-muted-foreground">/anno</span>
                 </p>
                 <p className="mt-2 text-sm text-primary font-semibold">10 giorni gratis · oggi €0</p>
-                <p className="mt-2 text-xs text-muted-foreground">Inserisci il metodo di pagamento. Poi €9,90/anno con rinnovo automatico, salvo disdetta nei primi 10 giorni.</p>
+                <p className="mt-2 text-xs text-muted-foreground">{t('pricingTrialTerms')}</p>
                 <ul className="mt-4 space-y-2 text-sm text-foreground flex-1">
                   <li className="flex gap-2"><Check className="w-4 h-4 text-primary mt-0.5 shrink-0" /> Sincronizzazione cloud E2EE</li>
                   <li className="flex gap-2"><Check className="w-4 h-4 text-primary mt-0.5 shrink-0" /> Multi-dispositivo in tempo reale</li>
@@ -219,16 +221,16 @@ export default function AccountPage() {
                 </span>
                 <div className="flex items-center gap-2 mb-2">
                   <Crown className="w-5 h-5 text-vault-gold" />
-                  <h3 className="font-semibold text-foreground">Lifetime</h3>
+                  <h3 className="font-semibold text-foreground">{t('pricingLifetimeName')}</h3>
                 </div>
                 <p className="text-3xl font-bold text-foreground">
                   €49,90<span className="text-sm font-normal text-muted-foreground"> una tantum</span>
                 </p>
+                <p className="mt-2 text-xs text-muted-foreground">{t('pricingLifetimeDesc')}</p>
                 <ul className="mt-4 space-y-2 text-sm text-foreground flex-1">
-                  <li className="flex gap-2"><Check className="w-4 h-4 text-primary mt-0.5 shrink-0" /> Tutto del piano Cloud Sync</li>
-                  <li className="flex gap-2"><Check className="w-4 h-4 text-primary mt-0.5 shrink-0" /> Aggiornamenti a vita</li>
-                  <li className="flex gap-2"><Check className="w-4 h-4 text-primary mt-0.5 shrink-0" /> Nessun rinnovo</li>
-                  <li className="flex gap-2"><Check className="w-4 h-4 text-primary mt-0.5 shrink-0" /> Paghi una volta sola</li>
+                  {['pricingLifetimeFeat1', 'pricingLifetimeFeat2', 'pricingLifetimeFeat3', 'pricingLifetimeFeat4'].map(key => (
+                    <li key={key} className="flex gap-2"><Check className="w-4 h-4 text-primary mt-0.5 shrink-0" /> {t(key)}</li>
+                  ))}
                 </ul>
                 <Button
                   onClick={() => handleCheckout('lifetime')}
