@@ -381,9 +381,14 @@ export default function LandingPage() {
 
           {/* Bottom bar */}
           <div className="border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-xs text-muted-foreground">
-              © 2026-2030 Vaulty Link. all right reserved.
-            </p>
+            <div className="flex flex-col items-center sm:items-start gap-1">
+              <p className="text-xs text-muted-foreground">
+                © 2026-2030 Vaulty Link · Apprentice.Technology. all right reserved.
+              </p>
+              <a href="mailto:vaultylink@mailcripty.com" className="text-xs text-muted-foreground hover:text-primary transition-colors">
+                Info: vaultylink@mailcripty.com
+              </a>
+            </div>
             <p className="text-xs text-muted-foreground font-mono">
               {t('encrypted')}
             </p>
