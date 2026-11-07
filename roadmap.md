@@ -17,6 +17,7 @@
 
 # Pie di pagina
 - [x] Aggiungere "Apprentice.Technology" al copyright e la riga "Info: vaultylink@mailcripty.com" cliccabile, sia nel piè di pagina compatto sia in quello della landing page; verificato a schermo su desktop.
+- [x] Rendere "Apprentice.Technology" un collegamento a https://apprentice.technology (nuova scheda) in entrambi i piè di pagina; apertura verificata.
 
 # Prova Cloud Sync annuale
 - [x] Aggiornare Cloud Sync a €9,90/anno: prezzo Stripe annuale verificato e 9 test superati; controllo visivo non concluso.
