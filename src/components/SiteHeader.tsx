@@ -56,9 +56,9 @@ export default function SiteHeader({ showBack, onBack }: { showBack?: boolean; o
           </button>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Button asChild variant="ghost" size="sm" className="h-8 px-2" title="Download">
-            <a href="/download" onClick={(event) => { event.preventDefault(); setView('download'); }} aria-label="Download"><Download className="w-4 h-4" /><span className="hidden sm:inline">Download</span></a>
+            <a href="/download" onClick={(event) => { event.preventDefault(); setView('download'); }} aria-label="Download"><Download className="w-4 h-4" /><span>Download</span></a>
           </Button>
           <Select value={lang} onValueChange={(v) => setLang(v as LangCode)}>
             <SelectTrigger className="w-[120px] bg-secondary border-border h-8 text-xs">
