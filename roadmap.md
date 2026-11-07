@@ -15,6 +15,9 @@
 - [x] Conservare lo storico degli esiti e registrare gli eventi email.
 - [x] Verificare i nuovi invii con test simulati, rimuovere i vecchi file e lasciare il sito non pubblicato.
 
+# Pie di pagina
+- [x] Aggiungere "Apprentice.Technology" al copyright e la riga "Info: vaultylink@mailcripty.com" cliccabile, sia nel piè di pagina compatto sia in quello della landing page; verificato a schermo su desktop.
+
 # Prova Cloud Sync annuale
 - [x] Aggiornare Cloud Sync a €9,90/anno: prezzo Stripe annuale verificato e 9 test superati; controllo visivo non concluso.
 - [x] Attivare 10 giorni gratuiti e addebito annuale successivo salvo disdetta.
