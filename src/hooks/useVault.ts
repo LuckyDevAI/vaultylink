@@ -139,7 +139,9 @@ export interface VaultLink {
 }
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
-export function useVault() {
+export function useVault(cloudEnabled = false) {
+  const cloudEnabledRef = useRef(cloudEnabled);
+  cloudEnabledRef.current = cloudEnabled;
   const [key, setKey] = useState<CryptoKey | null>(null);
   const [locked, setLocked] = useState(true);
   const [error, setError] = useState('');
@@ -262,11 +264,13 @@ export function useVault() {
       const k = await deriveAccountKey(userId);
       const blob = await encrypt([], k);
       await dbSet('vaultData', blob);
-      const { error: err } = await supabase
-        .from('vault_data')
-        .upsert({ user_id: userId, encrypted_blob: blob, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
-      if (err) throw err;
-      lastPushedRef.current = blob;
+      if (cloudEnabledRef.current) {
+        const { error: err } = await supabase
+          .from('vault_data')
+          .upsert({ user_id: userId, encrypted_blob: blob, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+        if (err) throw err;
+        lastPushedRef.current = blob;
+      }
       setKey(k);
       setLocked(false);
       await persistSession(k);
@@ -317,10 +321,11 @@ export function useVault() {
 
   // ── Cloud sync ────────────────────────────────────────────────────────────
   const pushToCloud = useCallback(async () => {
+    if (!cloudEnabledRef.current) return;
     const blob = await dbGet('vaultData');
     if (!blob) return;
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user || !cloudEnabledRef.current) return;
     lastPushedRef.current = blob;
     const { error: err } = await supabase
       .from('vault_data')
@@ -329,15 +334,16 @@ export function useVault() {
   }, []);
 
   const pullFromCloud = useCallback(async (): Promise<boolean> => {
+    if (!cloudEnabledRef.current) return false;
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return false;
+    if (!user || !cloudEnabledRef.current) return false;
     const { data, error: err } = await supabase
       .from('vault_data')
       .select('encrypted_blob')
       .eq('user_id', user.id)
       .maybeSingle();
     if (err) throw err;
-    if (data?.encrypted_blob) {
+    if (cloudEnabledRef.current && data?.encrypted_blob) {
       await dbSet('vaultData', data.encrypted_blob);
       lastPushedRef.current = data.encrypted_blob;
       return true;
@@ -346,7 +352,7 @@ export function useVault() {
   }, []);
 
   const syncCloud = useCallback(async () => {
-    if (!key) return;
+    if (!key || !cloudEnabledRef.current) return;
     try {
       await pushToCloud();
     } catch (e) {
@@ -358,6 +364,7 @@ export function useVault() {
   // ── Realtime cross-device sync ────────────────────────────────────────────
   const subscribeRealtime = useCallback(
     (onRemoteUpdate: () => void): (() => void) => {
+      if (!cloudEnabledRef.current) return () => {};
       // Tear down any existing channel
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current);
@@ -367,7 +374,7 @@ export function useVault() {
       let cancelled = false;
       (async () => {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user || cancelled) return;
+        if (!user || cancelled || !cloudEnabledRef.current) return;
 
         const ch = supabase
           .channel(`vault_data:${user.id}`)
@@ -380,6 +387,7 @@ export function useVault() {
               filter: `user_id=eq.${user.id}`,
             },
             async (payload) => {
+              if (!cloudEnabledRef.current) return;
               const row = (payload.new ?? payload.old) as { encrypted_blob?: string } | null;
               const incoming = row?.encrypted_blob;
               if (!incoming) return;
