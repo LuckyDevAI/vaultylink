@@ -14,6 +14,7 @@ import EulaPage from "@/pages/EulaPage";
 import AdminPage from "@/pages/AdminPage";
 import AccountPage from "@/pages/AccountPage";
 import SitemapPage from "@/pages/SitemapPage";
+import DownloadPage from "@/pages/DownloadPage";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const PATH_TO_VIEW: Record<string, string> = {
   '/vault': 'vault',
   '/account': 'account',
   '/sitemap': 'sitemap',
+  '/download': 'download',
 };
 
 const VIEW_TO_PATH: Record<string, string> = {
@@ -40,6 +42,7 @@ const VIEW_TO_PATH: Record<string, string> = {
   vault: '/vault',
   account: '/account',
   sitemap: '/sitemap',
+  download: '/download',
 };
 
 const isPasswordRecoveryCallback = () => {
@@ -126,6 +129,8 @@ const AppRouter = () => {
       return <EulaPage />;
     case 'sitemap':
       return <SitemapPage />;
+    case 'download':
+      return <DownloadPage />;
     default:
       return <LandingPage />;
   }

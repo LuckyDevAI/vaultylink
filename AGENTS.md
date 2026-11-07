@@ -1,4 +1,5 @@
 # Architecture rules
+- Desktop downloads use a public view in the existing app router; unavailable packages and store listings stay disabled until real release URLs exist, to avoid misleading downloads.
 - Legacy migration reset uses a controlled in-app confirmation dialog, never native browser prompts, so confirmation works in previews and installed apps.
 - Authentication email handling stays scaffold-owned; customize only its React Email templates to retain verified dispatch behavior.
 - App emails use the managed template helper in each existing feature function; only the existing administrator-composed HTML sender uses a direct managed API call because its free-form composition cannot fit fixed template props.
