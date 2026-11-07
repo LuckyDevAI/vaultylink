@@ -1,3 +1,7 @@
+# Pagina Download
+- [x] Creare /download con collegamenti da intestazione e piè di pagina, rilevamento del sistema e installazione dal browser. Pacchetti e Microsoft Store indicati come non disponibili: la creazione dei pacchetti non fa parte del punto 3.
+- [ ] Verificare navigazione e visualizzazione su desktop e telefono.
+
 # Solo Locale Lifetime
 - [x] Rendere coerenti offerte e traduzioni IT/EN (fallback delle altre lingue): Lifetime locale a €49,90; Cloud Sync a €9,90/anno dopo 10 giorni gratuiti. Scheda pubblica verificata su desktop e telefono.
 - [x] Bloccare le operazioni cloud dell’app per Lifetime e testare le regole: 16 test superati. Nessuna modifica a piani o dati esistenti; nessun acquisto eseguito. Account autenticato aperto, verifica delle offerte account non conclusa per mancato caricamento del piano.
