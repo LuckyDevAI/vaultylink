@@ -5,4 +5,5 @@
 - Retain legacy email tables as audit-only records; never consult them to gate suppression or recreate email queues.
 - Email event reactions stay in the scaffolded handle-email-events receiver and deduplicate audit writes using the event ID.
 - Billing rules live in the shared billing policy; Checkout enforces trusted prices and Stripe trialing status grants annual access, so client input cannot override billing terms.
+- Vault cloud operations are gated by verified annual entitlement in the shared plan-access predicate and hook; Lifetime keeps local storage only to prevent accidental cloud uploads.
 - Stripe subscription state is reconciled on account/vault refresh and before expiry actions without webhooks; trials must not produce paid receipts or annual-expiry reminders.
