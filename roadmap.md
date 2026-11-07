@@ -1,3 +1,7 @@
+# Solo Locale Lifetime
+- [ ] Rendere coerenti offerte e traduzioni: Lifetime locale a €49,90; Cloud Sync a €9,90/anno dopo 10 giorni gratuiti.
+- [ ] Verificare che Lifetime non attivi la sincronizzazione cloud e testare le regole.
+
 # Reset archivio legacy
 - [x] Sostituire il popup con una conferma nell’app: 3 test superati (RESET obbligatorio, annullamento, errore); anteprima senza errori. Cancellazione reale non eseguita per preservare i link; la sessione di verifica non mostra la migrazione.
 
