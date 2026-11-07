@@ -1,6 +1,6 @@
 # Solo Locale Lifetime
-- [ ] Rendere coerenti offerte e traduzioni: Lifetime locale a €49,90; Cloud Sync a €9,90/anno dopo 10 giorni gratuiti.
-- [ ] Verificare che Lifetime non attivi la sincronizzazione cloud e testare le regole.
+- [x] Rendere coerenti offerte e traduzioni IT/EN (fallback delle altre lingue): Lifetime locale a €49,90; Cloud Sync a €9,90/anno dopo 10 giorni gratuiti. Scheda pubblica verificata su desktop e telefono.
+- [x] Bloccare le operazioni cloud dell’app per Lifetime e testare le regole: 16 test superati. Nessuna modifica a piani o dati esistenti; nessun acquisto eseguito. Account autenticato aperto, verifica delle offerte account non conclusa per mancato caricamento del piano.
 
 # Reset archivio legacy
 - [x] Sostituire il popup con una conferma nell’app: 3 test superati (RESET obbligatorio, annullamento, errore); anteprima senza errori. Cancellazione reale non eseguita per preservare i link; la sessione di verifica non mostra la migrazione.
