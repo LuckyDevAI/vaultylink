@@ -383,7 +383,16 @@ export default function LandingPage() {
           <div className="border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="flex flex-col items-center sm:items-start gap-1">
               <p className="text-xs text-muted-foreground">
-                © 2026-2030 Vaulty Link · Apprentice.Technology. all right reserved.
+                © 2026-2030 Vaulty Link ·{' '}
+                <a
+                  href="https://apprentice.technology"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-primary underline-offset-2 hover:underline transition-colors"
+                >
+                  Apprentice.Technology
+                </a>
+                . all right reserved.
               </p>
               <a href="mailto:vaultylink@mailcripty.com" className="text-xs text-muted-foreground hover:text-primary transition-colors">
                 Info: vaultylink@mailcripty.com
