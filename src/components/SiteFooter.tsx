@@ -1,9 +1,10 @@
 import logoVaulty from '@/assets/logo_vaulty.png';
 import { useTranslation } from '@/lib/i18n';
 import { useAppStore } from '@/stores/appStore';
+import { Button } from '@/components/ui/button';
 
 export default function SiteFooter() {
-  const { lang } = useAppStore();
+  const { lang, setView } = useAppStore();
   const { t } = useTranslation(lang);
 
   return (
@@ -14,6 +15,7 @@ export default function SiteFooter() {
           <p className="text-xs text-muted-foreground">© 2026-2030 Vaulty Link. all right reserved.</p>
         </div>
         <p className="text-xs text-muted-foreground font-mono">{t('encrypted')}</p>
+        <Button asChild variant="link" size="sm"><a href="/download" onClick={(event) => { event.preventDefault(); setView('download'); }}>Download</a></Button>
       </div>
     </footer>
   );

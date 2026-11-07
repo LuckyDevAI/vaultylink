@@ -309,6 +309,11 @@ export default function LandingPage() {
               <h4 className="text-sm font-semibold text-foreground">Product</h4>
               <ul className="space-y-2">
                 <li>
+                  <Button asChild variant="link" className="h-auto p-0 text-sm text-muted-foreground hover:text-primary">
+                    <a href="/download" onClick={(event) => { event.preventDefault(); setView('download'); }}>Download</a>
+                  </Button>
+                </li>
+                <li>
                   <button onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
                     className="text-sm text-muted-foreground hover:text-primary transition-colors">
                     {t('ctaLearn')}

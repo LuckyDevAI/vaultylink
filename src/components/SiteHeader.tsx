@@ -1,4 +1,4 @@
-import { User, LogIn, LogOut, KeyRound, Settings, Shield, UserCog, Lock } from 'lucide-react';
+import { User, LogIn, LogOut, KeyRound, Settings, Shield, UserCog, Lock, Download } from 'lucide-react';
 import logoVaulty from '@/assets/logo_vaulty.png';
 import { Button } from '@/components/ui/button';
 import { useAppStore, type SettingsSection } from '@/stores/appStore';
@@ -43,7 +43,7 @@ export default function SiteHeader({ showBack, onBack }: { showBack?: boolean; o
 
   return (
     <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border px-6 py-3">
-      <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
+      <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           {showBack && onBack && (
             <Button variant="ghost" size="icon" onClick={onBack} aria-label="Torna indietro" className="h-8 w-8 mr-1">
@@ -57,6 +57,9 @@ export default function SiteHeader({ showBack, onBack }: { showBack?: boolean; o
         </div>
 
         <div className="flex items-center gap-3">
+          <Button asChild variant="ghost" size="sm" className="h-8 px-2" title="Download">
+            <a href="/download" onClick={(event) => { event.preventDefault(); setView('download'); }} aria-label="Download"><Download className="w-4 h-4" /><span className="hidden sm:inline">Download</span></a>
+          </Button>
           <Select value={lang} onValueChange={(v) => setLang(v as LangCode)}>
             <SelectTrigger className="w-[120px] bg-secondary border-border h-8 text-xs">
               <SelectValue />
