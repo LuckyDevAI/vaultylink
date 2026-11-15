@@ -902,19 +902,20 @@ export default function VaultApp() {
 
   // Auto-unlock the vault using a key derived from the logged-in account
   useEffect(() => {
-    if (!vault.sessionRestored || !cloudUser || !userPlan || !vault.locked || autoUnlockTried) return;
+    if (!vault.sessionRestored || !cloudUser || !vault.locked || autoUnlockTried) return;
     setAutoUnlockTried(true);
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      // Use the restored session: local unlock must not require a network request.
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) return;
-      // Pull latest cloud blob first so migration uses up-to-date data
-      if (cloudEnabled) try { await vault.pullFromCloud(); } catch { /* ignore */ }
+      // Cloud loading runs separately after unlock, only with verified entitlement.
       const res = await vault.autoUnlock(user.id);
       if (!res.ok && 'needsMigration' in res && res.needsMigration) {
         setNeedsMigration(true);
       }
     })();
-  }, [vault.sessionRestored, cloudUser, userPlan, cloudEnabled, vault.locked, autoUnlockTried, vault]);
+  }, [vault.sessionRestored, cloudUser, vault.locked, autoUnlockTried, vault]);
 
   const handleMigration = useCallback(async () => {
     setMigrationError('');

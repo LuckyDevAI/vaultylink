@@ -7,4 +7,5 @@
 - Email event reactions stay in the scaffolded handle-email-events receiver and deduplicate audit writes using the event ID.
 - Billing rules live in the shared billing policy; Checkout enforces trusted prices and Stripe trialing status grants annual access, so client input cannot override billing terms.
 - Vault cloud operations are gated by verified annual entitlement in the shared plan-access predicate and hook; Lifetime keeps local storage only to prevent accidental cloud uploads.
+- Local vault auto-unlock uses the restored auth session independently of subscription checks and cloud pulls, so offline access never grants cloud entitlement.
 - Stripe subscription state is reconciled on account/vault refresh and before expiry actions without webhooks; trials must not produce paid receipts or annual-expiry reminders.
