@@ -3,21 +3,15 @@ import { resolve } from "path";
 
 const BASE_URL = "https://vaultylink.com";
 
-interface SitemapEntry {
-  path: string;
-  lastmod?: string;
-  changefreq?: "always" | "hourly" | "daily" | "weekly" | "monthly" | "yearly" | "never";
-  priority?: string;
-}
 
-const entries: SitemapEntry[] = [
+const entries = [
   { path: "/", changefreq: "weekly", priority: "1.0" },
   { path: "/privacy", changefreq: "yearly", priority: "0.4" },
   { path: "/terms", changefreq: "yearly", priority: "0.4" },
   { path: "/eula", changefreq: "yearly", priority: "0.4" },
 ];
 
-function generateSitemap(entries: SitemapEntry[]) {
+function generateSitemap(entries) {
   const urls = entries.map((e) =>
     [
       `  <url>`,
