@@ -4,7 +4,7 @@ android {
     namespace = "app.lovable.d8793afc9904408d93a13fc60852fa47"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "app.lovable.d8793afc9904408d93a13fc60852fa47"
+        applicationId "com.vaultylink.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

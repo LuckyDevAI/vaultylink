@@ -207,6 +207,17 @@ export function useVault(cloudEnabled = false) {
     } finally { setBusy(false); }
   }, []);
 
+  // Read-only: fetch the account's cloud blob if it decrypts with the account key.
+  const fetchDecryptableCloudBlob = async (userId: string, k: CryptoKey): Promise<string | null> => {
+    try {
+      const { data } = await supabase.from('vault_data').select('encrypted_blob').eq('user_id', userId).maybeSingle();
+      const b = data?.encrypted_blob;
+      if (!b) return null;
+      await decrypt(b, k);
+      return b;
+    } catch { return null; }
+  };
+
   // Auto-unlock using a key deterministically derived from the account user id.
   // No PIN required. Returns { needsMigration: true } if a local blob exists
   // but cannot be decrypted with the account key (legacy PIN-encrypted data).
@@ -219,7 +230,11 @@ export function useVault(cloudEnabled = false) {
         try {
           await decrypt(blob, k);
         } catch {
-          return { ok: false as const, needsMigration: true as const };
+          // Stale/foreign local copy: prefer the user's own cloud vault before asking for a PIN.
+          const cloudBlob = await fetchDecryptableCloudBlob(userId, k);
+          if (!cloudBlob) return { ok: false as const, needsMigration: true as const };
+          await dbSet('vaultData', cloudBlob);
+          lastPushedRef.current = cloudBlob;
         }
       } else {
         await dbSet('vaultData', await encrypt([], k));
@@ -262,9 +277,13 @@ export function useVault(cloudEnabled = false) {
     setBusy(true); setError('');
     try {
       const k = await deriveAccountKey(userId);
-      const blob = await encrypt([], k);
+      // Never overwrite an existing readable cloud vault with an empty one.
+      const cloudBlob = await fetchDecryptableCloudBlob(userId, k);
+      const blob = cloudBlob ?? await encrypt([], k);
       await dbSet('vaultData', blob);
-      if (cloudEnabledRef.current) {
+      if (cloudBlob) {
+        lastPushedRef.current = cloudBlob;
+      } else if (cloudEnabledRef.current) {
         const { error: err } = await supabase
           .from('vault_data')
           .upsert({ user_id: userId, encrypted_blob: blob, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
