@@ -2,7 +2,7 @@ import { useAppStore } from '@/stores/appStore';
 import SiteHeader from '@/components/SiteHeader';
 import Seo from '@/components/Seo';
 import { Home, Shield, FileText, ScrollText, LogIn, Lock, User, Map, Languages } from 'lucide-react';
-import { LANG_NAMES, type LangCode } from '@/lib/i18n';
+import { LANG_NAMES, LANG_FLAGS, type LangCode } from '@/lib/i18n';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -116,6 +116,7 @@ export default function SitemapPage() {
                             {(Object.entries(LANG_NAMES) as [LangCode, string][]).map(([code, name]) => (
                               <SelectItem key={code} value={code}>
                                 <span className="flex items-center gap-2">
+                                  <span aria-hidden="true">{LANG_FLAGS[code]}</span>
                                   <span>{name}</span>
                                   <span className="font-mono text-xs text-muted-foreground uppercase">{code}</span>
                                 </span>

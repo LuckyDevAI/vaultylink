@@ -11,6 +11,13 @@ export const LANG_NAMES: Record<LangCode, string> = {
   ru: 'Русский', ar: 'العربية', tr: 'Türkçe', ko: '한국어',
 };
 
+// Bandierine mostrate nel selettore lingua (pulsante + elenco a tendina)
+export const LANG_FLAGS: Record<LangCode, string> = {
+  it: '🇮🇹', en: '🇬🇧', fr: '🇫🇷', de: '🇩🇪',
+  es: '🇪🇸', pt: '🇵🇹', ja: '🇯🇵', zh: '🇨🇳',
+  ru: '🇷🇺', ar: '🇸🇦', tr: '🇹🇷', ko: '🇰🇷',
+};
+
 export const RTL_LANGS = new Set<LangCode>(['ar']);
 
 type TranslationKeys = Record<string, string>;

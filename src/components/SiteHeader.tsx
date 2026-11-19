@@ -2,7 +2,7 @@ import { User, LogIn, LogOut, KeyRound, Settings, Shield, UserCog, Lock, Downloa
 import logoVaulty from '@/assets/logo_vaulty.png';
 import { Button } from '@/components/ui/button';
 import { useAppStore, type SettingsSection } from '@/stores/appStore';
-import { useTranslation, LANG_NAMES, type LangCode } from '@/lib/i18n';
+import { useTranslation, LANG_NAMES, LANG_FLAGS, type LangCode } from '@/lib/i18n';
 import {
   Select,
   SelectContent,
@@ -67,12 +67,17 @@ export default function SiteHeader({ showBack, onBack }: { showBack?: boolean; o
             <a href="/download" onClick={(event) => { event.preventDefault(); setView('download'); }} aria-label="Download"><Download className="w-4 h-4" /><span>Download</span></a>
           </Button>
           <Select value={lang} onValueChange={(v) => setLang(v as LangCode)}>
-            <SelectTrigger className="w-[120px] bg-secondary border-border h-8 text-xs">
+            <SelectTrigger className="w-[140px] bg-secondary border-border h-8 text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {Object.entries(LANG_NAMES).map(([code, name]) => (
-                <SelectItem key={code} value={code}>{name}</SelectItem>
+                <SelectItem key={code} value={code}>
+                  <span className="flex items-center gap-2">
+                    <span aria-hidden="true">{LANG_FLAGS[code as LangCode]}</span>
+                    <span>{name}</span>
+                  </span>
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>

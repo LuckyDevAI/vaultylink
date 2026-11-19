@@ -31,7 +31,7 @@ import {
 import { useVault, type VaultLink } from '@/hooks/useVault';
 import { useBiometric } from '@/hooks/useBiometric';
 import { useTranslation } from '@/lib/i18n';
-import { LANG_NAMES, type LangCode } from '@/lib/i18n';
+import { LANG_NAMES, LANG_FLAGS, type LangCode } from '@/lib/i18n';
 import { useAppStore } from '@/stores/appStore';
 import { bookmarksToVaultLinks } from '@/lib/bookmarkParser';
 import { toast } from 'sonner';
@@ -713,7 +713,12 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
           <SelectTrigger className="bg-secondary border-border"><SelectValue /></SelectTrigger>
           <SelectContent>
             {Object.entries(LANG_NAMES).map(([code, name]) => (
-              <SelectItem key={code} value={code}>{name}</SelectItem>
+              <SelectItem key={code} value={code}>
+                <span className="flex items-center gap-2">
+                  <span aria-hidden="true">{LANG_FLAGS[code as LangCode]}</span>
+                  <span>{name}</span>
+                </span>
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
