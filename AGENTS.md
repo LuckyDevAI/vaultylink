@@ -9,3 +9,4 @@
 - Vault cloud operations are gated by verified annual entitlement in the shared plan-access predicate and hook; Lifetime keeps local storage only to prevent accidental cloud uploads.
 - Local vault auto-unlock uses the restored auth session independently of subscription checks and cloud pulls, so offline access never grants cloud entitlement.
 - Stripe subscription state is reconciled on account/vault refresh and before expiry actions without webhooks; trials must not produce paid receipts or annual-expiry reminders.
+- Desktop packages are thin Electron shells (electron/main.cjs) loading the live site, packaged outside the project with @electron/packager, so web, auth and billing stay single-source.
