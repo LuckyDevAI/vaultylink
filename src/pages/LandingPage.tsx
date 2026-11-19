@@ -114,9 +114,9 @@ export default function LandingPage() {
             <br />
             Scegli il piano che preferisci:
             <br />
-            il Piano con sincronizzazione solo locale. Solo tuo.
+            Solo Locale Lifetime: i dati restano sul tuo dispositivo.
             <br />
-            Oppure con Backup cifrato su Cloud Criptato.
+            Oppure Cloud Sync: sincronizzato online, sempre cifrato.
           </motion.p>
 
           <motion.div variants={fadeUp} custom={3} className="flex items-center justify-center gap-4 pt-4">
