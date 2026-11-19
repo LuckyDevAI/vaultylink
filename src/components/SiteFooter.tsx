@@ -80,7 +80,7 @@ export default function SiteFooter() {
           </div>
         )}
 
-        <div className="mt-4 flex flex-col gap-4 border-t border-border pt-4 text-xs text-muted-foreground md:flex-row md:items-center md:justify-end">
+        <div className="mt-4 flex flex-col gap-4 border-t border-border pt-4 text-xs text-muted-foreground md:flex-row md:items-center md:justify-start">
           <div className="flex flex-wrap items-center gap-5">
             <a href="mailto:info@vaultylink.com" className={link}><Mail className="size-4" /> info@vaultylink.com</a>
             <a href="/account" onClick={go('account')} className={link}><Sparkles className="size-4" /> Piani e prezzi</a>
