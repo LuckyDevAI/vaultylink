@@ -1226,7 +1226,9 @@ export default function VaultApp() {
   // Legacy data migration: ask the old PIN one time to re-encrypt with the account key
   if (needsMigration) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <div className="min-h-screen bg-background flex flex-col">
+        <SiteHeader />
+        <main className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-md space-y-6">
           <div className="text-center space-y-2">
             <div className="w-16 h-16 mx-auto rounded-2xl bg-primary/10 flex items-center justify-center">
@@ -1256,8 +1258,13 @@ export default function VaultApp() {
             <Button variant="ghost" className="w-full h-auto min-h-10 whitespace-normal text-destructive" onClick={() => setLegacyResetOpen(true)} disabled={vault.busy}>
               Non ricordo il PIN — Resetta e inizia da zero
             </Button>
+            <Button variant="outline" className="w-full" disabled={vault.busy} onClick={async () => { await supabase.auth.signOut(); setNeedsMigration(false); setView('auth'); }}>
+              Cambia account / Torna al login
+            </Button>
           </div>
         </div>
+        </main>
+        <SiteFooter />
         <LegacyResetDialog open={legacyResetOpen} onOpenChange={setLegacyResetOpen} onConfirm={handleLegacyReset} />
       </div>
     );

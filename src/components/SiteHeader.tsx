@@ -1,4 +1,4 @@
-import { User, LogIn, LogOut, KeyRound, Settings, Shield, UserCog, Lock, Download } from 'lucide-react';
+import { User, LogIn, LogOut, KeyRound, Settings, Shield, UserCog, Lock, Download, Tag } from 'lucide-react';
 import logoVaulty from '@/assets/logo_vaulty.png';
 import { Button } from '@/components/ui/button';
 import { useAppStore, type SettingsSection } from '@/stores/appStore';
@@ -52,11 +52,17 @@ export default function SiteHeader({ showBack, onBack }: { showBack?: boolean; o
           )}
           <button onClick={() => setView('landing')} aria-label="Vaulty Link home" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <img src={logoVaulty} alt="Vaulty Link secure vault logo" className="w-8 h-8" />
-            <span className="font-semibold text-lg text-foreground">Vaulty Link</span>
+            <span className="flex flex-col items-start leading-tight">
+              <span className="font-semibold text-lg text-foreground">Vaulty Link</span>
+              <span className="hidden sm:block font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Zero-Knowledge · E2EE</span>
+            </span>
           </button>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
+          <Button asChild variant="ghost" size="sm" className="h-8 px-2" title="Piani">
+            <a href="/account" onClick={(event) => { event.preventDefault(); setView(cloudUser ? 'account' : 'auth'); }}><Tag className="w-4 h-4" /><span>Piani</span></a>
+          </Button>
           <Button asChild variant="ghost" size="sm" className="h-8 px-2" title="Download">
             <a href="/download" onClick={(event) => { event.preventDefault(); setView('download'); }} aria-label="Download"><Download className="w-4 h-4" /><span>Download</span></a>
           </Button>
