@@ -2,6 +2,7 @@
 - [x] Separare lo sblocco locale dalla verifica del piano: 7 test superati; preferito locale cifrato visibile con errore 500 e rete backend assente, senza sessione chiave recente e senza richieste ai dati cloud. Nessun dato reale modificato.
 
 # Pagina Download
+- [x] Collegare i quattro pacchetti GitHub v1.0.10, distinguere Mac Apple Silicon e Intel e aggiungere note di rilascio: quattro download completi verificati dal browser, archivi leggibili, note aperte correttamente e nessun errore causato dai clic. Pagina controllata su desktop e telefono; aggiornamento del sito pubblico da pubblicare.
 - [x] Creare /download con collegamenti da intestazione e piè di pagina, rilevamento del sistema e installazione dal browser. Pacchetti e Microsoft Store indicati come non disponibili: la creazione dei pacchetti non fa parte del punto 3.
 - [x] Verificare navigazione e visualizzazione su desktop e telefono: /download raggiungibile, finestra installazione funzionante, nessuna sovrapposizione o errore; installazione effettiva da verificare dopo pubblicazione.
 

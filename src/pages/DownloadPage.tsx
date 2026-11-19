@@ -12,6 +12,9 @@ interface InstallPrompt extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
+const releaseUrl = 'https://github.com/LuckyDevAI/vaultylink/releases/tag/v1.0.10';
+const desktopDownloadBase = 'https://github.com/LuckyDevAI/vaultylink/releases/download/v1.0.10';
+
 export default function DownloadPage() {
   const { lang } = useAppStore();
   const it = lang === 'it';
@@ -59,9 +62,9 @@ export default function DownloadPage() {
   };
 
   const platforms = [
-    { name: 'Windows', icon: Monitor, detail: 'Windows 10 / 11 · x64' },
-    { name: 'macOS', icon: Apple, detail: 'Intel / Apple Silicon' },
-    { name: 'Linux', icon: Laptop, detail: 'Linux · x64' },
+    { name: 'Windows', icon: Monitor, detail: 'Windows 10 / 11 · x64', downloads: [{ label: 'Windows x64 (.zip)', file: 'VaultyLink-Windows-x64.zip' }] },
+    { name: 'macOS', icon: Apple, detail: 'Intel / Apple Silicon', downloads: [{ label: 'Apple Silicon (.zip)', file: 'VaultyLink-macOS-AppleSilicon.zip' }, { label: 'Intel (.zip)', file: 'VaultyLink-macOS-Intel.zip' }] },
+    { name: 'Linux', icon: Laptop, detail: 'Linux · x64', downloads: [{ label: 'Linux x64 (.tar.gz)', file: 'VaultyLink-Linux-x64.tar.gz' }] },
   ].sort((a, b) => Number(b.name === platform) - Number(a.name === platform));
 
   return (
@@ -89,16 +92,23 @@ export default function DownloadPage() {
         <section className="mt-10" aria-labelledby="desktop-heading">
           <h2 id="desktop-heading" className="text-2xl font-semibold">{it ? 'App desktop' : 'Desktop apps'}</h2>
           <div className="grid md:grid-cols-3 gap-5 mt-5">
-            {platforms.map(({ name, icon: Icon, detail }) => (
+            {platforms.map(({ name, icon: Icon, detail, downloads }) => (
               <article key={name} className={`border rounded-lg p-6 flex flex-col gap-5 ${name === platform ? 'border-primary bg-primary/5' : 'border-border bg-card'}`}>
                 <div className="flex items-center justify-between gap-2"><Icon className="w-8 h-8 text-muted-foreground" />{name === platform && <span className="text-xs text-primary">{it ? 'Il tuo sistema' : 'Your system'}</span>}</div>
                 <div><h3 className="text-xl font-semibold">{name}</h3><p className="text-sm text-muted-foreground mt-2">{detail}</p></div>
-                <p className="text-sm text-muted-foreground">{it ? 'Pacchetto non ancora disponibile.' : 'Package not yet available.'}</p>
-                <Button disabled variant="secondary" className="w-full"><Download />{it ? 'Prossimamente' : 'Coming soon'}</Button>
+                <p className="text-sm text-muted-foreground">v1.0.10 · {it ? 'Disponibile' : 'Available'}</p>
+                <div className="mt-auto flex flex-col gap-3">
+                  {downloads.map(({ label, file }) => (
+                    <Button key={file} asChild className="w-full h-auto min-h-10 whitespace-normal text-center">
+                      <a href={`${desktopDownloadBase}/${file}`}><Download className="shrink-0" /><span>{it ? 'Scarica' : 'Download'} {label}</span></a>
+                    </Button>
+                  ))}
+                </div>
               </article>
             ))}
           </div>
           <p className="text-sm text-muted-foreground mt-5">{it ? 'Microsoft Store: pubblicazione non ancora disponibile.' : 'Microsoft Store: listing not yet available.'}</p>
+          <p className="text-sm text-muted-foreground mt-2">{it ? 'Pacchetti non firmati: Windows e macOS possono mostrare un avviso di sicurezza. È necessaria una connessione Internet.' : 'Unsigned packages: Windows and macOS may show a security warning. An Internet connection is required.'}</p>
         </section>
         <section className="mt-10 pt-8 border-t border-border" aria-labelledby="ext-heading">
           <div className="flex items-center gap-3"><Puzzle className="w-6 h-6 text-primary" /><h2 id="ext-heading" className="text-2xl font-semibold">{it ? 'Estensione browser' : 'Browser extension'}</h2><span className="text-xs text-primary font-mono">{it ? 'OPZIONALE' : 'OPTIONAL'}</span></div>
@@ -114,7 +124,7 @@ export default function DownloadPage() {
         </section>
         <section className="mt-10 pt-8 border-t border-border">
           <h2 className="text-xl font-semibold">{it ? 'Versioni e note di rilascio' : 'Versions & release notes'}</h2>
-          <p className="text-muted-foreground text-sm mt-3">{it ? 'Le versioni e le note saranno pubblicate insieme ai pacchetti desktop.' : 'Versions and release notes will be published with the desktop packages.'}</p>
+          <Button asChild variant="outline" className="mt-4"><a href={releaseUrl} target="_blank" rel="noopener noreferrer"><ArrowUpRight />{it ? 'Note di rilascio v1.0.10' : 'Release notes v1.0.10'}</a></Button>
         </section>
       </main>
       <SiteFooter />
