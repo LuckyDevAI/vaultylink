@@ -8,7 +8,7 @@ const api = (typeof browser !== "undefined") ? browser : chrome;
 
 const SUPABASE_URL = "https://ejeodmaptmgdfguierdn.supabase.co";
 const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVqZW9kbWFwdG1nZGZndWllcmRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1Nzg0NDEsImV4cCI6MjA4OTE1NDQ0MX0.w087HdkGHxr6qIN43f8JpGSJvwePsQwy6YE4XGycVhI";
-const APP_URL = "https://vaultylink.app";
+const APP_URL = "https://vaultylink.com";
 
 // ============ Storage helpers ============
 const storage = {

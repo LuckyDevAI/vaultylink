@@ -3,7 +3,6 @@
   "name": "Vaulty Link",
   "version": "1.0.0",
   "description": "Salva, organizza e proteggi i tuoi link con crittografia AES-256-GCM. Estensione ufficiale di Vaulty Link.",
-  "default_locale": "it",
   "icons": {
     "48": "icon-48.png",
     "128": "icon-128.png"

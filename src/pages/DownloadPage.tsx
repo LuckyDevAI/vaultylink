@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowUpRight, Download, Globe, Monitor, Apple, Laptop, Check } from 'lucide-react';
+import { ArrowUpRight, Download, Globe, Monitor, Apple, Laptop, Check, Puzzle } from 'lucide-react';
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import { Button } from '@/components/ui/button';
@@ -45,6 +45,19 @@ export default function DownloadPage() {
     } catch { setHelpOpen(true); }
   };
 
+  const downloadExtension = () => {
+    fetch('/vaultylink-extension.zip')
+      .then((res) => { if (!res.ok) throw new Error(String(res.status)); return res.blob(); })
+      .then((blob) => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'vaultylink-extension.zip';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      })
+      .catch(() => alert(it ? 'Download non riuscito, riprova.' : 'Download failed, try again.'));
+  };
+
   const platforms = [
     { name: 'Windows', icon: Monitor, detail: 'Windows 10 / 11 · x64' },
     { name: 'macOS', icon: Apple, detail: 'Intel / Apple Silicon' },
@@ -86,6 +99,18 @@ export default function DownloadPage() {
             ))}
           </div>
           <p className="text-sm text-muted-foreground mt-5">{it ? 'Microsoft Store: pubblicazione non ancora disponibile.' : 'Microsoft Store: listing not yet available.'}</p>
+        </section>
+        <section className="mt-10 pt-8 border-t border-border" aria-labelledby="ext-heading">
+          <div className="flex items-center gap-3"><Puzzle className="w-6 h-6 text-primary" /><h2 id="ext-heading" className="text-2xl font-semibold">{it ? 'Estensione browser' : 'Browser extension'}</h2><span className="text-xs text-primary font-mono">{it ? 'OPZIONALE' : 'OPTIONAL'}</span></div>
+          <p className="text-muted-foreground mt-3">Chrome · Edge · Brave · Opera · Arc</p>
+          <p className="text-sm text-muted-foreground mt-2 max-w-2xl">{it ? 'Salva la pagina aperta con 1 clic o dal tasto destro. I link vengono cifrati appena sblocchi la cassaforte.' : 'Save the current page in 1 click or from the right-click menu. Links are encrypted when you unlock your vault.'}</p>
+          <Button className="mt-5" onClick={downloadExtension}><Download />{it ? 'Scarica estensione (.zip)' : 'Download extension (.zip)'}</Button>
+          <ol className="mt-6 space-y-2 text-sm text-muted-foreground list-decimal ps-5">
+            <li>{it ? 'Estrai il file .zip in una cartella.' : 'Unzip the file into a folder.'}</li>
+            <li>{it ? 'Apri chrome://extensions (o edge://extensions).' : 'Open chrome://extensions (or edge://extensions).'}</li>
+            <li>{it ? 'Attiva «Modalità sviluppatore» in alto a destra.' : 'Enable “Developer mode” at the top right.'}</li>
+            <li>{it ? 'Clicca «Carica estensione non pacchettizzata» e scegli la cartella estratta.' : 'Click “Load unpacked” and select the unzipped folder.'}</li>
+          </ol>
         </section>
         <section className="mt-10 pt-8 border-t border-border">
           <h2 className="text-xl font-semibold">{it ? 'Versioni e note di rilascio' : 'Versions & release notes'}</h2>
