@@ -3,7 +3,7 @@ import { ChevronDown, ChevronUp, KeyRound, Lock, Mail, MonitorDown, ServerOff, S
 import logoVaulty from '@/assets/logo_vaulty.png';
 import { useAppStore } from '@/stores/appStore';
 
-type View = 'landing' | 'vault' | 'auth' | 'privacy' | 'terms' | 'eula' | 'account' | 'sitemap' | 'download';
+type View = 'landing' | 'vault' | 'auth' | 'privacy' | 'terms' | 'eula' | 'account' | 'sitemap' | 'download' | 'support';
 
 export default function SiteFooter() {
   const { setView, cloudUser } = useAppStore();
@@ -21,6 +21,7 @@ export default function SiteFooter() {
     { v: 'privacy', label: 'Privacy Policy' },
     { v: 'eula', label: 'EULA' },
     { v: 'download', label: 'Download' },
+    { v: 'support', label: 'Supporto clienti' },
     { v: 'sitemap', label: 'Mappa del sito' },
   ];
   const link = 'inline-flex items-center gap-1.5 transition-colors hover:text-foreground';

@@ -15,6 +15,7 @@ import AdminPage from "@/pages/AdminPage";
 import AccountPage from "@/pages/AccountPage";
 import SitemapPage from "@/pages/SitemapPage";
 import DownloadPage from "@/pages/DownloadPage";
+import SupportPage from "@/pages/SupportPage";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const PATH_TO_VIEW: Record<string, string> = {
   '/account': 'account',
   '/sitemap': 'sitemap',
   '/download': 'download',
+  '/support': 'support',
 };
 
 const VIEW_TO_PATH: Record<string, string> = {
@@ -43,6 +45,7 @@ const VIEW_TO_PATH: Record<string, string> = {
   account: '/account',
   sitemap: '/sitemap',
   download: '/download',
+  support: '/support',
 };
 
 const isPasswordRecoveryCallback = () => {
@@ -131,6 +134,8 @@ const AppRouter = () => {
       return <SitemapPage />;
     case 'download':
       return <DownloadPage />;
+    case 'support':
+      return <SupportPage />;
     default:
       return <LandingPage />;
   }
