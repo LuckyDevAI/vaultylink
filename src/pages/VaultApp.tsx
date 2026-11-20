@@ -19,6 +19,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
+import { RecoveryKitCard } from '@/components/RecoveryKitCard';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -701,6 +702,10 @@ function SettingsPanel({ onBack, vault, biometric, onImportDone, scrollToSection
         </div>
       </div>
 
+
+      <Separator className="bg-border" />
+
+      <RecoveryKitCard onExportBackup={() => { void handleExport(); }} />
 
       <Separator className="bg-border" />
 
