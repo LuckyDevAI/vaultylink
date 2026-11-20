@@ -16,7 +16,7 @@ export default function SecurityPage() {
           <h1 className="font-display text-3xl font-bold leading-tight text-foreground md:text-4xl">{content.title}</h1>
           <div className="mt-5 flex flex-wrap items-center gap-4">
             <p className="text-sm text-muted-foreground">Versione {content.version} · {content.date} · Italiano</p>
-            <Button asChild><a href="/documents/VaultyLink_Sicurezza_v1_2026-11-20.pdf" download><Download /> Scarica PDF</a></Button>
+            <Button asChild><a href={content.pdfPath} download><Download /> Scarica PDF</a></Button>
           </div>
         </header>
         <aside className="my-8 flex gap-3 border-l-2 border-accent bg-accent/5 p-4" aria-label="Limiti della verifica">
@@ -27,6 +27,7 @@ export default function SecurityPage() {
           <nav aria-label="Indice sicurezza" className="space-y-3 border-b border-border pb-6 md:sticky md:top-24 md:border-b-0">
             <h2 className="font-mono text-xs uppercase text-primary">In questo documento</h2>
             {content.sections.map(section => <a key={section.id} href={`#${section.id}`} className="block text-sm leading-6 text-muted-foreground hover:text-primary">{section.title}</a>)}
+            <a href="#infrastruttura" className="block text-sm leading-6 text-muted-foreground hover:text-primary">9. Server e trasferimenti internazionali</a>
           </nav>
           <article className="min-w-0 space-y-8">
             {content.sections.map(section => (
@@ -35,6 +36,11 @@ export default function SecurityPage() {
                 <div className="space-y-4">{section.paragraphs.map((paragraph, index) => <p key={index} className="break-words text-sm leading-7 text-muted-foreground">{paragraph}</p>)}</div>
               </section>
             ))}
+            <section id="infrastruttura" className="scroll-mt-24 border-b border-border pb-8">
+              <h2 className="mb-4 text-xl font-semibold leading-7 text-foreground">9. Server e trasferimenti internazionali</h2>
+              <p className="mb-4 font-medium text-primary">{content.infrastructure.summary}</p>
+              <div className="space-y-4">{[content.infrastructure.scope, content.infrastructure.limits, content.infrastructure.certification].map(paragraph => <p key={paragraph} className="text-sm leading-7 text-muted-foreground">{paragraph}</p>)}</div>
+            </section>
             <div className="flex flex-wrap gap-4 pb-6">
               <Button variant="outline" asChild><a href="mailto:support@vaultylink.com">Segnala un problema <ArrowUpRight /></a></Button>
               <Button variant="link" asChild><a href="https://github.com/LuckyDevAI/vaultylink" target="_blank" rel="noopener noreferrer">Sorgenti GitHub <ArrowUpRight /></a></Button>

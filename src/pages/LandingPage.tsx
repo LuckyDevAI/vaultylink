@@ -10,6 +10,7 @@ import { PLANS } from '@/lib/stripe';
 import { toast } from 'sonner';
 import SiteHeader from '@/components/SiteHeader';
 import Seo from '@/components/Seo';
+import securityContent from '@/content/security.json';
 
 
 const fadeUp = {
@@ -118,6 +119,12 @@ export default function LandingPage() {
             <br />
             Oppure Cloud Sync: sincronizzato online, sempre cifrato.
           </motion.p>
+
+          <div lang="it" dir="ltr" className="mx-auto max-w-2xl space-y-2">
+            <p className="flex items-center justify-center gap-2 text-sm font-medium text-primary"><Globe className="h-4 w-4 shrink-0" />{securityContent.infrastructure.summary}</p>
+            <p className="text-xs leading-5 text-muted-foreground">La sede del database non garantisce che tutti i servizi operino in UE né certifica conformità GDPR.</p>
+            <Button asChild variant="link" className="h-auto text-sm"><a href="/security#infrastruttura">Server, servizi esterni e limiti della verifica <ChevronRight className="h-4 w-4" /></a></Button>
+          </div>
 
           <motion.div variants={fadeUp} custom={3} className="flex items-center justify-center gap-4 pt-4">
             <Button

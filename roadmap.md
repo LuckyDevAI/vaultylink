@@ -1,4 +1,5 @@
 # Documentazione sicurezza
+- [x] Aggiornare sicurezza, Home, privacy e PDF v2 con regione database Irlanda (eu-west-1), distinguendo servizi esterni e certificazioni non verificate; quattro pagine PDF controllate senza tagli o sovrapposizioni, pagine e download verificati su desktop/telefono senza errori né overflow. Nessuna modifica alle protezioni o pubblicazione.
 - [x] Creare PDF e /security con contenuto condiviso e limiti verificati: PDF di 3 pagine controllato integralmente, download e indice funzionanti, navigazione verificata, nessun errore pagina o overflow su telefono. Nessuna modifica alle protezioni e nessuna pubblicazione eseguita.
 
 # Apertura Vault senza rete
