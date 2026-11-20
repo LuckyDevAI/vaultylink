@@ -1,4 +1,5 @@
 # Architecture rules
+- Security page and downloadable white paper use src/content/security.json as their shared source to prevent conflicting security claims; document observed limitations rather than implying independent certification.
 - Desktop downloads use a public view in the existing app router; unavailable packages and store listings stay disabled until real release URLs exist, to avoid misleading downloads.
 - Legacy migration reset uses a controlled in-app confirmation dialog, never native browser prompts, so confirmation works in previews and installed apps.
 - Authentication email handling stays scaffold-owned; customize only its React Email templates to retain verified dispatch behavior.

@@ -1,0 +1,81 @@
+{
+  "title": "Vaulty Link — Sicurezza e crittografia",
+  "subtitle": "White paper tecnico · Stato dell’implementazione",
+  "version": "1.0",
+  "date": "20 novembre 2026",
+  "notice": "Questo documento descrive il codice esaminato, non costituisce un audit indipendente né una certificazione. La presenza di AES-256-GCM non dimostra, da sola, una protezione end-to-end o zero-knowledge: la gestione attuale delle chiavi presenta limiti rilevanti.",
+  "sections": [
+    {
+      "id": "ambito",
+      "title": "1. Ambito e modello di minaccia",
+      "paragraphs": [
+        "Vaulty Link archivia link e preferiti in una cassaforte locale e offre una sincronizzazione opzionale tramite Lovable Cloud. Solo Locale conserva l’archivio sul dispositivo; Cloud Sync sincronizza una copia cifrata online.",
+        "La lettura del codice riguarda cifratura, sblocco, sessione locale, biometria e trasferimento dell’archivio. Non sono stati eseguiti per questo documento penetration test, verifiche dell’infrastruttura attiva o test di compromissione dei dispositivi.",
+        "Le minacce considerate comprendono furto di una copia del database, tentativi offline sul PIN, accesso al profilo del browser e codice malevolo eseguito nella stessa origine. Un dispositivo compromesso o uno script XSS può accedere ai dati mentre la cassaforte è aperta."
+      ]
+    },
+    {
+      "id": "cifratura",
+      "title": "2. Cifratura e derivazione dal PIN",
+      "paragraphs": [
+        "Le operazioni crittografiche utilizzano la Web Crypto API: AES-GCM con chiave di 256 bit e IV casuale di 12 byte generato con crypto.getRandomValues per ogni cifratura. Il payload JSON serializzato contiene IV e dati cifrati; GCM include la verifica di autenticità del ciphertext.",
+        "Nel percorso protetto da password/PIN, la chiave è derivata con PBKDF2-HMAC-SHA-256, 100.000 iterazioni e salt locale casuale di 16 byte conservato in IndexedDB. Non è usato Argon2. La funzione di derivazione non impone autonomamente una lunghezza o un punteggio minimo della password.",
+        "PBKDF2 rallenta i tentativi, ma non rende sicuro un PIN breve o prevedibile. Chi ottiene archivio e salt può provare password offline senza dipendere dai limiti del login. Parametri e requisiti della password richiedono una valutazione aggiornata prima di dichiarare resistenza al brute-force."
+      ]
+    },
+    {
+      "id": "chiavi",
+      "title": "3. Sblocco account: limite critico",
+      "paragraphs": [
+        "Lo sblocco automatico dell’account usa una chiave deterministica derivata dall’identificativo utente e da costanti presenti nel codice. Non utilizza un segreto conosciuto soltanto dall’utente. La migrazione dal vecchio PIN ricifra i dati con questa chiave account.",
+        "L’identificativo utente non è un segreto crittografico: chi possiede tale identificativo e il blob cifrato può ricostruire la chiave. Le regole di accesso al database possono limitare chi scarica il blob, ma non eliminano questo problema crittografico.",
+        "Di conseguenza, l’attuale percorso account non giustifica la promessa che il gestore del servizio non possa decifrare i dati. Le diciture E2EE e zero-knowledge presenti altrove non vanno interpretate come garanzie dimostrate. La correzione richiede un segreto utente o un meccanismo equivalente e una migrazione sicura degli archivi; non è stata implementata da questo documento."
+      ]
+    },
+    {
+      "id": "dispositivo",
+      "title": "4. Chiavi locali e biometria",
+      "paragraphs": [
+        "Il blob cifrato e il salt sono memorizzati in IndexedDB. La chiave AES del vault è esportabile e viene salvata come JWK in localStorage per ripristinare una sessione di 50 minuti. Non è cifrata separatamente in tale voce: uno script della stessa origine o chi legge il profilo del browser può ottenerla. La scadenza è verificata al ripristino; non equivale a una cancellazione garantita esattamente al minuto 50.",
+        "Il percorso biometrico usa WebAuthn con verifica utente richiesta. La password salvata viene cifrata con AES-GCM e una chiave HKDF-SHA-256 derivata dall’ID della credenziale e da un salt casuale di 32 byte. ID, salt e password cifrata sono tutti conservati nello stesso IndexedDB.",
+        "ID della credenziale e salt non sono segreti: copiando questi record si può ricostruire la chiave di protezione della password, senza ripetere la biometria. L’implementazione non usa un segreto WebAuthn PRF per questa derivazione e non dimostra che la chiave AES del vault risieda in Secure Enclave, Keychain o Android Keystore."
+      ]
+    },
+    {
+      "id": "cloud",
+      "title": "5. Sincronizzazione e metadati",
+      "paragraphs": [
+        "Il client serializza i link, cifra l’archivio sul dispositivo e invia encrypted_blob al backend. La copia remota viene scaricata e decifrata sul client. Le notifiche di aggiornamento consentono il riallineamento tra dispositivi; il diritto Cloud Sync è verificato separatamente dallo sblocco locale.",
+        "L’integrazione esaminata usa Lovable Cloud, non OneDrive o Google Drive. Nel codice delle migrazioni, vault_data è associata all’identificativo utente e protetta da regole per le operazioni dell’utente sui propri record. Questa lettura non certifica la configurazione attiva o tutti gli accessi privilegiati.",
+        "Restano visibili al servizio identificativi account, timestamp, dimensioni del blob e dati operativi di accesso. L’estensione usa inoltre una coda separata con URL, titolo e favicon in campi non cifrati prima dell’importazione nel vault: questo percorso non è end-to-end. I limiti sulle chiavi account descritti nella sezione 3 si applicano anche alla copia cloud."
+      ]
+    },
+    {
+      "id": "trasparenza",
+      "title": "6. Audit, sorgenti e conformità",
+      "paragraphs": [
+        "Non sono disponibili in questa verifica rapporti di audit indipendenti, penetration test esterni o certificazioni SOC 2 e ISO 27001 riferite a Vaulty Link. Test automatici e controlli del codice non sono equivalenti a un audit professionale.",
+        "Il repository di riferimento è pubblico su GitHub: https://github.com/LuckyDevAI/vaultylink. La disponibilità dei sorgenti permette una revisione, ma non implica da sola una licenza open source: i diritti di riuso dipendono dalla licenza applicabile.",
+        "Il documento non attesta conformità GDPR. Tale valutazione richiede, tra l’altro, ruoli privacy, basi giuridiche, contratti con fornitori, conservazione, procedure per i diritti degli interessati e gestione degli incidenti. La cifratura è una misura tecnica, non una certificazione legale."
+      ]
+    },
+    {
+      "id": "segnalazioni",
+      "title": "7. Segnalazioni e risposta agli incidenti",
+      "paragraphs": [
+        "Per segnalare un possibile problema scrivere a support@vaultylink.com, descrivendo versione, dispositivo, passaggi per riprodurlo e impatto osservato. Non inviare password, PIN, chiavi, token di sessione o archivi personali. Usare esempi privi di dati reali.",
+        "Il contatto indicato non equivale a un programma formalizzato di responsible disclosure o bug bounty. Non sono stati verificati tempi garantiti di risposta, un canale cifrato dedicato o una procedura pubblica completa di gestione degli incidenti.",
+        "Prima di testare sistemi o dati di altri utenti occorre un’autorizzazione esplicita. Una procedura operativa dovrebbe prevedere valutazione del rischio, contenimento, conservazione delle evidenze, correzione e comunicazioni dovute; questa è una raccomandazione, non la descrizione di un processo già certificato."
+      ]
+    },
+    {
+      "id": "priorita",
+      "title": "8. Priorità di miglioramento e riferimenti",
+      "paragraphs": [
+        "Priorità: sostituire la chiave account ricostruibile da dati pubblici; eliminare o proteggere la chiave JWK salvata in localStorage; riprogettare la protezione biometrica usando un segreto effettivo; cifrare la coda dell’estensione prima dell’invio. Ogni intervento deve preservare gli archivi esistenti e includere test di migrazione e recupero.",
+        "Successivamente: rivalutare derivazione e requisiti password, verificare dipendenze e difese XSS, documentare gestione dei conflitti e backup, svolgere una revisione indipendente e pubblicare una procedura di disclosure. Non sono promesse di interventi già conclusi.",
+        "Riferimenti della lettura: src/hooks/useVault.ts (deriveKey, deriveAccountKey, persistSession, sync); src/hooks/useBiometric.ts (HKDF e WebAuthn); migrazioni di vault_data ed extension_queue. Documento versione 1.0, aggiornato il 20 novembre 2026. Le descrizioni valgono per il codice esaminato e possono cambiare nelle versioni successive."
+      ]
+    }
+  ]
+}

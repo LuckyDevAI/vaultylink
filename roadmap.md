@@ -1,3 +1,6 @@
+# Documentazione sicurezza
+- [x] Creare PDF e /security con contenuto condiviso e limiti verificati: PDF di 3 pagine controllato integralmente, download e indice funzionanti, navigazione verificata, nessun errore pagina o overflow su telefono. Nessuna modifica alle protezioni e nessuna pubblicazione eseguita.
+
 # Apertura Vault senza rete
 - [x] Separare lo sblocco locale dalla verifica del piano: 7 test superati; preferito locale cifrato visibile con errore 500 e rete backend assente, senza sessione chiave recente e senza richieste ai dati cloud. Nessun dato reale modificato.
 

@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import type { LangCode } from '@/lib/i18n';
 import { supabase } from '@/integrations/supabase/client';
 
-type AppView = 'landing' | 'vault' | 'auth' | 'privacy' | 'terms' | 'eula' | 'admin' | 'account' | 'sitemap' | 'download' | 'support';
+type AppView = 'landing' | 'vault' | 'auth' | 'privacy' | 'terms' | 'eula' | 'admin' | 'account' | 'sitemap' | 'download' | 'support' | 'security';
 export type SettingsSection = 'profile' | 'password' | 'pin' | 'general' | null;
 
 interface AppState {

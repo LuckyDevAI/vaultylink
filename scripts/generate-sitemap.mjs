@@ -7,6 +7,7 @@ const BASE_URL = "https://vaultylink.com";
 const entries = [
   { path: "/", changefreq: "weekly", priority: "1.0" },
   { path: "/privacy", changefreq: "yearly", priority: "0.4" },
+  { path: "/security", changefreq: "monthly", priority: "0.6" },
   { path: "/terms", changefreq: "yearly", priority: "0.4" },
   { path: "/eula", changefreq: "yearly", priority: "0.4" },
 ];

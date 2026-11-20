@@ -11,6 +11,7 @@ type Entry = { path: string; label: string; desc: string; icon: React.ComponentT
 const publicEntries: Entry[] = [
   { path: '/', label: 'Home', desc: 'Pagina principale di VaultyLink', icon: Home, view: 'landing' },
   { path: '/privacy', label: 'Privacy Policy', desc: 'Come proteggiamo i tuoi dati', icon: Shield, view: 'privacy' },
+  { path: '/security', label: 'Sicurezza', desc: 'Crittografia, chiavi e limiti verificati', icon: Shield, view: 'security' },
   { path: '/terms', label: 'Termini di servizio', desc: 'Condizioni di utilizzo', icon: FileText, view: 'terms' },
   { path: '/eula', label: 'EULA', desc: 'Contratto di licenza utente finale', icon: ScrollText, view: 'eula' },
 ];
